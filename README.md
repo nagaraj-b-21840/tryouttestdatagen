@@ -11,7 +11,7 @@ A free, offline test data generator that works directly in the browser — no AP
 Just open the link — everything runs offline in your browser using pure JavaScript.
 
 ## Live Demo
-👉 https://YOUR-USERNAME.github.io/test-data-generator/
+👉 https://testdataone.github.io/test-data-generator/
 
 ## No Dependencies
 - No API key needed
