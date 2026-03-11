@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Test Data Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+[data-theme="dark"]{
+  --bg:#080c14;
+  --bg2:#0d1220;
+  --surface:#111827;
+  --surface2:#1a2236;
+  --border:#1e2d45;
+  --border-soft:#162035;
+  --text:#e2eaf8;
+  --text-muted:#5a7194;
+  --text-faint:#1e2d45;
+  --primary:#38bdf8;
+  --primary-glow:#7dd3fc;
+  --primary-dim:rgba(56,189,248,0.10);
+  --primary-dim2:rgba(56,189,248,0.18);
+  --success:#34d399;
+  --success-dim:rgba(52,211,153,0.12);
+  --danger:#f87171;
+  --amber:#fbbf24;
+  --amber-dim:rgba(251,191,36,0.12);
+}
+[data-theme="light"]{
+  --bg:#f0f6ff;
+  --bg2:#e6f0fd;
+  --surface:#ffffff;
+  --surface2:#f0f6ff;
+  --border:#c8ddf5;
+  --border-soft:#dceeff;
+  --text:#0d1f35;
+  --text-muted:#4a6fa5;
+  --text-faint:#c8ddf5;
+  --primary:#0284c7;
+  --primary-glow:#0369a1;
+  --primary-dim:rgba(2,132,199,0.08);
+  --primary-dim2:rgba(2,132,199,0.15);
+  --success:#059669;
+  --success-dim:rgba(5,150,105,0.08);
+  --danger:#dc2626;
+  --amber:#d97706;
+  --amber-dim:rgba(217,119,6,0.10);
+}
+
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  transition:background .3s,color .3s;
+}
+
+/* ── HEADER ── */
+.header{
+  position:relative;
+  padding:40px 24px 32px;
+  text-align:center;
+  border-bottom:1px solid var(--border-soft);
+  overflow:hidden;
+}
+.header::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 80% at 50% -10%,rgba(56,189,248,0.15) 0%,transparent 65%);
+  pointer-events:none;
+}
+.header::after{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(var(--text-faint) 1px,transparent 1px),linear-gradient(90deg,var(--text-faint) 1px,transparent 1px);
+  background-size:36px 36px;opacity:.4;
+  mask-image:radial-gradient(ellipse 60% 100% at 50% 50%,black 10%,transparent 75%);
+  pointer-events:none;
+}
+.header-inner{position:relative;z-index:1;}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--primary-dim2);border:1px solid var(--primary-dim2);
+  color:var(--primary-glow);border-radius:999px;
+  padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.badge::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--primary);box-shadow:0 0 8px var(--primary);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.header h1{
+  font-size:36px;font-weight:800;letter-spacing:-1.5px;line-height:1.1;
+  background:linear-gradient(135deg,var(--text) 0%,var(--primary-glow) 60%,var(--primary) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+[data-theme="light"] .header h1{
+  background:linear-gradient(135deg,#0d1f35 0%,#0284c7 100%);
+  -webkit-background-clip:text;background-clip:text;
+}
+.header p{color:var(--text-muted);margin-top:8px;font-size:15px;font-weight:400;}
+.theme-btn{
+  position:absolute;right:20px;top:50%;transform:translateY(-50%);z-index:2;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);
+  border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;
+  font-family:'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:all .2s;
+}
+.theme-btn:hover{border-color:var(--primary);color:var(--primary-glow);background:var(--primary-dim);}
+
+/* ── SUGGESTIONS BAR ── */
+.suggestions-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:12px 24px;overflow-x:auto;
+}
+.suggestions-bar::-webkit-scrollbar{display:none;}
+.suggestions-inner{
+  max-width:900px;margin:0 auto;
+  display:flex;gap:8px;align-items:center;flex-wrap:nowrap;
+}
+.suggest-label{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text-muted);white-space:nowrap;flex-shrink:0;
+}
+.chip{
+  padding:6px 14px;border:1px solid var(--border);border-radius:999px;
+  font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;
+  cursor:pointer;background:var(--surface);color:var(--text-muted);
+  white-space:nowrap;transition:all .18s;flex-shrink:0;
+}
+.chip:hover{border-color:var(--primary);color:var(--primary-glow);background:var(--primary-dim);}
+
+/* ── MAIN LAYOUT ── */
+.main{max-width:900px;margin:0 auto;padding:28px 20px 72px;display:flex;flex-direction:column;gap:20px;}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 4px 24px rgba(0,0,0,.3);
+}
+[data-theme="light"] .card{box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.card-header{
+  padding:16px 20px;border-bottom:1px solid var(--border-soft);
+  display:flex;align-items:center;gap:12px;background:var(--surface2);
+}
+.card-icon{
+  width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;border:1px solid var(--border);
+}
+.card-icon.blue{background:var(--primary-dim2);border-color:var(--primary-dim2);}
+.card-icon.green{background:var(--success-dim);border-color:rgba(52,211,153,.2);}
+.card-icon.amber{background:var(--amber-dim);border-color:rgba(251,191,36,.2);}
+.card-title{font-size:15px;font-weight:700;letter-spacing:-.2px;}
+.card-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.card-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
+
+/* ── INPUT ── */
+.input-wrap{position:relative;}
+textarea{
+  width:100%;min-height:110px;
+  background:var(--bg2);color:var(--text);
+  border:1px solid var(--border);border-radius:10px;
+  padding:13px 15px;font-size:14px;font-family:'Outfit',sans-serif;
+  line-height:1.6;resize:vertical;transition:border-color .2s,box-shadow .2s;
+}
+textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
+textarea::placeholder{color:var(--text-muted);}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+button{
+  padding:10px 20px;border:none;border-radius:10px;
+  font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;
+  cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:6px;
+}
+button:disabled{opacity:.35;cursor:not-allowed;}
+.btn-primary{background:var(--primary);color:#000;box-shadow:0 2px 12px var(--primary-dim2);}
+.btn-primary:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-1px);}
+.btn-secondary{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
+.btn-secondary:hover:not(:disabled){border-color:var(--primary);color:var(--text);background:var(--primary-dim);}
+.btn-copy{background:var(--success-dim);color:var(--success);border:1px solid rgba(52,211,153,.2);}
+.btn-copy:hover:not(:disabled){background:rgba(52,211,153,.2);}
+.btn-dl{background:var(--primary-dim);color:var(--primary-glow);border:1px solid var(--primary-dim2);}
+.btn-dl:hover:not(:disabled){background:var(--primary-dim2);transform:translateY(-1px);}
+
+/* ── OUTPUT BOX ── */
+.output-wrap{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;
+}
+.output-label{
+  padding:8px 14px;border-bottom:1px solid var(--border-soft);
+  background:var(--surface2);font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.output-area{
+  max-height:320px;min-height:72px;overflow-y:auto;
+  padding:14px 16px;white-space:pre-wrap;word-break:break-word;
+  font-size:13px;font-family:'JetBrains Mono',monospace;line-height:1.7;
+  color:var(--text);user-select:text;
+}
+.output-area::-webkit-scrollbar{width:5px;}
+.output-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.placeholder{color:var(--text-muted);font-style:italic;font-family:'Outfit',sans-serif;}
+
+/* ── SELECT ── */
+.select-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field-group{display:flex;flex-direction:column;gap:6px;}
+.field-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);}
+select{
+  width:100%;padding:10px 32px 10px 12px;
+  background:var(--bg2);color:var(--text);border:1px solid var(--border);
+  border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;font-weight:500;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235a7194' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  transition:border-color .2s,box-shadow .2s;
+}
+select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
+
+/* ── SIZE CHIPS ── */
+.size-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.size-chip{
+  padding:8px 18px;border:1px solid var(--border);border-radius:10px;
+  font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;
+  cursor:pointer;background:var(--bg2);color:var(--text-muted);transition:all .18s;
+}
+.size-chip:hover{border-color:var(--primary);color:var(--primary-glow);background:var(--primary-dim);}
+.size-chip.selected{background:var(--primary);color:#000;border-color:var(--primary);box-shadow:0 2px 12px var(--primary-dim2);}
+
+/* ── FILE STATUS ── */
+.file-status{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;display:none;align-items:center;gap:14px;
+}
+.file-status.visible{display:flex;}
+.file-icon-wrap{
+  width:42px;height:42px;border-radius:10px;border:1px solid var(--primary-dim2);
+  background:var(--primary-dim2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.file-name{font-weight:600;font-size:14px;}
+.file-size{font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:var(--border);border-radius:999px;height:3px;overflow:hidden;display:none;}
+.progress-wrap.visible{display:block;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-glow));border-radius:999px;transition:width .12s linear;}
+
+/* ── ERROR ── */
+.error-banner{
+  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);
+  color:#fca5a5;padding:10px 14px;border-radius:10px;
+  font-size:13px;display:none;align-items:center;gap:8px;
+}
+.error-banner.visible{display:flex;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);padding:10px 22px;border-radius:999px;
+  font-size:13px;font-weight:600;
+  box-shadow:0 0 0 1px var(--primary-dim2),0 8px 40px rgba(0,0,0,.5);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:1000;white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── SPINNER ── */
+.spinner{
+  display:inline-block;width:13px;height:13px;
+  border:2px solid rgba(0,0,0,.2);border-top-color:#000;
+  border-radius:50%;animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TABS ── */
+.nav-tabs{
+  display:flex;background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 28px;overflow-x:auto;gap:4px;
+}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{
+  padding:14px 18px;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;
+  color:var(--text-muted);cursor:pointer;border:none;background:none;
+  border-bottom:2px solid transparent;white-space:nowrap;
+  transition:color .2s,border-color .2s;
+}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--primary-glow);border-bottom-color:var(--primary);}
+.section-panel{display:none;}
+.section-panel.active{display:block;animation:fadeUp .22s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── RESPONSE ACTIONS ── */
+.response-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+@media(max-width:600px){
+  .main{padding:16px 12px 56px;}
+  .select-row{grid-template-columns:1fr;}
+  .btn-row{flex-direction:column;}
+  .btn-row button{width:100%;justify-content:center;}
+  .header h1{font-size:26px;}
+  .theme-btn span:last-child{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="badge">Test Data Generator</div>
+    <h1>Test Data Generator</h1>
+    <p>Generate test data in any format, instantly</p>
+  </div>
+  <button class="theme-btn" id="theme-btn">
+    <span id="theme-icon">☀️</span>
+    <span id="theme-label">Light</span>
+  </button>
+</div>
+
+<!-- Quick suggestions -->
+<div class="suggestions-bar">
+  <div class="suggestions-inner">
+    <span class="suggest-label">Try:</span>
+    <span class="chip" data-prompt="generate 10 full names">10 full names</span>
+    <span class="chip" data-prompt="generate 10 email addresses">10 emails</span>
+    <span class="chip" data-prompt="generate 5 user records in JSON">5 users JSON</span>
+    <span class="chip" data-prompt="generate 8 rows of employee data in CSV">employee CSV</span>
+    <span class="chip" data-prompt="generate 10 phone numbers">phone numbers</span>
+    <span class="chip" data-prompt="generate 5 product records in JSON">products JSON</span>
+    <span class="chip" data-prompt="generate 10 addresses">10 addresses</span>
+    <span class="chip" data-prompt="generate 3 paragraphs of lorem ipsum">lorem ipsum</span>
+    <span class="chip" data-prompt="generate 10 random dates">random dates</span>
+    <span class="chip" data-prompt="generate 10 UUIDs">10 UUIDs</span>
+    <span class="chip" data-prompt="generate SQL insert for 5 users">SQL inserts</span>
+    <span class="chip" data-prompt="generate 5 credit card numbers">credit cards</span>
+    <span class="chip" data-prompt="generate 8 company names">company names</span>
+    <span class="chip" data-prompt="generate 5 order records in XML">orders XML</span>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="nav-tabs">
+  <button class="nav-tab active" data-section="text-section">✦ Text Generator</button>
+  <button class="nav-tab" data-section="structured-section">⊞ Structured Data</button>
+  <button class="nav-tab" data-section="file-section">⬡ File Generator</button>
+</div>
+
+<!-- SECTION 1: Text Generator -->
+<div id="text-section" class="section-panel active">
+  <div class="main">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">✦</div>
+        <div><div class="card-title">Text Generator</div><div class="card-sub">Describe what data you need and it generates instantly</div></div>
+      </div>
+      <div class="card-body">
+        <textarea id="text-input" placeholder="Examples:&#10;• generate 10 full names&#10;• give me 5 email addresses&#10;• create 8 phone numbers in US format&#10;• generate 3 paragraphs of lorem ipsum&#10;• give me 10 random dates between 2020 and 2024"></textarea>
+        <div class="btn-row">
+          <button class="btn-primary" id="text-gen-btn" disabled><span id="text-gen-label">Generate</span></button>
+          <button class="btn-secondary" id="text-reset-btn" disabled>Reset</button>
+        </div>
+        <div class="error-banner" id="text-error"><span>⚠</span><span id="text-error-msg"></span></div>
+        <div class="output-wrap">
+          <div class="output-label"><span>Output</span><span id="text-item-count" style="font-size:11px;color:var(--success);display:none;"></span></div>
+          <div class="output-area" id="text-output"><span class="placeholder">Generated content will appear here…</span></div>
+        </div>
+        <div class="response-actions">
+          <button class="btn-copy" id="text-copy-btn" disabled>Copy</button>
+          <button class="btn-dl" id="text-dl-btn" disabled>Download TXT</button>
+          <button class="btn-secondary" id="text-clear-btn" disabled>Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: Structured Data -->
+<div id="structured-section" class="section-panel">
+  <div class="main">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon green">⊞</div>
+        <div><div class="card-title">Structured Data Generator</div><div class="card-sub">Pick format and row count — get clean structured data instantly</div></div>
+      </div>
+      <div class="card-body">
+        <div class="select-row">
+          <div class="field-group">
+            <label class="field-label">Format</label>
+            <select id="struct-type">
+              <option value="" disabled selected>Select format…</option>
+              <option value="json">JSON</option>
+              <option value="csv">CSV</option>
+              <option value="xml">XML</option>
+              <option value="sql">SQL (INSERT)</option>
+              <option value="yaml">YAML</option>
+              <option value="html">HTML Table</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Row Count</label>
+            <select id="struct-rows">
+              <option value="" disabled selected>Select rows…</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="struct-gen-btn" disabled><span id="struct-gen-label">Generate</span></button>
+          <button class="btn-secondary" id="struct-reset-btn" disabled>Reset</button>
+        </div>
+        <div class="error-banner" id="struct-error"><span>⚠</span><span id="struct-error-msg"></span></div>
+        <div class="output-wrap">
+          <div class="output-label"><span>Output</span><span id="struct-record-count" style="font-size:11px;color:var(--success);display:none;"></span></div>
+          <div class="output-area" id="struct-output"><span class="placeholder">Generated structured data will appear here…</span></div>
+        </div>
+        <div class="response-actions">
+          <button class="btn-copy" id="struct-copy-btn" disabled>Copy</button>
+          <button class="btn-dl" id="struct-dl-btn" disabled>Download</button>
+          <button class="btn-secondary" id="struct-clear-btn" disabled>Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: File Generator -->
+<div id="file-section" class="section-panel">
+  <div class="main">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon amber">⬡</div>
+        <div><div class="card-title">File Generator</div><div class="card-sub">Generate sample files at exact sizes — PDF, DOCX, XLSX and more</div></div>
+      </div>
+      <div class="card-body">
+        <div class="select-row">
+          <div class="field-group">
+            <label class="field-label">File Type</label>
+            <select id="file-type">
+              <option value="" disabled selected>Select type…</option>
+              <option value="pdf">PDF (.pdf)</option>
+              <option value="docx">Word (.docx)</option>
+              <option value="xlsx">Excel (.xlsx)</option>
+              <option value="txt">Plain Text (.txt)</option>
+              <option value="csv">CSV (.csv)</option>
+              <option value="json">JSON (.json)</option>
+              <option value="xml">XML (.xml)</option>
+              <option value="html">HTML (.html)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">File Size</label>
+            <div class="size-chips" id="size-chips">
+              <div class="size-chip" data-size="2">2 MB</div>
+              <div class="size-chip" data-size="5">5 MB</div>
+              <div class="size-chip" data-size="10">10 MB</div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="file-gen-btn" disabled><span id="file-gen-label">Generate</span></button>
+          <button class="btn-secondary" id="file-reset-btn" disabled>Reset</button>
+        </div>
+        <div class="error-banner" id="file-error"><span>⚠</span><span id="file-error-msg"></span></div>
+        <div class="progress-wrap" id="file-progress-wrap"><div class="progress-bar" id="file-progress-bar" style="width:0%"></div></div>
+        <div class="file-status" id="file-status">
+          <div class="file-icon-wrap"><span id="file-status-icon">📄</span></div>
+          <div><div class="file-name" id="file-status-name">—</div><div class="file-size" id="file-status-size">—</div></div>
+        </div>
+        <div class="response-actions">
+          <button class="btn-dl" id="file-dl-btn" disabled>Download</button>
+          <button class="btn-secondary" id="file-clear-btn" disabled>Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  DATA POOLS
+// ============================================================
+const FIRST = ["James","Mary","John","Patricia","Robert","Jennifer","Michael","Linda","William","Barbara","David","Susan","Richard","Jessica","Joseph","Sarah","Thomas","Karen","Charles","Lisa","Christopher","Nancy","Daniel","Betty","Matthew","Margaret","Anthony","Sandra","Mark","Ashley","Donald","Dorothy","Steven","Kimberly","Paul","Emily","Andrew","Donna","Joshua","Michelle","Kenneth","Carol","Kevin","Amanda","Brian","Melissa","George","Deborah","Timothy","Stephanie","Ronald","Rebecca","Edward","Sharon","Jason","Laura","Jeffrey","Cynthia","Ryan","Kathleen","Jacob","Amy","Gary","Angela","Nicholas","Shirley","Eric","Anna","Jonathan","Brenda","Stephen","Pamela","Larry","Emma","Justin","Nicole","Scott","Helen","Brandon","Samantha","Frank","Katherine","Benjamin","Christine","Gregory","Debra","Samuel","Rachel","Raymond","Carolyn","Patrick","Janet","Alexander","Maria","Jack","Heather","Dennis","Diane"];
+const LAST = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin","Lee","Perez","Thompson","White","Harris","Sanchez","Clark","Ramirez","Lewis","Robinson","Walker","Young","Allen","King","Wright","Scott","Torres","Nguyen","Hill","Flores","Green","Adams","Nelson","Baker","Hall","Rivera","Campbell","Mitchell","Carter","Roberts","Turner","Phillips","Evans","Collins","Stewart","Morris","Sanchez","Rogers","Reed","Cook","Morgan","Bell","Murphy","Bailey","Cooper","Richardson","Cox","Howard","Ward","Torres","Peterson","Gray","Ramirez","James","Watson","Brooks","Kelly","Sanders","Price","Bennett","Wood","Barnes","Ross","Henderson","Coleman","Jenkins","Perry","Powell","Long","Patterson","Hughes","Flores","Washington","Butler","Simmons","Foster","Gonzales","Bryant","Alexander","Russell"];
+const DOMAINS = ["gmail.com","yahoo.com","outlook.com","hotmail.com","company.com","business.org","enterprise.net","corp.io","techfirm.com","globalco.net"];
+const CITIES = ["New York","Los Angeles","Chicago","Houston","Phoenix","Philadelphia","San Antonio","San Diego","Dallas","San Jose","Austin","Jacksonville","Fort Worth","Columbus","Charlotte","Indianapolis","San Francisco","Seattle","Denver","Nashville","Oklahoma City","El Paso","Washington","Boston","Las Vegas","Portland","Louisville","Memphis","Baltimore","Milwaukee","Albuquerque","Tucson","Fresno","Sacramento","Kansas City","Atlanta","Miami","Minneapolis","Cleveland","Raleigh","Omaha","Colorado Springs","Arlington","Virginia Beach","Tampa","New Orleans","Wichita","Bakersfield","Aurora","Anaheim"];
+const STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+const STATE_CODES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+const STREETS = ["Main St","Oak Ave","Maple Dr","Cedar Ln","Elm St","Pine Ave","Washington Blvd","Park Rd","Lake Dr","Hill St","River Rd","Forest Ave","Valley Dr","Sunset Blvd","Highland Ave","Meadow Ln","Grove St","Church Rd","School St","Mill Rd","Spring St","Market St","Broadway","Lincoln Ave","Madison St","Jefferson Rd","Adams Blvd","Monroe St","Harrison Ave","Tyler Ln"];
+const DEPARTMENTS = ["Engineering","Marketing","Sales","Finance","HR","Operations","IT","Design","Legal","Support","Research","Development","Product","Management","Accounting"];
+const JOB_TITLES = ["Software Engineer","Product Manager","Data Analyst","Marketing Specialist","Sales Representative","HR Manager","Operations Lead","UX Designer","System Administrator","Business Analyst","DevOps Engineer","Project Manager","Content Writer","Financial Analyst","Customer Success Manager","QA Engineer","Backend Developer","Frontend Developer","Data Scientist","Technical Lead"];
+const PRODUCTS = ["Wireless Headphones","Smart Watch","Laptop Stand","USB-C Hub","Mechanical Keyboard","Gaming Mouse","Monitor 4K","Webcam HD","Desk Lamp","Phone Case","Portable Charger","Bluetooth Speaker","Tablet Cover","Cable Organizer","Mouse Pad XL","Screen Protector","Ergonomic Chair","Standing Desk","Monitor Arm","Cable Management Kit","Drawing Tablet","Microphone USB","Ring Light","Green Screen","Capture Card","NAS Drive","External SSD","RAM Module","CPU Cooler","GPU Stand"];
+const CATEGORIES = ["Electronics","Clothing","Home & Garden","Sports","Books","Toys","Food","Health","Automotive","Office","Beauty","Music","Movies","Gaming","Tools"];
+const COMPANIES = ["Acme Corp","TechWave","GlobalSystems","DataBridge","CloudNova","InnovateTech","NextGen Solutions","Digital Forge","AlphaStream","BetaWorks","OmegaSoft","ZenithGroup","ApexDynamics","ClearPath Inc","Horizon Labs","Vertex Systems","Pinnacle Tech","Summit Digital","Catalyst Corp","Fusion Works"];
+const LOREM_WORDS = ["lorem","ipsum","dolor","sit","amet","consectetur","adipiscing","elit","sed","do","eiusmod","tempor","incididunt","ut","labore","et","dolore","magna","aliqua","enim","ad","minim","veniam","quis","nostrud","exercitation","ullamco","laboris","nisi","aliquip","ex","ea","commodo","consequat","duis","aute","irure","in","reprehenderit","voluptate","velit","esse","cillum","fugiat","nulla","pariatur","excepteur","sint","occaecat","cupidatat","non","proident","sunt","culpa","qui","officia","deserunt","mollit","anim","id","est","laborum"];
+const TLDS = [".com",".org",".net",".io",".co",".app",".dev",".tech",".ai"];
+const ORDER_STATUSES = ["Pending","Processing","Shipped","Delivered","Cancelled","Refunded","On Hold"];
+const PAYMENT_METHODS = ["Credit Card","PayPal","Bank Transfer","Stripe","Apple Pay","Google Pay"];
+const COLORS = ["Red","Blue","Green","Black","White","Silver","Gold","Navy","Purple","Orange","Pink","Brown","Grey","Yellow","Teal"];
+
+// ============================================================
+//  UTILITY FUNCTIONS
+// ============================================================
+function rnd(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function rndInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function rndFloat(min,max,dec=2){ return parseFloat((Math.random()*(max-min)+min).toFixed(dec)); }
+
+function rndName(){ return rnd(FIRST)+" "+rnd(LAST); }
+function rndFirst(){ return rnd(FIRST); }
+function rndLast(){ return rnd(LAST); }
+function rndEmail(first,last){
+  first = first||rnd(FIRST); last = last||rnd(LAST);
+  const sep = rnd([".","-","_",""]);
+  const prefix = rnd([
+    first.toLowerCase()+sep+last.toLowerCase(),
+    first.toLowerCase()+rndInt(10,999),
+    last.toLowerCase()+sep+first[0].toLowerCase(),
+    first[0].toLowerCase()+last.toLowerCase(),
+  ]);
+  return prefix+"@"+rnd(DOMAINS);
+}
+function rndPhone(){
+  const fmt = rnd([
+    `+1 (${rndInt(200,999)}) ${rndInt(200,999)}-${rndInt(1000,9999)}`,
+    `(${rndInt(200,999)}) ${rndInt(200,999)}-${rndInt(1000,9999)}`,
+    `${rndInt(200,999)}-${rndInt(200,999)}-${rndInt(1000,9999)}`,
+    `+44 ${rndInt(700,799)} ${rndInt(100,999)} ${rndInt(1000,9999)}`,
+  ]);
+  return fmt;
+}
+function rndAddress(){
+  return `${rndInt(1,9999)} ${rnd(STREETS)}, ${rnd(CITIES)}, ${rnd(STATE_CODES)} ${rndInt(10000,99999)}`;
+}
+function rndDate(startYear=2018,endYear=2024){
+  const y = rndInt(startYear,endYear);
+  const m = String(rndInt(1,12)).padStart(2,"0");
+  const d = String(rndInt(1,28)).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+function rndUUID(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+function rndIP(){
+  return `${rndInt(10,223)}.${rndInt(0,255)}.${rndInt(0,255)}.${rndInt(1,254)}`;
+}
+function rndUrl(){
+  const name = rnd(COMPANIES).toLowerCase().replace(/[^a-z]/g,"");
+  return `https://www.${name}${rnd(TLDS)}`;
+}
+function rndCC(){
+  // Luhn-valid-looking (not real)
+  const prefixes = ["4","51","52","53","54","55","34","37"];
+  const p = rnd(prefixes);
+  const len = p.startsWith("3") ? 15 : 16;
+  let num = p;
+  while(num.length < len-1) num += rndInt(0,9);
+  // Luhn checksum
+  let sum=0,alt=false;
+  for(let i=num.length-1;i>=0;i--){
+    let n=parseInt(num[i]);
+    if(alt){n*=2;if(n>9)n-=9;}
+    sum+=n;alt=!alt;
+  }
+  num += (10-(sum%10))%10;
+  return num.match(/.{1,4}/g).join(" ");
+}
+function rndLorem(sentences=3){
+  let out=[];
+  for(let i=0;i<sentences;i++){
+    const wc=rndInt(12,25);
+    let words=[];
+    for(let w=0;w<wc;w++) words.push(rnd(LOREM_WORDS));
+    out.push(words[0].charAt(0).toUpperCase()+words[0].slice(1)+" "+words.slice(1).join(" ")+".");
+  }
+  return out.join(" ");
+}
+function rndBoolean(){ return Math.random()>0.5; }
+function rndSalary(){ return rndInt(35,180)*1000; }
+function rndAge(){ return rndInt(21,65); }
+function rndScore(){ return rndFloat(1,5,1); }
+function rndPrice(){ return rndFloat(9.99,999.99); }
+function rndQty(){ return rndInt(1,500); }
+function rndSku(){
+  return rnd(["SKU","PRD","ITEM","REF"])+"-"+rndInt(1000,9999)+"-"+String.fromCharCode(65+rndInt(0,25));
+}
+function rndOrderId(){
+  return "ORD-"+rndInt(10000,99999);
+}
+function rndUsername(first,last){
+  first=first||rnd(FIRST);last=last||rnd(LAST);
+  return rnd([
+    first.toLowerCase()+last.toLowerCase().slice(0,3)+rndInt(10,99),
+    first[0].toLowerCase()+last.toLowerCase()+rndInt(1,999),
+    first.toLowerCase()+"_"+last.toLowerCase(),
+  ]);
+}
+
+// ============================================================
+//  RECORD GENERATORS
+// ============================================================
+function genUser(){
+  const first=rnd(FIRST),last=rnd(LAST);
+  return {
+    id: rndUUID(),
+    firstName: first,
+    lastName: last,
+    email: rndEmail(first,last),
+    phone: rndPhone(),
+    username: rndUsername(first,last),
+    age: rndAge(),
+    city: rnd(CITIES),
+    state: rnd(STATES),
+    address: rndAddress(),
+    active: rndBoolean(),
+    createdAt: rndDate(),
+  };
+}
+function genEmployee(){
+  const first=rnd(FIRST),last=rnd(LAST);
+  return {
+    id: "EMP-"+rndInt(1000,9999),
+    firstName: first,
+    lastName: last,
+    email: rndEmail(first,last),
+    phone: rndPhone(),
+    department: rnd(DEPARTMENTS),
+    jobTitle: rnd(JOB_TITLES),
+    salary: rndSalary(),
+    startDate: rndDate(2015,2024),
+    city: rnd(CITIES),
+    active: rndBoolean(),
+  };
+}
+function genProduct(){
+  return {
+    id: rndSku(),
+    name: rnd(PRODUCTS),
+    category: rnd(CATEGORIES),
+    price: rndPrice(),
+    stock: rndQty(),
+    color: rnd(COLORS),
+    rating: rndScore(),
+    available: rndBoolean(),
+    addedDate: rndDate(),
+  };
+}
+function genOrder(){
+  const first=rnd(FIRST),last=rnd(LAST);
+  return {
+    orderId: rndOrderId(),
+    customer: first+" "+last,
+    email: rndEmail(first,last),
+    product: rnd(PRODUCTS),
+    quantity: rndInt(1,10),
+    total: rndPrice(),
+    status: rnd(ORDER_STATUSES),
+    payment: rnd(PAYMENT_METHODS),
+    orderDate: rndDate(),
+    deliveryDate: rndDate(2024,2025),
+    address: rndAddress(),
+  };
+}
+
+// ============================================================
+//  STRUCTURED DATA FORMATTERS
+// ============================================================
+// Compact record — fewer fields, easier to read as "rows"
+function genRecord(){
+  const first=rnd(FIRST),last=rnd(LAST);
+  return {
+    id:       rndInt(1000,9999),
+    name:     first+" "+last,
+    email:    rndEmail(first,last),
+    phone:    rndPhone(),
+    city:     rnd(CITIES),
+    country:  rnd(["USA","UK","Canada","Australia","Germany","France","India","Japan"]),
+    age:      rndAge(),
+    active:   rndBoolean(),
+  };
+}
+
+function toJSON(records){
+  // Each record on one line — easy to count rows visually
+  return "[\n"+records.map(r=>"  "+JSON.stringify(r)).join(",\n")+"\n]";
+}
+
+function toCSV(records){
+  if(!records.length) return "";
+  const headers = Object.keys(records[0]);
+  const rows = records.map(r=>headers.map(h=>{
+    const v=String(r[h]??"");
+    return v.includes(",")||v.includes('"') ? `"${v.replace(/"/g,'""')}"` : v;
+  }).join(","));
+  return [headers.join(","),...rows].join("\n");
+}
+
+function toXML(records,rootTag,itemTag){
+  const indent=(n)=>"  ".repeat(n);
+  const escape=(s)=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  let lines=[`<?xml version="1.0" encoding="UTF-8"?>`,`<${rootTag}>`];
+  records.forEach(r=>{
+    lines.push(`${indent(1)}<${itemTag}>`);
+    Object.entries(r).forEach(([k,v])=>{
+      lines.push(`${indent(2)}<${k}>${escape(v)}</${k}>`);
+    });
+    lines.push(`${indent(1)}</${itemTag}>`);
+  });
+  lines.push(`</${rootTag}>`);
+  return lines.join("\n");
+}
+
+function toSQL(records,table){
+  return records.map(r=>{
+    const cols=Object.keys(r).join(", ");
+    const vals=Object.values(r).map(v=>typeof v==="boolean"?Number(v):`'${String(v).replace(/'/g,"''")}'`).join(", ");
+    return `INSERT INTO ${table} (${cols}) VALUES (${vals});`;
+  }).join("\n");
+}
+
+function toYAML(records){
+  function yamlVal(v){
+    if(typeof v==="boolean") return v?"true":"false";
+    if(typeof v==="number") return v;
+    if(String(v).match(/^[\w\-\.@]+$/)) return v;
+    return `"${String(v).replace(/"/g,'\\"')}"`;
+  }
+  let lines=["users:"];
+  records.forEach(r=>{
+    const entries=Object.entries(r);
+    lines.push(`  - ${entries[0][0]}: ${yamlVal(entries[0][1])}`);
+    entries.slice(1).forEach(([k,v])=>lines.push(`    ${k}: ${yamlVal(v)}`));
+  });
+  return lines.join("\n");
+}
+
+function toHTMLTable(records){
+  if(!records.length) return "";
+  const headers=Object.keys(records[0]);
+  const ths=headers.map(h=>`<th>${h}</th>`).join("");
+  const trs=records.map(r=>`<tr>${headers.map(h=>`<td>${r[h]??""}</td>`).join("")}</tr>`).join("\n    ");
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  body{font-family:sans-serif;padding:20px;}
+  table{border-collapse:collapse;width:100%;}
+  th,td{border:1px solid #ddd;padding:8px 12px;text-align:left;}
+  th{background:#f2f2f2;font-weight:600;}
+  tr:nth-child(even){background:#fafafa;}
+</style></head><body>
+<table>
+  <thead><tr>${ths}</tr></thead>
+  <tbody>
+    ${trs}
+  </tbody>
+</table>
+</body></html>`;
+}
+
+// ============================================================
+//  SMART TEXT QUERY ENGINE
+// ============================================================
+function parseCount(q){
+  // Match patterns like "10 names", "generate 5", "give me 20", "create 3"
+  const patterns=[
+    /\b(?:generate|give|create|make|list|show|produce|get)\s+(\d+)\b/,
+    /\b(\d+)\s+(?:rows?|records?|items?|entries|results?|names?|emails?|phones?|addresses?|uuids?|dates?|numbers?|users?|people|persons?|employees?|products?|orders?|paragraphs?|lines?|passwords?|companies?|urls?|websites?|ips?)\b/,
+    /\b(\d+)\b/,
+  ];
+  for(const p of patterns){
+    const m=q.match(p);
+    if(m) return Math.min(Math.max(parseInt(m[1]),1),200);
+  }
+  return 10;
+}
+
+function processQuery(query){
+  const q=query.toLowerCase().trim();
+  const n=parseCount(q);
+
+  // ---- NAMES ----
+  if(/full.?name|person.?name|people.?name|names/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndName()}`).join("\n");
+  }
+  if(/first.?name/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndFirst()}`).join("\n");
+  }
+  if(/last.?name|surname/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndLast()}`).join("\n");
+  }
+
+  // ---- EMAIL ----
+  if(/email/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndEmail()}`).join("\n");
+  }
+
+  // ---- PHONE ----
+  if(/phone|mobile|cell|telephone/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndPhone()}`).join("\n");
+  }
+
+  // ---- ADDRESS ----
+  if(/address|street|location/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndAddress()}`).join("\n");
+  }
+
+  // ---- UUID ----
+  if(/uuid|guid/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndUUID()}`).join("\n");
+  }
+
+  // ---- IP ADDRESS ----
+  if(/\bip\b|ip.?address/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndIP()}`).join("\n");
+  }
+
+  // ---- CREDIT CARD ----
+  if(/credit.?card|card.?number/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndCC()}`).join("\n");
+  }
+
+  // ---- DATE ----
+  if(/date|dob|birth/.test(q)){
+    const startY=q.match(/\b(19|20)\d{2}\b/)?.[0]||"2018";
+    const allYears=q.match(/\b(19|20)\d{2}\b/g)||[];
+    const endY=allYears[1]||"2024";
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndDate(parseInt(startY),parseInt(endY))}`).join("\n");
+  }
+
+  // ---- URL / WEBSITE ----
+  if(/url|website|domain|link/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndUrl()}`).join("\n");
+  }
+
+  // ---- USERNAME ----
+  if(/username|user.?name/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndUsername()}`).join("\n");
+  }
+
+  // ---- COMPANY ----
+  if(/company|organization|firm|business/.test(q)){
+    const pool=[...COMPANIES];
+    while(pool.length<n) pool.push(...COMPANIES);
+    return pool.slice(0,n).map((c,i)=>`${i+1}. ${c}`).join("\n");
+  }
+
+  // ---- PRODUCT ----
+  if(/product|item/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(PRODUCTS)} — $${rndPrice()} — Stock: ${rndQty()}`).join("\n");
+  }
+
+  // ---- CITY ----
+  if(/city|cities/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(CITIES)}, ${rnd(STATE_CODES)}`).join("\n");
+  }
+
+  // ---- LOREM IPSUM / PARAGRAPH ----
+  if(/lorem|ipsum|paragraph|text|passage/.test(q)){
+    return Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n");
+  }
+
+  // ---- USER RECORDS ----
+  if(/user.?record|user.?data|user.?info/.test(q)){
+    return Array.from({length:n},()=>genRecord()).map((u,i)=>
+      `--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")
+    ).join("\n\n");
+  }
+
+  // ---- EMPLOYEE ----
+  if(/employee|staff|worker/.test(q)){
+    return Array.from({length:n},()=>genEmployee()).map((e,i)=>
+      `--- Employee ${i+1} ---\n`+Object.entries(e).map(([k,v])=>`  ${k}: ${v}`).join("\n")
+    ).join("\n\n");
+  }
+
+  // ---- ORDER ----
+  if(/order/.test(q)){
+    return Array.from({length:n},()=>genOrder()).map((o,i)=>
+      `--- Order ${i+1} ---\n`+Object.entries(o).map(([k,v])=>`  ${k}: ${v}`).join("\n")
+    ).join("\n\n");
+  }
+
+  // ---- JSON ----
+  if(/json/.test(q)){
+    if(/product/.test(q)) return toJSON(Array.from({length:n},()=>genProduct()));
+    if(/employee|staff/.test(q)) return toJSON(Array.from({length:n},()=>genEmployee()));
+    if(/order/.test(q)) return toJSON(Array.from({length:n},()=>genOrder()));
+    return toJSON(Array.from({length:n},()=>genRecord()));
+  }
+
+  // ---- CSV ----
+  if(/csv/.test(q)){
+    if(/product/.test(q)) return toCSV(Array.from({length:n},()=>genProduct()));
+    if(/employee|staff/.test(q)) return toCSV(Array.from({length:n},()=>genEmployee()));
+    if(/order/.test(q)) return toCSV(Array.from({length:n},()=>genOrder()));
+    return toCSV(Array.from({length:n},()=>genRecord()));
+  }
+
+  // ---- XML ----
+  if(/xml/.test(q)){
+    if(/product/.test(q)) return toXML(Array.from({length:n},()=>genProduct()),"products","product");
+    if(/employee/.test(q)) return toXML(Array.from({length:n},()=>genEmployee()),"employees","employee");
+    if(/order/.test(q)) return toXML(Array.from({length:n},()=>genOrder()),"orders","order");
+    return toXML(Array.from({length:n},()=>genRecord()),"records","record");
+  }
+
+  // ---- SQL ----
+  if(/sql|insert/.test(q)){
+    if(/product/.test(q)) return toSQL(Array.from({length:n},()=>genProduct()),"products");
+    if(/employee/.test(q)) return toSQL(Array.from({length:n},()=>genEmployee()),"employees");
+    if(/order/.test(q)) return toSQL(Array.from({length:n},()=>genOrder()),"orders");
+    return toSQL(Array.from({length:n},()=>genRecord()),"test_data");
+  }
+
+  // ---- YAML ----
+  if(/yaml/.test(q)){
+    return toYAML(Array.from({length:n},()=>genRecord()));
+  }
+
+  // ---- NUMBER / INTEGER ----
+  if(/random.?number|integer|number/.test(q)){
+    const min=parseInt(q.match(/between\s+(\d+)/)?.[1]||"1");
+    const max=parseInt(q.match(/and\s+(\d+)/)?.[1]||"1000");
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndInt(min,max)}`).join("\n");
+  }
+
+  // ---- PASSWORD ----
+  if(/password/.test(q)){
+    const chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    return Array.from({length:n},(_,i)=>{
+      let p="";for(let c=0;c<16;c++) p+=chars[rndInt(0,chars.length-1)];
+      return `${i+1}. ${p}`;
+    }).join("\n");
+  }
+
+  // ---- BOOLEAN ----
+  if(/boolean|true.?false/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rndBoolean()}`).join("\n");
+  }
+
+  // ---- SALARY ----
+  if(/salary|wage|income/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. $${rndSalary().toLocaleString()}`).join("\n");
+  }
+
+  // ---- DEPARTMENT ----
+  if(/department/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(DEPARTMENTS)}`).join("\n");
+  }
+
+  // ---- JOB TITLE ----
+  if(/job.?title|position|role/.test(q)){
+    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(JOB_TITLES)}`).join("\n");
+  }
+
+  // ---- DEFAULT: general record data ----
+  return Array.from({length:n},()=>genRecord()).map((u,i)=>
+    `--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")
+  ).join("\n\n");
+}
+
+// ============================================================
+//  STRUCTURED DATA SECTION
+// ============================================================
+function genStructured(type, count){
+  const n = count;
+  const records = Array.from({length:n}, ()=>genRecord());
+  switch(type){
+    case "json": return { data: toJSON(records),                          ext:"json", mime:"application/json" };
+    case "csv":  return { data: toCSV(records),                           ext:"csv",  mime:"text/csv" };
+    case "xml":  return { data: toXML(records,"records","record"),        ext:"xml",  mime:"application/xml" };
+    case "sql":  return { data: toSQL(records,"test_data"),               ext:"sql",  mime:"text/plain" };
+    case "yaml": return { data: toYAML(records),                          ext:"yaml", mime:"text/yaml" };
+    case "html": return { data: toHTMLTable(records),                     ext:"html", mime:"text/html" };
+    default:     return { data:"Unknown format", ext:"txt", mime:"text/plain" };
+  }
+}
+
+// ============================================================
+//  FILE GENERATOR (exact size, no AI)
+// ============================================================
+const ENC = new TextEncoder();
+function downloadBlob(blob,name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);
+  a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+const WORDS=["lorem","ipsum","dolor","sit","amet","consectetur","adipiscing","elit","sed","do","eiusmod","tempor","incididunt","labore","magna","aliqua","enim","veniam","nostrud","exercitation","ullamco","nisi","aliquip","commodo","consequat","duis","aute","irure","reprehenderit","voluptate","velit","esse","fugiat","nulla","pariatur","excepteur","sint","occaecat","proident","culpa","deserunt","mollit","anim","laborum"];
+function randWord(){ return WORDS[Math.floor(Math.random()*WORDS.length)]; }
+function randSentence(){
+  const len=8+Math.floor(Math.random()*12);
+  const words=Array.from({length:len},()=>randWord());
+  return words[0].charAt(0).toUpperCase()+words[0].slice(1)+" "+words.slice(1).join(" ")+".";
+}
+function makeBytes(targetBytes,prefix,suffix,lineGen){
+  const pre=ENC.encode(prefix),suf=ENC.encode(suffix);
+  const bodyTarget=targetBytes-pre.length-suf.length;
+  const out=new Uint8Array(targetBytes);
+  let pos=0;
+  out.set(pre,0);pos+=pre.length;
+  while(pos<pre.length+bodyTarget){
+    const line=ENC.encode(lineGen()+"\n");
+    const space=pre.length+bodyTarget-pos;
+    if(line.length<=space){out.set(line,pos);pos+=line.length;}
+    else{out.set(line.slice(0,space),pos);pos+=space;}
+  }
+  out.set(suf,pos);
+  return out;
+}
+function genTXT(tb){ return makeBytes(tb,"","",randSentence); }
+function genCSV(tb){
+  const header="id,name,email,city,department,salary\n";
+  const names=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black"];
+  const cities=["New York","London","Paris","Tokyo","Sydney","Berlin"];
+  const depts=["Engineering","Marketing","Sales","Finance","HR"];
+  const row=()=>`${rndUUID()},${names[rndInt(0,5)]},${rndEmail()},${cities[rndInt(0,5)]},${depts[rndInt(0,4)]},${rndSalary()}`;
+  return makeBytes(tb,header,"",row);
+}
+function genJSON(tb){
+  const obj=()=>({id:rndUUID(),name:rndName(),email:rndEmail(),age:rndAge(),city:rnd(CITIES),active:rndBoolean(),score:rndScore()});
+  const pre="[\n",suf="\n]";
+  const bodyTarget=tb-ENC.encode(pre).length-ENC.encode(suf).length;
+  const out=new Uint8Array(tb);
+  const preEnc=ENC.encode(pre);
+  out.set(preEnc,0);let pos=preEnc.length;
+  let first=true;
+  while(pos<ENC.encode(pre).length+bodyTarget-10){
+    const chunk=ENC.encode((first?"":",\n")+"  "+JSON.stringify(obj()));
+    first=false;
+    const space=ENC.encode(pre).length+bodyTarget-pos;
+    if(chunk.length<=space){out.set(chunk,pos);pos+=chunk.length;}
+    else break;
+  }
+  const sufEnc=ENC.encode(suf);
+  out.set(sufEnc,pos);
+  return out.slice(0,pos+sufEnc.length);
+}
+function genXML(tb){
+  const pre=`<?xml version="1.0" encoding="UTF-8"?>\n<records>\n`,suf="\n</records>";
+  const row=()=>`  <record><id>${rndUUID()}</id><name>${rndName()}</name><email>${rndEmail()}</email><city>${rnd(CITIES)}</city></record>`;
+  return makeBytes(tb,pre,suf,row);
+}
+function genHTML(tb){
+  const pre=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Test Data</title></head><body>\n`,suf="\n</body></html>";
+  const row=()=>`<p>${randSentence()} ${randSentence()}</p>`;
+  return makeBytes(tb,pre,suf,row);
+}
+function genPDF(tb){
+  const textTarget=Math.floor(tb*0.4);
+  let body="";
+  while(ENC.encode(body).length<textTarget) body+=randSentence()+" ";
+  const stream=body.substring(0,Math.floor(body.length*0.95));
+  const streamBytes=ENC.encode(stream).length;
+  const objects=[
+    "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj",
+    "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj",
+    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj",
+    `4 0 obj\n<< /Length ${streamBytes} >>\nstream\nBT /F1 12 Tf 50 750 Td (${stream.replace(/[()\\]/g,"")}) Tj ET\nendstream\nendobj`,
+    "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj",
+  ];
+  let pdf="%PDF-1.4\n";
+  const offsets=[];
+  objects.forEach(o=>{offsets.push(ENC.encode(pdf).length);pdf+=o+"\n";});
+  const xrefPos=ENC.encode(pdf).length;
+  let xref=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n`;
+  offsets.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \n");
+  pdf+=xref+`trailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF\n`;
+  const pdfBytes=ENC.encode(pdf);
+  const remaining=tb-pdfBytes.length;
+  let padding="";
+  if(remaining>0){
+    while(ENC.encode(padding).length<remaining-10) padding+="% "+randWord()+" "+randWord()+"\n";
+    const eof=pdf.lastIndexOf("%%EOF");
+    pdf=pdf.slice(0,eof)+padding+"%%EOF\n";
+  }
+  const finalBytes=ENC.encode(pdf);
+  return finalBytes.slice(0,tb);
+}
+function genDOCX(tb){
+  const pre=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n`;
+  const suf=`\n</w:body></w:document>`;
+  const row=()=>`<w:p><w:r><w:t>${randSentence().replace(/[<>&]/g,c=>c==="<"?"&lt;":c===">"?"&gt;":"&amp;")}</w:t></w:r></w:p>`;
+  return makeBytes(tb,pre,suf,row);
+}
+function genXLSX(tb){
+  const names=["Alice","Bob","Carol","Dan","Eva","Frank","Grace","Henry","Iris","Jack"];
+  const cities=["New York","London","Paris","Tokyo","Sydney"];
+  const depts=["Engineering","Marketing","Sales","Finance","HR"];
+  let rows="";
+  let r=2;
+  while(ENC.encode(rows).length<tb*0.7){
+    rows+=`<row r="${r}"><c r="A${r}" t="s"><v>${names[rndInt(0,9)]}</v></c><c r="B${r}"><v>${rndInt(20,60)}</v></c><c r="C${r}" t="s"><v>${cities[rndInt(0,4)]}</v></c><c r="D${r}" t="s"><v>${depts[rndInt(0,4)]}</v></c><c r="E${r}"><v>${rndSalary()}</v></c></row>`;
+    r++;
+  }
+  const header=`<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>Name</v></c><c r="B1" t="s"><v>Age</v></c><c r="C1" t="s"><v>City</v></c><c r="D1" t="s"><v>Department</v></c><c r="E1" t="s"><v>Salary</v></c></row>`;
+  const suf=`</sheetData></worksheet>`;
+  return makeBytes(tb,header,suf,()=>`<row r="${r++}"><c r="A${r}"><v>${rndInt(1000,9999)}</v></c></row>`);
+}
+
+const FILE_ICONS={pdf:"📕",docx:"📘",xlsx:"📗",txt:"📄",csv:"📋",json:"📦",xml:"🗂️",html:"🌐"};
+
+function generateFile(type,sizeMB){
+  const tb=sizeMB*1024*1024;
+  switch(type){
+    case "txt":  return {bytes:genTXT(tb),  mime:"text/plain",ext:"txt"};
+    case "csv":  return {bytes:genCSV(tb),  mime:"text/csv",ext:"csv"};
+    case "json": return {bytes:genJSON(tb), mime:"application/json",ext:"json"};
+    case "xml":  return {bytes:genXML(tb),  mime:"application/xml",ext:"xml"};
+    case "html": return {bytes:genHTML(tb), mime:"text/html",ext:"html"};
+    case "pdf":  return {bytes:genPDF(tb),  mime:"application/pdf",ext:"pdf"};
+    case "docx": return {bytes:genDOCX(tb), mime:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",ext:"docx"};
+    case "xlsx": return {bytes:genXLSX(tb), mime:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",ext:"xlsx"};
+    default: return {bytes:genTXT(tb),mime:"text/plain",ext:"txt"};
+  }
+}
+
+// ============================================================
+//  UI WIRING
+// ============================================================
+// Theme
+const themeBtn=document.getElementById("theme-btn");
+let isDark=true;
+themeBtn.addEventListener("click",()=>{
+  isDark=!isDark;
+  document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
+  document.getElementById("theme-icon").textContent=isDark?"☀️":"🌙";
+  document.getElementById("theme-label").textContent=isDark?"Light":"Dark";
+});
+
+// Tabs
+document.querySelectorAll(".nav-tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".section-panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.section).classList.add("active");
+  });
+});
+
+// Toast
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+// Chips → fill textarea
+document.querySelectorAll(".chip").forEach(chip=>{
+  chip.addEventListener("click",()=>{
+    document.getElementById("text-input").value=chip.dataset.prompt;
+    updateTextBtns();
+    // Switch to text tab
+    document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".section-panel").forEach(p=>p.classList.remove("active"));
+    document.querySelector('[data-section="text-section"]').classList.add("active");
+    document.getElementById("text-section").classList.add("active");
+    document.getElementById("text-input").focus();
+  });
+});
+
+// ---- SECTION 1: Text Generator ----
+const textInput=document.getElementById("text-input");
+const textGenBtn=document.getElementById("text-gen-btn");
+const textGenLabel=document.getElementById("text-gen-label");
+const textOutput=document.getElementById("text-output");
+let textContent="";
+
+function updateTextBtns(){
+  const has=!!textInput.value.trim();
+  textGenBtn.disabled=!has;
+  document.getElementById("text-reset-btn").disabled=!has;
+  document.getElementById("text-copy-btn").disabled=!textContent;
+  document.getElementById("text-dl-btn").disabled=!textContent;
+  document.getElementById("text-clear-btn").disabled=!textContent;
+}
+textInput.addEventListener("input",updateTextBtns);
+
+textGenBtn.addEventListener("click",()=>{
+  const q=textInput.value.trim();
+  if(!q) return;
+  textGenLabel.innerHTML='<span class="spinner"></span> Generating…';
+  textGenBtn.disabled=true;
+  setTimeout(()=>{
+    try{
+      const n=parseCount(q);
+      textContent=processQuery(q);
+      textOutput.textContent=textContent;
+      const badge=document.getElementById("text-item-count");
+      badge.textContent=`✓ ${n} item${n===1?"":"s"} generated`;
+      badge.style.display="inline";
+    }catch(e){
+      textOutput.innerHTML='<span class="placeholder">Could not understand the query. Try rephrasing.</span>';
+      textContent="";
+      document.getElementById("text-item-count").style.display="none";
+    }
+    textGenLabel.textContent="Generate";
+    updateTextBtns();
+  },80);
+});
+
+document.getElementById("text-reset-btn").addEventListener("click",()=>{
+  textInput.value="";updateTextBtns();
+});
+document.getElementById("text-clear-btn").addEventListener("click",()=>{
+  textContent="";
+  textOutput.innerHTML='<span class="placeholder">Generated content will appear here…</span>';
+  document.getElementById("text-item-count").style.display="none";
+  updateTextBtns();
+});
+document.getElementById("text-copy-btn").addEventListener("click",async()=>{
+  await navigator.clipboard.writeText(textContent);showToast("Copied!");
+});
+document.getElementById("text-dl-btn").addEventListener("click",()=>{
+  downloadBlob(new Blob([textContent],{type:"text/plain"}), "generated.txt");
+  showToast("Downloaded!");
+});
+
+// ---- SECTION 2: Structured Data ----
+const structType=document.getElementById("struct-type");
+const structRows=document.getElementById("struct-rows");
+const structOutput=document.getElementById("struct-output");
+let structContent="",structExt="txt";
+
+// populate rows
+const rowsSel=document.getElementById("struct-rows");
+[1,2,5,10,20,50,100].forEach(v=>{
+  const o=document.createElement("option");
+  o.value=v;o.textContent=v+(v===1?" row":" rows");
+  rowsSel.appendChild(o);
+});
+
+function updateStructBtns(){
+  document.getElementById("struct-gen-btn").disabled=!structType.value||!structRows.value;
+  document.getElementById("struct-reset-btn").disabled=!structType.value&&!structRows.value;
+  document.getElementById("struct-copy-btn").disabled=!structContent;
+  document.getElementById("struct-dl-btn").disabled=!structContent;
+  document.getElementById("struct-clear-btn").disabled=!structContent;
+}
+structType.addEventListener("change",updateStructBtns);
+structRows.addEventListener("change",updateStructBtns);
+
+document.getElementById("struct-gen-btn").addEventListener("click",()=>{
+  const label=document.getElementById("struct-gen-label");
+  label.innerHTML='<span class="spinner"></span> Generating…';
+  setTimeout(()=>{
+    const count=parseInt(structRows.value);
+    const result=genStructured(structType.value,count);
+    structContent=result.data;structExt=result.ext;
+    structOutput.textContent=structContent;
+    document.getElementById("struct-dl-btn").textContent="Download as "+result.ext.toUpperCase();
+    const badge=document.getElementById("struct-record-count");
+    badge.textContent=`✓ ${count} record${count===1?"":"s"} generated`;
+    badge.style.display="inline";
+    label.textContent="Generate";
+    updateStructBtns();
+  },80);
+});
+document.getElementById("struct-reset-btn").addEventListener("click",()=>{
+  structType.selectedIndex=0;structRows.selectedIndex=0;updateStructBtns();
+});
+document.getElementById("struct-clear-btn").addEventListener("click",()=>{
+  structContent="";
+  structOutput.innerHTML='<span class="placeholder">Generated structured data will appear here…</span>';
+  document.getElementById("struct-record-count").style.display="none";
+  updateStructBtns();
+});
+document.getElementById("struct-copy-btn").addEventListener("click",async()=>{
+  await navigator.clipboard.writeText(structContent);showToast("Copied!");
+});
+document.getElementById("struct-dl-btn").addEventListener("click",()=>{
+  const mime=structExt==="json"?"application/json":structExt==="csv"?"text/csv":structExt==="xml"?"application/xml":"text/plain";
+  downloadBlob(new Blob([structContent],{type:mime}),"generated-data."+structExt);
+  showToast("Downloaded!");
+});
+
+// ---- SECTION 3: File Generator ----
+const fileType=document.getElementById("file-type");
+let selectedSize=null,generatedFileBlob=null,generatedFileName="";
+
+document.querySelectorAll(".size-chip").forEach(chip=>{
+  chip.addEventListener("click",()=>{
+    document.querySelectorAll(".size-chip").forEach(c=>c.classList.remove("selected"));
+    chip.classList.add("selected");
+    selectedSize=parseInt(chip.dataset.size);
+    updateFileBtns();
+  });
+});
+fileType.addEventListener("change",updateFileBtns);
+
+function updateFileBtns(){
+  document.getElementById("file-gen-btn").disabled=!fileType.value||!selectedSize;
+  document.getElementById("file-reset-btn").disabled=!fileType.value&&!selectedSize;
+  document.getElementById("file-dl-btn").disabled=!generatedFileBlob;
+  document.getElementById("file-clear-btn").disabled=!generatedFileBlob;
+}
+
+// ---- Inline Web Worker code (runs file generation off main thread) ----
+const WORKER_CODE = `
+const ENC=new TextEncoder();
+const WORDS=["lorem","ipsum","dolor","sit","amet","consectetur","adipiscing","elit","sed","do","eiusmod","tempor","incididunt","labore","magna","aliqua","enim","veniam","nostrud","exercitation","ullamco","nisi","aliquip","commodo","consequat","duis","aute","irure","reprehenderit","voluptate","velit","esse","fugiat","nulla","pariatur","excepteur","sint","occaecat","proident","culpa","deserunt","mollit","anim","laborum"];
+const CITIES=["New York","Los Angeles","Chicago","Houston","Phoenix","San Diego","Dallas","San Jose","Austin","Seattle","Denver","Boston","Atlanta","Miami","Portland"];
+const DEPTS=["Engineering","Marketing","Sales","Finance","HR","Operations","IT","Design"];
+const NAMES=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black","Grace Hall","Henry Adams","Iris Clark","Jack Davis"];
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rw(){return WORDS[ri(0,WORDS.length-1)];}
+function rs(){const l=8+ri(0,12);const w=Array.from({length:l},()=>rw());return w[0].charAt(0).toUpperCase()+w[0].slice(1)+" "+w.slice(1).join(" ")+".";}
+function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
+function email(){const u=["alice","bob","carol","dan","eva","frank","grace","henry"][ri(0,7)];const d=["gmail.com","yahoo.com","outlook.com","company.com"][ri(0,3)];return u+ri(10,99)+"@"+d;}
+function salary(){return ri(35,180)*1000;}
+
+function makeBytes(tb,prefix,suffix,lineGen){
+  const pre=ENC.encode(prefix),suf=ENC.encode(suffix);
+  const bodyTarget=tb-pre.length-suf.length;
+  const chunks=[pre];let filled=pre.length;
+  while(filled<pre.length+bodyTarget){
+    const line=ENC.encode(lineGen()+"\\n");
+    const space=pre.length+bodyTarget-filled;
+    if(line.length<=space){chunks.push(line);filled+=line.length;}
+    else{chunks.push(line.slice(0,space));filled+=space;}
+    if(filled%500000<200) self.postMessage({type:"progress",value:Math.round(filled/tb*90)});
+  }
+  chunks.push(suf);
+  const out=new Uint8Array(tb);let pos=0;
+  chunks.forEach(c=>{out.set(c,pos);pos+=c.length;});
+  return out;
+}
+
+function genTXT(tb){return makeBytes(tb,"","",rs);}
+function genCSV(tb){
+  const row=()=>uuid()+","+NAMES[ri(0,9)]+","+email()+","+CITIES[ri(0,14)]+","+DEPTS[ri(0,7)]+","+salary();
+  return makeBytes(tb,"id,name,email,city,department,salary\\n","",row);
+}
+function genXML(tb){
+  const row=()=>'  <record><id>'+uuid()+'</id><name>'+NAMES[ri(0,9)]+'</name><email>'+email()+'</email><city>'+CITIES[ri(0,14)]+'</city></record>';
+  return makeBytes(tb,'<?xml version="1.0" encoding="UTF-8"?>\\n<records>\\n',"\\n</records>",row);
+}
+function genHTML(tb){
+  const row=()=>'<p>'+rs()+' '+rs()+'</p>';
+  return makeBytes(tb,'<!DOCTYPE html><html><body>\\n',"\\n</body></html>",row);
+}
+function genDOCX(tb){
+  const row=()=>'<w:p><w:r><w:t>'+rs().replace(/[<>&]/g,c=>c==="<"?"&lt;":c===">"?"&gt;":"&amp;")+'</w:t></w:r></w:p>';
+  return makeBytes(tb,'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\\n',"\\n</w:body></w:document>",row);
+}
+function genJSON(tb){
+  const obj=()=>({id:uuid(),name:NAMES[ri(0,9)],email:email(),city:CITIES[ri(0,14)],salary:salary(),active:Math.random()>0.5});
+  const pre="[\\n",suf="\\n]";
+  const preEnc=ENC.encode(pre),sufEnc=ENC.encode(suf);
+  const bodyTarget=tb-preEnc.length-sufEnc.length;
+  const chunks=[preEnc];let filled=preEnc.length;let first=true;
+  while(filled<preEnc.length+bodyTarget-20){
+    const chunk=ENC.encode((first?"":",\\n")+"  "+JSON.stringify(obj()));first=false;
+    const space=preEnc.length+bodyTarget-filled;
+    if(chunk.length<=space){chunks.push(chunk);filled+=chunk.length;}else break;
+    if(filled%500000<500) self.postMessage({type:"progress",value:Math.round(filled/tb*90)});
+  }
+  chunks.push(sufEnc);
+  const out=new Uint8Array(filled+sufEnc.length);let pos=0;
+  chunks.forEach(c=>{out.set(c,pos);pos+=c.length;});
+  return out;
+}
+function genPDF(tb){
+  let body="";const textTarget=Math.floor(tb*0.35);
+  while(ENC.encode(body).length<textTarget) body+=rs()+" ";
+  self.postMessage({type:"progress",value:30});
+  const stream=body.substring(0,Math.floor(body.length*0.9)).replace(/[()\\\\]/g,"");
+  const streamBytes=ENC.encode(stream).length;
+  const objs=[
+    "1 0 obj\\n<< /Type /Catalog /Pages 2 0 R >>\\nendobj",
+    "2 0 obj\\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\\nendobj",
+    "3 0 obj\\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\\nendobj",
+    "4 0 obj\\n<< /Length "+streamBytes+" >>\\nstream\\nBT /F1 12 Tf 50 750 Td ("+stream+") Tj ET\\nendstream\\nendobj",
+    "5 0 obj\\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\\nendobj",
+  ];
+  let pdf="%PDF-1.4\\n";const offs=[];
+  objs.forEach(o=>{offs.push(ENC.encode(pdf).length);pdf+=o+"\\n";});
+  const xp=ENC.encode(pdf).length;
+  let xref="xref\\n0 "+(objs.length+1)+"\\n0000000000 65535 f \\n";
+  offs.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \\n");
+  pdf+=xref+"trailer\\n<< /Size "+(objs.length+1)+" /Root 1 0 R >>\\nstartxref\\n"+xp+"\\n%%EOF\\n";
+  self.postMessage({type:"progress",value:60});
+  const pdfBytes=ENC.encode(pdf);
+  const remaining=tb-pdfBytes.length;
+  let padding="";
+  if(remaining>0){
+    while(ENC.encode(padding).length<remaining-10) padding+="% "+rw()+" "+rw()+"\\n";
+    const eof=pdf.lastIndexOf("%%EOF");
+    pdf=pdf.slice(0,eof)+padding+"%%EOF\\n";
+  }
+  self.postMessage({type:"progress",value:90});
+  return ENC.encode(pdf).slice(0,tb);
+}
+function genXLSX(tb){
+  const header='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>Name</v></c><c r="B1" t="s"><v>Age</v></c><c r="C1" t="s"><v>City</v></c><c r="D1" t="s"><v>Salary</v></c></row>';
+  const suf='</sheetData></worksheet>';
+  let r=2;
+  const row=()=>'<row r="'+r+'"><c r="A'+r+'" t="s"><v>'+NAMES[ri(0,9)]+'</v></c><c r="B'+r+'"><v>'+ri(20,60)+'</v></c><c r="C'+r+'" t="s"><v>'+CITIES[ri(0,14)]+'</v></c><c r="D'+r+'"><v>'+salary()+'</v></c></row>';
+  return makeBytes(tb,header,suf,()=>{r++;return row();});
+}
+
+self.onmessage=function(e){
+  const {type,sizeMB}=e.data;
+  const tb=sizeMB*1024*1024;
+  let bytes,mime,ext;
+  try{
+    switch(type){
+      case"txt": bytes=genTXT(tb);mime="text/plain";ext="txt";break;
+      case"csv": bytes=genCSV(tb);mime="text/csv";ext="csv";break;
+      case"json":bytes=genJSON(tb);mime="application/json";ext="json";break;
+      case"xml": bytes=genXML(tb);mime="application/xml";ext="xml";break;
+      case"html":bytes=genHTML(tb);mime="text/html";ext="html";break;
+      case"pdf": bytes=genPDF(tb);mime="application/pdf";ext="pdf";break;
+      case"docx":bytes=genDOCX(tb);mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document";ext="docx";break;
+      case"xlsx":bytes=genXLSX(tb);mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";ext="xlsx";break;
+      default:   bytes=genTXT(tb);mime="text/plain";ext="txt";
+    }
+    self.postMessage({type:"done",bytes,mime,ext},[bytes.buffer]);
+  }catch(err){
+    self.postMessage({type:"error",message:err.message});
+  }
+};
+`;
+
+document.getElementById("file-gen-btn").addEventListener("click",()=>{
+  const label=document.getElementById("file-gen-label");
+  const pw=document.getElementById("file-progress-wrap");
+  const pb=document.getElementById("file-progress-bar");
+  pw.classList.add("visible");pb.style.width="0%";
+  label.innerHTML='<span class="spinner"></span> Generating…';
+  document.getElementById("file-gen-btn").disabled=true;
+  document.getElementById("file-reset-btn").disabled=true;
+
+  // Spin up inline worker
+  const blob=new Blob([WORKER_CODE],{type:"application/javascript"});
+  const workerUrl=URL.createObjectURL(blob);
+  const worker=new Worker(workerUrl);
+
+  worker.onmessage=function(e){
+    const msg=e.data;
+    if(msg.type==="progress"){
+      pb.style.width=msg.value+"%";
+    } else if(msg.type==="done"){
+      pb.style.width="100%";
+      generatedFileBlob=new Blob([msg.bytes],{type:msg.mime});
+      generatedFileName=`sample-${selectedSize}mb.${msg.ext}`;
+      const actualSize=(generatedFileBlob.size/1024/1024).toFixed(2);
+      document.getElementById("file-status-icon").textContent=FILE_ICONS[fileType.value]||"📄";
+      document.getElementById("file-status-name").textContent=generatedFileName;
+      document.getElementById("file-status-size").textContent=`${generatedFileBlob.size.toLocaleString()} bytes (${actualSize} MB)`;
+      document.getElementById("file-status").classList.add("visible");
+      setTimeout(()=>pw.classList.remove("visible"),600);
+      label.textContent="Generate";
+      document.getElementById("file-reset-btn").disabled=false;
+      updateFileBtns();
+      worker.terminate();URL.revokeObjectURL(workerUrl);
+    } else if(msg.type==="error"){
+      label.textContent="Generate";
+      document.getElementById("file-reset-btn").disabled=false;
+      const eb=document.getElementById("file-error");
+      document.getElementById("file-error-msg").textContent=msg.message||"Generation failed.";
+      eb.classList.add("visible");
+      updateFileBtns();
+      worker.terminate();URL.revokeObjectURL(workerUrl);
+    }
+  };
+
+  worker.postMessage({type:fileType.value,sizeMB:selectedSize});
+});
+
+document.getElementById("file-reset-btn").addEventListener("click",()=>{
+  fileType.selectedIndex=0;
+  document.querySelectorAll(".size-chip").forEach(c=>c.classList.remove("selected"));
+  selectedSize=null;
+  updateFileBtns();
+});
+document.getElementById("file-clear-btn").addEventListener("click",()=>{
+  generatedFileBlob=null;generatedFileName="";
+  document.getElementById("file-status").classList.remove("visible");
+  updateFileBtns();
+});
+document.getElementById("file-dl-btn").addEventListener("click",()=>{
+  downloadBlob(generatedFileBlob,generatedFileName);
+  showToast("File downloaded!");
+});
+</script>
+</body>
+</html>
