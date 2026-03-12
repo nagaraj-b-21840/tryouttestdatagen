@@ -298,7 +298,37 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 /* ── RESPONSE ACTIONS ── */
 .response-actions{display:flex;gap:10px;flex-wrap:wrap;}
 
-@media(max-width:600px){
+/* ── TWO COLUMN LAYOUT ── */
+.app-body{display:flex;min-height:calc(100vh - 120px);}
+.left-pane{
+  width:220px;flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  padding:16px 12px;display:flex;flex-direction:column;gap:4px;
+  position:sticky;top:0;height:calc(100vh - 120px);overflow-y:auto;
+}
+.left-pane::-webkit-scrollbar{width:4px;}
+.left-pane::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.pane-label{
+  font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text-muted);
+  padding:12px 8px 4px;margin-top:4px;
+  border-top:1px solid var(--border);
+}
+.left-pane .pane-label:first-child{border-top:none;padding-top:4px;}
+.pane-chip{
+  padding:8px 12px;border-radius:8px;font-size:12px;font-weight:500;
+  font-family:'Outfit',sans-serif;cursor:pointer;
+  background:transparent;color:var(--text-muted);border:none;
+  text-align:left;transition:all .15s;line-height:1.4;
+}
+.pane-chip:hover{background:var(--primary-dim);color:var(--primary-glow);}
+.pane-chip.active{background:var(--primary-dim2);color:var(--primary-glow);font-weight:600;}
+.right-pane{flex:1;min-width:0;}
+
+@media(max-width:700px){
+  .app-body{flex-direction:column;}
+  .left-pane{width:100%;height:auto;flex-direction:row;flex-wrap:wrap;position:static;border-right:none;border-bottom:1px solid var(--border);}
+  .pane-label{display:none;}
   .main{padding:16px 12px 56px;}
   .select-row{grid-template-columns:1fr;}
   .btn-row{flex-direction:column;}
@@ -312,7 +342,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 
 <div class="header">
   <div class="header-inner">
-    <div class="badge">Test Data Generator</div>
     <h1>Test Data Generator</h1>
     <p>Generate test data in any format, instantly</p>
   </div>
@@ -322,33 +351,82 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   </button>
 </div>
 
-<!-- Quick suggestions -->
-<div class="suggestions-bar">
-  <div class="suggestions-inner">
-    <span class="suggest-label">Try:</span>
-    <span class="chip" data-prompt="generate 10 full names">10 full names</span>
-    <span class="chip" data-prompt="generate 10 email addresses">10 emails</span>
-    <span class="chip" data-prompt="generate 5 user records in JSON">5 users JSON</span>
-    <span class="chip" data-prompt="generate 8 rows of employee data in CSV">employee CSV</span>
-    <span class="chip" data-prompt="generate 10 phone numbers">phone numbers</span>
-    <span class="chip" data-prompt="generate 5 product records in JSON">products JSON</span>
-    <span class="chip" data-prompt="generate 10 addresses">10 addresses</span>
-    <span class="chip" data-prompt="generate 3 paragraphs of lorem ipsum">lorem ipsum</span>
-    <span class="chip" data-prompt="generate 10 random dates">random dates</span>
-    <span class="chip" data-prompt="generate 10 UUIDs">10 UUIDs</span>
-    <span class="chip" data-prompt="generate SQL insert for 5 users">SQL inserts</span>
-    <span class="chip" data-prompt="generate 5 credit card numbers">credit cards</span>
-    <span class="chip" data-prompt="generate 8 company names">company names</span>
-    <span class="chip" data-prompt="generate 5 order records in XML">orders XML</span>
-  </div>
-</div>
-
 <!-- Tabs -->
 <div class="nav-tabs">
   <button class="nav-tab active" data-section="text-section">✦ Text Generator</button>
   <button class="nav-tab" data-section="structured-section">⊞ Structured Data</button>
   <button class="nav-tab" data-section="file-section">⬡ File Generator</button>
 </div>
+
+<div class="app-body">
+<!-- Left pane: sample prompts -->
+<div class="left-pane" id="left-pane">
+
+  <div class="pane-label">📝 Text &amp; Characters</div>
+  <button class="pane-chip" data-prompt="generate 200 characters of random English text">200 chars English</button>
+  <button class="pane-chip" data-prompt="give 500 characters of lorem ipsum text">500 chars Lorem</button>
+  <button class="pane-chip" data-prompt="generate 300 characters containing letters, numbers, and special characters">Mixed charset 300</button>
+  <button class="pane-chip" data-prompt="generate 100 characters with only lowercase letters">100 lowercase chars</button>
+  <button class="pane-chip" data-prompt="generate 150 characters with uppercase letters and numbers">150 uppercase+nums</button>
+  <button class="pane-chip" data-prompt="generate long paragraph with emojis and symbols">Paragraph + Emojis</button>
+  <button class="pane-chip" data-prompt="generate 10000 characters of random Unicode text">10k Unicode chars</button>
+
+  <div class="pane-label">🌐 Multilingual</div>
+  <button class="pane-chip" data-prompt="generate 200 characters in Tamil">Tamil text</button>
+  <button class="pane-chip" data-prompt="generate paragraph in Hindi with 300 characters">Hindi paragraph</button>
+  <button class="pane-chip" data-prompt="create Japanese text with 100 characters">Japanese text</button>
+  <button class="pane-chip" data-prompt="provide Chinese lorem ipsum text">Chinese text</button>
+  <button class="pane-chip" data-prompt="generate French random text">French text</button>
+  <button class="pane-chip" data-prompt="give Spanish paragraph with punctuation">Spanish text</button>
+  <button class="pane-chip" data-prompt="create Arabic sample text">Arabic text</button>
+
+  <div class="pane-label">👤 Personal Data</div>
+  <button class="pane-chip" data-prompt="generate 10 full names">10 Full Names</button>
+  <button class="pane-chip" data-prompt="generate 10 email addresses">10 Emails</button>
+  <button class="pane-chip" data-prompt="generate phone numbers for US, UK and India">US/UK/India Phones</button>
+  <button class="pane-chip" data-prompt="generate 10 addresses">10 Addresses</button>
+  <button class="pane-chip" data-prompt="generate 10 usernames">10 Usernames</button>
+  <button class="pane-chip" data-prompt="generate 10 random dates">10 Dates</button>
+  <button class="pane-chip" data-prompt="generate 5 credit card numbers">5 Credit Cards</button>
+  <button class="pane-chip" data-prompt="generate 10 UUIDs">10 UUIDs</button>
+  <button class="pane-chip" data-prompt="generate 10 IP addresses">10 IP Addresses</button>
+
+  <div class="pane-label">🔐 Security &amp; Auth</div>
+  <button class="pane-chip" data-prompt="generate 10 strong passwords">Strong Passwords</button>
+  <button class="pane-chip" data-prompt="generate 5 weak passwords">Weak Passwords</button>
+  <button class="pane-chip" data-prompt="generate 10 medium strength passwords">Medium Passwords</button>
+  <button class="pane-chip" data-prompt="generate strings matching regex [A-Z]{5}[0-9]{3}">Regex Pattern</button>
+  <button class="pane-chip" data-prompt="generate 10 random coupon codes">Coupon Codes</button>
+
+  <div class="pane-label">🗂 Structured Formats</div>
+  <button class="pane-chip" data-prompt="generate JSON with 5 user records including name, email, phone, and address">User JSON</button>
+  <button class="pane-chip" data-prompt="generate nested JSON data for employee with department and manager details">Nested JSON</button>
+  <button class="pane-chip" data-prompt="generate JSON containing random numbers, strings, booleans and null values">Mixed JSON</button>
+  <button class="pane-chip" data-prompt="generate CSV with 20 rows of employee records">Employee CSV</button>
+  <button class="pane-chip" data-prompt="create CSV with product id, product name, price and quantity">Product CSV</button>
+  <button class="pane-chip" data-prompt="generate SQL insert statements for 20 users">SQL Inserts</button>
+  <button class="pane-chip" data-prompt="generate 5 order records in XML">Order XML</button>
+  <button class="pane-chip" data-prompt="generate 10 user records in YAML">YAML Records</button>
+
+  <div class="pane-label">🌍 HTML</div>
+  <button class="pane-chip" data-prompt="generate HTML page with form fields for name, email, phone, and message">HTML Form</button>
+  <button class="pane-chip" data-prompt="create HTML email template with header, body and footer">Email Template</button>
+  <button class="pane-chip" data-prompt="generate HTML table with 10 rows of random user data">HTML Table</button>
+  <button class="pane-chip" data-prompt="generate HTML snippet with buttons, links, and input fields">UI Snippet</button>
+
+  <div class="pane-label">🧪 QA &amp; Testing</div>
+  <button class="pane-chip" data-prompt="generate 10 random comments for testing comment sections">Random Comments</button>
+  <button class="pane-chip" data-prompt="generate long error messages">Error Messages</button>
+  <button class="pane-chip" data-prompt="generate placeholder text for form fields">Form Placeholders</button>
+  <button class="pane-chip" data-prompt="generate text containing every ASCII special character">All Special Chars</button>
+  <button class="pane-chip" data-prompt="generate 10 boolean values">10 Booleans</button>
+  <button class="pane-chip" data-prompt="generate 10 random numbers between 1 and 9999">Random Numbers</button>
+  <button class="pane-chip" data-prompt="generate 10 salaries">Salary Data</button>
+  <button class="pane-chip" data-prompt="generate 10 job titles">Job Titles</button>
+  <button class="pane-chip" data-prompt="generate 8 company names">Company Names</button>
+
+</div>
+<div class="right-pane">
 
 <!-- SECTION 1: Text Generator -->
 <div id="text-section" class="section-panel active">
@@ -453,11 +531,19 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
           </div>
           <div class="field-group">
             <label class="field-label">File Size</label>
-            <div class="size-chips" id="size-chips">
-              <div class="size-chip" data-size="2">2 MB</div>
-              <div class="size-chip" data-size="5">5 MB</div>
-              <div class="size-chip" data-size="10">10 MB</div>
-            </div>
+            <select id="file-size-select">
+              <option value="" disabled selected>Select size…</option>
+              <option value="1">1 MB</option>
+              <option value="2">2 MB</option>
+              <option value="3">3 MB</option>
+              <option value="4">4 MB</option>
+              <option value="5">5 MB</option>
+              <option value="6">6 MB</option>
+              <option value="7">7 MB</option>
+              <option value="8">8 MB</option>
+              <option value="9">9 MB</option>
+              <option value="10">10 MB</option>
+            </select>
           </div>
         </div>
         <div class="btn-row">
@@ -478,6 +564,9 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
     </div>
   </div>
 </div>
+
+</div><!-- right-pane -->
+</div><!-- app-body -->
 
 <div class="toast" id="toast"></div>
 
@@ -502,6 +591,19 @@ const TLDS = [".com",".org",".net",".io",".co",".app",".dev",".tech",".ai"];
 const ORDER_STATUSES = ["Pending","Processing","Shipped","Delivered","Cancelled","Refunded","On Hold"];
 const PAYMENT_METHODS = ["Credit Card","PayPal","Bank Transfer","Stripe","Apple Pay","Google Pay"];
 const COLORS = ["Red","Blue","Green","Black","White","Silver","Gold","Navy","Purple","Orange","Pink","Brown","Grey","Yellow","Teal"];
+
+// ── MULTILINGUAL POOLS ──
+const TAMIL_WORDS = ["வணக்கம்","நன்றி","அன்பு","வீடு","பள்ளி","மரம்","நீர்","வானம்","பூமி","நண்பன்","குழந்தை","மலர்","நாடு","ஊர்","கடல்","மலை","காற்று","நெருப்பு","ஒளி","இரவு","பகல்","வெயில்","மழை","புயல்","சோறு","பால்","பழம்","காய்","மண்","தங்கம்","வெள்ளி","இரும்பு","கல்","காடு","ஆறு","குளம்","ஏரி","பறவை","மீன்","விலங்கு"];
+const HINDI_WORDS = ["नमस्ते","धन्यवाद","प्रेम","घर","विद्यालय","पेड़","पानी","आकाश","पृथ्वी","मित्र","बच्चा","फूल","देश","गाँव","समुद्र","पहाड़","हवा","आग","प्रकाश","रात","दिन","धूप","बारिश","तूफान","चावल","दूध","फल","सब्जी","मिट्टी","सोना","चाँदी","लोहा","पत्थर","जंगल","नदी","तालाब","झील","पक्षी","मछली","जानवर"];
+const JAPANESE_WORDS = ["こんにちは","ありがとう","愛","家","学校","木","水","空","地球","友達","子供","花","国","村","海","山","風","火","光","夜","昼","日差し","雨","嵐","ご飯","牛乳","果物","野菜","土","金","銀","鉄","石","森","川","池","湖","鳥","魚","動物"];
+const CHINESE_WORDS = ["你好","谢谢","爱","家","学校","树","水","天空","地球","朋友","孩子","花","国","村","海","山","风","火","光","夜","昼","阳光","雨","风暴","饭","牛奶","水果","蔬菜","土","金","银","铁","石","森林","河","池","湖","鸟","鱼","动物"];
+const FRENCH_WORDS = ["Bonjour","merci","amour","maison","école","arbre","eau","ciel","terre","ami","enfant","fleur","pays","village","mer","montagne","vent","feu","lumière","nuit","jour","soleil","pluie","tempête","riz","lait","fruit","légume","sol","or","argent","fer","pierre","forêt","rivière","étang","lac","oiseau","poisson","animal"];
+const SPANISH_WORDS = ["Hola","gracias","amor","casa","escuela","árbol","agua","cielo","tierra","amigo","niño","flor","país","pueblo","mar","montaña","viento","fuego","luz","noche","día","sol","lluvia","tormenta","arroz","leche","fruta","verdura","suelo","oro","plata","hierro","piedra","bosque","río","estanque","lago","pájaro","pez","animal"];
+const ARABIC_WORDS = ["مرحبا","شكرا","حب","بيت","مدرسة","شجرة","ماء","سماء","أرض","صديق","طفل","زهرة","بلد","قرية","بحر","جبل","ريح","نار","نور","ليل","نهار","شمس","مطر","عاصفة","أرز","حليب","فاكهة","خضار","تراب","ذهب","فضة","حديد","حجر","غابة","نهر","بركة","بحيرة","طائر","سمكة","حيوان"];
+
+// ── SPECIAL CHARACTER POOLS ──
+const ASCII_SPECIAL = "!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
+const EMOJI_LIST = ["😀","😂","🥰","😎","🤔","👍","👏","🎉","🔥","💯","⭐","🌟","✨","🎯","🚀","💡","🎨","🌈","🦋","🌸","🍕","🎵","🏆","💪","🙌","👀","💬","📱","💻","🔑"];
 
 // ============================================================
 //  UTILITY FUNCTIONS
@@ -600,6 +702,328 @@ function rndUsername(first,last){
     first[0].toLowerCase()+last.toLowerCase()+rndInt(1,999),
     first.toLowerCase()+"_"+last.toLowerCase(),
   ]);
+}
+
+// ── CHARACTER-EXACT TEXT GENERATORS ──
+function rndEnglishChars(n){
+  const words=["the","quick","brown","fox","jumps","over","lazy","dog","and","cat","runs","fast","slow","big","small","happy","sad","good","bad","beautiful","amazing","simple","complex","random","sample","test","data","value","word","text","lorem","ipsum","dolor","sit","amet"];
+  let out="";
+  while(out.length<n+30){
+    out+=rnd(words)+" ";
+  }
+  return out.slice(0,n);
+}
+
+function rndCharset(n,charset){
+  let out="";
+  for(let i=0;i<n;i++) out+=charset[Math.floor(Math.random()*charset.length)];
+  return out;
+}
+
+function rndLoremChars(n){
+  const base="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ";
+  let out="";
+  while(out.length<n) out+=base;
+  return out.slice(0,n);
+}
+
+function rndMultilingualWords(pool,n){
+  let out=[];
+  for(let i=0;i<n;i++) out.push(rnd(pool));
+  return out.join(" ");
+}
+
+function rndMultilingualChars(pool,n){
+  let out="";
+  while(out.length<n+20) out+=rnd(pool)+" ";
+  return out.slice(0,n);
+}
+
+function rndMixedUnicode(n){
+  // Mix of Latin, Cyrillic, Greek, CJK, Arabic
+  const blocks=[
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ",
+    "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ",
+    "αβγδεζηθικλμνξοπρστυφχψω",
+    "你好世界爱家水火山河",
+    "مرحبا شكرا حب بيت",
+  ];
+  let out="";
+  for(let i=0;i<n;i++){
+    const block=rnd(blocks);
+    out+=block[Math.floor(Math.random()*block.length)];
+  }
+  return out;
+}
+
+function rndRegexPattern(pattern){
+  // Simple regex generator supporting [A-Z], [a-z], [0-9], {n}, literal chars
+  let result="";
+  let i=0;
+  while(i<pattern.length){
+    if(pattern[i]==="["){
+      const close=pattern.indexOf("]",i);
+      const inner=pattern.slice(i+1,close);
+      // expand ranges like A-Z, a-z, 0-9
+      let chars="";
+      for(let j=0;j<inner.length;j++){
+        if(inner[j+1]==="-"&&inner[j+2]){
+          const s=inner.charCodeAt(j),e=inner.charCodeAt(j+2);
+          for(let c=s;c<=e;c++) chars+=String.fromCharCode(c);
+          j+=2;
+        } else {
+          chars+=inner[j];
+        }
+      }
+      i=close+1;
+      // Check for {n}
+      if(pattern[i]==="{"){
+        const cend=pattern.indexOf("}",i);
+        const count=parseInt(pattern.slice(i+1,cend));
+        for(let k=0;k<count;k++) result+=chars[Math.floor(Math.random()*chars.length)];
+        i=cend+1;
+      } else {
+        result+=chars[Math.floor(Math.random()*chars.length)];
+      }
+    } else if(pattern[i]==="{"){
+      // skip stray braces
+      i=pattern.indexOf("}",i)+1||i+1;
+    } else {
+      result+=pattern[i];
+      i++;
+    }
+  }
+  return result;
+}
+
+function rndCoupon(){
+  const prefixes=["SAVE","DISC","OFF","PROMO","DEAL","SALE","GET","USE","TRY","NEW"];
+  const p=rnd(prefixes);
+  const code=rndCharset(6,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+  return p+code;
+}
+
+function rndPassword(strength="strong"){
+  const lower="abcdefghijklmnopqrstuvwxyz";
+  const upper="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const digits="0123456789";
+  const special="!@#$%^&*()-_=+";
+  if(strength==="weak"){
+    return rndCharset(8,lower+digits);
+  } else if(strength==="medium"){
+    let p=rndCharset(2,upper)+rndCharset(6,lower)+rndCharset(2,digits);
+    return p.split("").sort(()=>Math.random()-0.5).join("").slice(0,10);
+  } else {
+    let p=rndCharset(3,upper)+rndCharset(4,lower)+rndCharset(3,digits)+rndCharset(2,special);
+    return p.split("").sort(()=>Math.random()-0.5).join("").slice(0,12);
+  }
+}
+
+function rndPhoneRegion(region){
+  if(region==="uk") return `+44 ${rndInt(700,799)} ${rndInt(100,999)} ${rndInt(1000,9999)}`;
+  if(region==="india"||region==="in") return `+91 ${rndInt(70,99)}${rndInt(10000000,99999999)}`;
+  return `+1 (${rndInt(200,999)}) ${rndInt(200,999)}-${rndInt(1000,9999)}`;
+}
+
+function rndComment(){
+  const templates=[
+    "Great product! Really love it.",
+    "Not what I expected, but decent.",
+    "Works perfectly. Highly recommend.",
+    "Average quality. Nothing special.",
+    "Exceeded my expectations! Five stars.",
+    "Could be better. Missing some features.",
+    "Fast delivery and good packaging.",
+    "Had some issues but support helped.",
+    "Very satisfied with my purchase.",
+    "Will definitely buy again!",
+    "Okay for the price. Does the job.",
+    "Disappointed. Expected more.",
+    "Fantastic! Best purchase this year.",
+    "Good value for money.",
+    "Returned it. Didn't meet expectations.",
+    "Love it! Using it every day now.",
+    "Solid build quality. Feels premium.",
+    "Nice design but a bit slow.",
+    "Arrived damaged but got refund.",
+    "Excellent! Works as advertised.",
+  ];
+  return rnd(templates);
+}
+
+function rndErrorMessage(){
+  const templates=[
+    "Error: Connection timeout after 30 seconds.",
+    "ValidationError: Field 'email' must be a valid email address.",
+    "NullPointerException: Object reference not set to an instance.",
+    "404 Not Found: The requested resource could not be located.",
+    "500 Internal Server Error: An unexpected error occurred.",
+    "TypeError: Cannot read property 'length' of undefined.",
+    "AuthenticationError: Invalid or expired token.",
+    "DatabaseError: Duplicate entry for key 'PRIMARY'.",
+    "RateLimitError: Too many requests. Retry after 60 seconds.",
+    "PermissionDenied: You do not have access to this resource.",
+    "ParseError: Invalid JSON format at line 12, column 5.",
+    "MemoryError: Out of memory. Please reduce batch size.",
+    "NetworkError: Failed to fetch. Check your connection.",
+    "BadRequest: Missing required parameter 'user_id'.",
+    "ConflictError: Resource already exists with this identifier.",
+  ];
+  return rnd(templates);
+}
+
+function rndPlaceholder(field){
+  const map={
+    name:"Enter your full name",email:"example@email.com",phone:"(555) 123-4567",
+    address:"123 Main St, City, State",city:"Enter city name",zip:"Enter ZIP code",
+    password:"Min 8 chars, include numbers",username:"Choose a username",
+    message:"Write your message here...",search:"Search...",url:"https://example.com",
+    date:"MM/DD/YYYY",card:"1234 5678 9012 3456",cvv:"123",amount:"0.00",
+  };
+  return map[field]||"Enter "+field+"...";
+}
+
+// ── HTML SNIPPET GENERATORS ──
+function genHTMLForm(){
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Contact Form</title>
+<style>
+  body{font-family:sans-serif;max-width:500px;margin:40px auto;padding:20px;}
+  label{display:block;margin-bottom:4px;font-weight:600;font-size:14px;}
+  input,textarea,select{width:100%;padding:10px;margin-bottom:16px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;}
+  button{background:#6c63ff;color:#fff;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-size:16px;}
+  button:hover{background:#5a52e0;}
+</style></head>
+<body>
+<h2>Contact Us</h2>
+<form>
+  <label for="name">Full Name *</label>
+  <input type="text" id="name" name="name" placeholder="Enter your full name" required minlength="2" maxlength="100">
+
+  <label for="email">Email Address *</label>
+  <input type="email" id="email" name="email" placeholder="example@email.com" required>
+
+  <label for="phone">Phone Number</label>
+  <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" pattern="[0-9\s\-\+\(\)]{7,15}">
+
+  <label for="subject">Subject</label>
+  <select id="subject" name="subject">
+    <option value="">Select a subject...</option>
+    <option>General Inquiry</option>
+    <option>Support Request</option>
+    <option>Billing Issue</option>
+    <option>Partnership</option>
+  </select>
+
+  <label for="message">Message *</label>
+  <textarea id="message" name="message" rows="5" placeholder="Write your message here..." required minlength="10"></textarea>
+
+  <button type="submit">Send Message</button>
+</form>
+</body></html>`;
+}
+
+function genHTMLEmailTemplate(){
+  const name=rndName();
+  const company=rnd(COMPANIES);
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width">
+<style>
+  body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f4f4;}
+  .wrapper{max-width:600px;margin:20px auto;background:#fff;border-radius:8px;overflow:hidden;}
+  .header{background:#6c63ff;padding:30px;text-align:center;color:#fff;}
+  .header h1{margin:0;font-size:24px;}
+  .body{padding:30px;color:#333;line-height:1.6;}
+  .btn{display:inline-block;background:#6c63ff;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;margin:16px 0;}
+  .footer{background:#f9f9f9;padding:20px;text-align:center;font-size:12px;color:#999;border-top:1px solid #eee;}
+</style></head>
+<body>
+<div class="wrapper">
+  <div class="header"><h1>${company}</h1><p style="margin:8px 0 0;opacity:.85;">Your trusted partner</p></div>
+  <div class="body">
+    <p>Hi ${name.split(" ")[0]},</p>
+    <p>Thank you for signing up! We're excited to have you on board. Your account has been successfully created and you can now access all features.</p>
+    <p>To get started, click the button below:</p>
+    <a href="#" class="btn">Get Started</a>
+    <p>If you have any questions, reply to this email or visit our help center.</p>
+    <p>Best regards,<br><strong>The ${company} Team</strong></p>
+  </div>
+  <div class="footer">
+    <p>© ${new Date().getFullYear()} ${company}. All rights reserved.</p>
+    <p><a href="#">Unsubscribe</a> · <a href="#">Privacy Policy</a> · <a href="#">Terms</a></p>
+  </div>
+</div>
+</body></html>`;
+}
+
+function genHTMLSnippet(){
+  return `<!-- Sample UI Snippet -->
+<div class="card" style="font-family:sans-serif;max-width:400px;padding:20px;border:1px solid #ddd;border-radius:8px;">
+  <h3 style="margin-top:0;">${rnd(PRODUCTS)}</h3>
+  <p style="color:#666;">Category: ${rnd(CATEGORIES)} · Rating: ${rndScore()}/5</p>
+  <p style="font-size:24px;font-weight:bold;color:#6c63ff;">$${rndPrice()}</p>
+
+  <input type="text" placeholder="${rndPlaceholder("search")}" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;margin-bottom:12px;box-sizing:border-box;">
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a href="#" style="background:#6c63ff;color:#fff;padding:8px 16px;border-radius:4px;text-decoration:none;">Buy Now</a>
+    <button style="background:#f0f0f0;padding:8px 16px;border:none;border-radius:4px;cursor:pointer;">Add to Cart</button>
+    <button style="background:#fff;padding:8px 16px;border:1px solid #ddd;border-radius:4px;cursor:pointer;">♡ Wishlist</button>
+  </div>
+</div>`;
+}
+
+function genNestedEmployeeJSON(n){
+  const records=Array.from({length:n},()=>{
+    const first=rnd(FIRST),last=rnd(LAST);
+    const mgrFirst=rnd(FIRST),mgrLast=rnd(LAST);
+    return {
+      id:"EMP-"+rndInt(1000,9999),
+      name:first+" "+last,
+      email:rndEmail(first,last),
+      phone:rndPhone(),
+      department:{
+        id:"DEPT-"+rndInt(10,99),
+        name:rnd(DEPARTMENTS),
+        headCount:rndInt(5,50),
+        location:rnd(CITIES),
+      },
+      manager:{
+        id:"EMP-"+rndInt(1000,9999),
+        name:mgrFirst+" "+mgrLast,
+        email:rndEmail(mgrFirst,mgrLast),
+        title:rnd(JOB_TITLES),
+      },
+      jobTitle:rnd(JOB_TITLES),
+      salary:rndSalary(),
+      startDate:rndDate(2015,2024),
+      active:rndBoolean(),
+    };
+  });
+  return JSON.stringify(records,null,2);
+}
+
+function genMixedJSON(n){
+  const records=Array.from({length:n},(_,i)=>({
+    id:i+1,
+    name:rndName(),
+    score:rndFloat(0,100,2),
+    active:rndBoolean(),
+    tags:[rnd(CATEGORIES),rnd(CATEGORIES)],
+    meta:null,
+    createdAt:rndDate(),
+    value:Math.random()>0.3?rndInt(1,9999):null,
+    label:Math.random()>0.5?rnd(PRODUCTS):null,
+    ratio:rndFloat(0,1,4),
+  }));
+  return JSON.stringify(records,null,2);
+}
+
+function genPaginationJSON(n){
+  const records=Array.from({length:n},()=>genRecord());
+  return JSON.stringify({page:1,limit:n,total:n*10,hasNext:true,hasPrev:false,data:records},null,2);
 }
 
 // ============================================================
@@ -764,137 +1188,195 @@ function toHTMLTable(records){
 }
 
 // ============================================================
-//  SMART TEXT QUERY ENGINE
+//  SMART TEXT QUERY ENGINE  v2
 // ============================================================
+
+// ── Intent parser helpers ──
 function parseCount(q){
-  // Match patterns like "10 names", "generate 5", "give me 20", "create 3"
+  // "a few" → 5, "some" → 7, "many"/"lots" → 20, "a couple" → 2
+  if(/\ba\s+couple\b/.test(q)) return 2;
+  if(/\ba\s+few\b/.test(q)) return 5;
+  if(/\bsome\b/.test(q)) return 7;
+  if(/\bmany\b|\blots?\s+of\b|\btonne?\s+of\b/.test(q)) return 20;
   const patterns=[
-    /\b(?:generate|give|create|make|list|show|produce|get)\s+(\d+)\b/,
-    /\b(\d+)\s+(?:rows?|records?|items?|entries|results?|names?|emails?|phones?|addresses?|uuids?|dates?|numbers?|users?|people|persons?|employees?|products?|orders?|paragraphs?|lines?|passwords?|companies?|urls?|websites?|ips?)\b/,
+    /\b(?:generate|give|create|make|list|show|produce|get|need|want)\s+(\d+)\b/,
+    /\b(\d+)\s+(?:rows?|records?|items?|entries|results?|samples?|examples?|names?|emails?|phones?|addresses?|uuids?|dates?|numbers?|users?|people|persons?|employees?|products?|orders?|paragraphs?|lines?|passwords?|companies?|urls?|websites?|ips?|coupons?|comments?|usernames?)\b/,
     /\b(\d+)\b/,
   ];
-  for(const p of patterns){
-    const m=q.match(p);
-    if(m) return Math.min(Math.max(parseInt(m[1]),1),200);
-  }
+  for(const p of patterns){const m=q.match(p);if(m) return Math.min(Math.max(parseInt(m[1]),1),500);}
   return 10;
 }
 
-function processQuery(query){
-  const q=query.toLowerCase().trim();
-  const n=parseCount(q);
+// ── Extract character count: "200 characters", "500 chars" ──
+function parseCharCount(q){
+  const m=q.match(/\b(\d+)\s*(?:char(?:acter)?s?)\b/);
+  return m?parseInt(m[1]):null;
+}
 
-  // ---- NAMES ----
-  if(/full.?name|person.?name|people.?name|names/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndName()}`).join("\n");
-  }
-  if(/first.?name/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndFirst()}`).join("\n");
-  }
-  if(/last.?name|surname/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndLast()}`).join("\n");
-  }
+// ── Detect language ──
+function detectLang(q){
+  if(/\btamil\b/.test(q)) return 'tamil';
+  if(/\bhindi\b/.test(q)) return 'hindi';
+  if(/\bjapanese\b/.test(q)) return 'japanese';
+  if(/\bchinese\b|\bmandarin\b/.test(q)) return 'chinese';
+  if(/\bfrench\b/.test(q)) return 'french';
+  if(/\bspanish\b/.test(q)) return 'spanish';
+  if(/\barabic\b/.test(q)) return 'arabic';
+  return null;
+}
 
-  // ---- EMAIL ----
-  if(/email/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndEmail()}`).join("\n");
-  }
+// ── Detect phone region ──
+function detectPhoneRegion(q){
+  if(/\buk\b|united.kingdom|british/.test(q)) return 'uk';
+  if(/\bindia\b|\bindian\b|\bin\b/.test(q)) return 'india';
+  if(/\bus\b|united.states|american/.test(q)) return 'us';
+  return null; // mixed/any
+}
 
-  // ---- PHONE ----
-  if(/phone|mobile|cell|telephone/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndPhone()}`).join("\n");
-  }
+// ── Detect password strength ──
+function detectPasswordStrength(q){
+  if(/\bweak\b|simple|easy/.test(q)) return 'weak';
+  if(/\bmedium\b|moderate/.test(q)) return 'medium';
+  return 'strong'; // default
+}
 
-  // ---- ADDRESS ----
-  if(/address|street|location/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndAddress()}`).join("\n");
-  }
+// ── Unsupported detection ──
+function detectUnsupported(q){
+  const blocks=[
+    {test:/xss|cross.?site|script.?inject|html.?inject/,      label:"XSS payloads"},
+    {test:/sql.?inject|drop.?table|union.?select/,             label:"SQL injection payloads"},
+    {test:/exploit|malware|shellcode|buffer.?overflow/,        label:"exploit/security payloads"},
+    {test:/sentiment|classify|summarize|analyse|analyze|predict\b/,label:"AI analysis tasks"},
+    {test:/translate\b|convert.+language/,                     label:"language translation"},
+    {test:/\bimage\b|\bphoto\b|\bpicture\b|\bvideo\b|\baudio\b/,label:"media generation"},
+  ];
+  for(const u of blocks){if(u.test.test(q)) return u.label;}
+  return null;
+}
 
-  // ---- UUID ----
-  if(/uuid|guid/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndUUID()}`).join("\n");
-  }
+// ── Main ──
+function processQuery(rawQuery){
+  const q = rawQuery.toLowerCase().trim();
+  const n = parseCount(q);
+  const charCount = parseCharCount(q);
+  const lang = detectLang(q);
 
-  // ---- IP ADDRESS ----
-  if(/\bip\b|ip.?address/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndIP()}`).join("\n");
-  }
+  // ── BLOCKED ──
+  const blocked = detectUnsupported(q);
+  if(blocked) return `⚠ This generator cannot produce ${blocked}.\n\nSupported categories:\n  • Character-based text (English, Tamil, Hindi, Japanese, Chinese, French, Spanish, Arabic)\n  • Names, emails, phones, addresses, UUIDs, dates, passwords, IPs\n  • JSON (plain, nested, mixed-type, paginated)\n  • CSV, XML, SQL, YAML records\n  • HTML (form, table, email template, snippet)\n  • Regex patterns, coupon codes, usernames, comments\n\nExample: "generate 200 characters of random English text"`;
 
-  // ---- CREDIT CARD ----
-  if(/credit.?card|card.?number/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndCC()}`).join("\n");
-  }
-
-  // ---- DATE ----
-  if(/date|dob|birth/.test(q)){
-    const startY=q.match(/\b(19|20)\d{2}\b/)?.[0]||"2018";
-    const allYears=q.match(/\b(19|20)\d{2}\b/g)||[];
-    const endY=allYears[1]||"2024";
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndDate(parseInt(startY),parseInt(endY))}`).join("\n");
-  }
-
-  // ---- URL / WEBSITE ----
-  if(/url|website|domain|link/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndUrl()}`).join("\n");
-  }
-
-  // ---- USERNAME ----
-  if(/username|user.?name/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndUsername()}`).join("\n");
-  }
-
-  // ---- COMPANY ----
-  if(/company|organization|firm|business/.test(q)){
-    const pool=[...COMPANIES];
-    while(pool.length<n) pool.push(...COMPANIES);
-    return pool.slice(0,n).map((c,i)=>`${i+1}. ${c}`).join("\n");
+  // ── ESCAPE CHARACTERS / SPECIAL STRINGS ──
+  if(/escape.?char|special.?char|ascii.?special|all.?special|punctuation/.test(q)){
+    if(charCount){
+      return rndCharset(charCount, ASCII_SPECIAL + " ");
+    }
+    return `All ASCII special characters:\n${ASCII_SPECIAL}\n\nSample strings:\n`+
+      Array.from({length:n},()=>rndCharset(rndInt(10,30), ASCII_SPECIAL+" abcdefghijklmnopqrstuvwxyz0123456789")).join("\n");
   }
 
-  // ---- PRODUCT ----
-  if(/product|item/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(PRODUCTS)} — $${rndPrice()} — Stock: ${rndQty()}`).join("\n");
+  // ── REGEX PATTERN GENERATOR ──
+  if(/regex|pattern|matching|format/.test(q)){
+    // Extract pattern from query e.g. [A-Z]{5}[0-9]{3}
+    const patternMatch = rawQuery.match(/`([^`]+)`|\[[\w\-\]]+\{[^}]+\}(?:\[[\w\-\]]+\{[^}]+\})*/);
+    if(patternMatch){
+      const pat = patternMatch[1]||patternMatch[0];
+      return Array.from({length:n},()=>rndRegexPattern(pat)).join("\n");
+    }
+    // Default: generate alphanumeric codes
+    return Array.from({length:n},()=>rndRegexPattern("[A-Z]{5}[0-9]{3}")).join("\n");
   }
 
-  // ---- CITY ----
-  if(/city|cities/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(CITIES)}, ${rnd(STATE_CODES)}`).join("\n");
+  // ── EMOJI / EMOJI+TEXT ──
+  if(/emoji/.test(q)){
+    if(charCount){
+      let out="";
+      while(out.length<charCount){
+        out+=rnd(EMOJI_LIST)+" "+rnd(["great","love","amazing","wow","yes","nice","cool","best"])+" ";
+      }
+      return out.slice(0,charCount);
+    }
+    return Array.from({length:n},()=>Array.from({length:rndInt(3,8)},()=>rnd(EMOJI_LIST)).join(" ")).join("\n");
   }
 
-  // ---- LOREM IPSUM / PARAGRAPH ----
-  if(/lorem|ipsum|paragraph|text|passage/.test(q)){
+  // ── UNICODE (large, mixed) ──
+  if(/unicode|multilingual/.test(q)){
+    const len = charCount || (n*100);
+    return rndMixedUnicode(Math.min(len,10000));
+  }
+
+  // ── MULTILINGUAL ──
+  if(lang){
+    const pool = lang==='tamil'?TAMIL_WORDS:lang==='hindi'?HINDI_WORDS:lang==='japanese'?JAPANESE_WORDS:lang==='chinese'?CHINESE_WORDS:lang==='french'?FRENCH_WORDS:lang==='spanish'?SPANISH_WORDS:ARABIC_WORDS;
+    if(charCount){
+      return rndMultilingualChars(pool, charCount);
+    }
+    return Array.from({length:n},()=>rndMultilingualWords(pool, rndInt(8,15))).join("\n");
+  }
+
+  // ── LOREM IPSUM (character-exact) ──
+  if(/\blorem\b|\bipsum\b/.test(q)){
+    if(charCount) return rndLoremChars(charCount);
     return Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n");
   }
 
-  // ---- USER RECORDS ----
-  if(/user.?record|user.?data|user.?info/.test(q)){
-    return Array.from({length:n},()=>genRecord()).map((u,i)=>
-      `--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")
-    ).join("\n\n");
+  // ── CHARACTER-BASED ENGLISH TEXT ──
+  if(charCount && /english|random.?text|sample.?text|text/.test(q)){
+    return rndEnglishChars(charCount);
   }
 
-  // ---- EMPLOYEE ----
-  if(/employee|staff|worker/.test(q)){
-    return Array.from({length:n},()=>genEmployee()).map((e,i)=>
-      `--- Employee ${i+1} ---\n`+Object.entries(e).map(([k,v])=>`  ${k}: ${v}`).join("\n")
-    ).join("\n\n");
+  // ── LOWERCASE ONLY ──
+  if(/lower.?case|only.?lower/.test(q)){
+    const len = charCount || n*10;
+    return rndCharset(len, "abcdefghijklmnopqrstuvwxyz");
   }
 
-  // ---- ORDER ----
-  if(/order/.test(q)){
-    return Array.from({length:n},()=>genOrder()).map((o,i)=>
-      `--- Order ${i+1} ---\n`+Object.entries(o).map(([k,v])=>`  ${k}: ${v}`).join("\n")
-    ).join("\n\n");
+  // ── UPPERCASE + NUMBERS ──
+  if(/upper.?case.*number|number.*upper.?case|uppercase/.test(q)){
+    const len = charCount || n*10;
+    return rndCharset(len, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
   }
 
-  // ---- JSON ----
+  // ── MIXED CHARSET (letters + numbers + special) ──
+  if(/letter.*number.*special|special.*char|mixed.?char|alphanumeric.*special/.test(q)){
+    const len = charCount || n*10;
+    return rndCharset(len, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?");
+  }
+
+  // ── LONG PARAGRAPH with emojis/symbols ──
+  if(/long.*paragraph|paragraph.*emoji|paragraph.*symbol/.test(q)){
+    const base = rndLorem(5);
+    const emojis = Array.from({length:10},()=>rnd(EMOJI_LIST)).join(" ");
+    return base + " " + emojis;
+  }
+
+  // ── HTML OUTPUTS ──
+  if(/html/.test(q)){
+    if(/form|contact|input|field/.test(q)) return genHTMLForm();
+    if(/email.?template|email.?html|newsletter/.test(q)) return genHTMLEmailTemplate();
+    if(/snippet|button|link|component/.test(q)) return genHTMLSnippet();
+    if(/table/.test(q)){
+      const records = Array.from({length:n},()=>genRecord());
+      return toHTMLTable(records);
+    }
+    // default: form
+    return genHTMLForm();
+  }
+
+  // ── JSON ──
   if(/json/.test(q)){
+    if(/nest|department.*manager|manager.*department|employee.*department/.test(q))
+      return genNestedEmployeeJSON(n);
+    if(/mix|boolean.*null|null.*boolean|different.?type|various.?type/.test(q))
+      return genMixedJSON(n);
+    if(/paginat|wrapper|meta.*data|api.?response/.test(q))
+      return genPaginationJSON(n);
     if(/product/.test(q)) return toJSON(Array.from({length:n},()=>genProduct()));
     if(/employee|staff/.test(q)) return toJSON(Array.from({length:n},()=>genEmployee()));
     if(/order/.test(q)) return toJSON(Array.from({length:n},()=>genOrder()));
     return toJSON(Array.from({length:n},()=>genRecord()));
   }
 
-  // ---- CSV ----
+  // ── CSV ──
   if(/csv/.test(q)){
     if(/product/.test(q)) return toCSV(Array.from({length:n},()=>genProduct()));
     if(/employee|staff/.test(q)) return toCSV(Array.from({length:n},()=>genEmployee()));
@@ -902,68 +1384,168 @@ function processQuery(query){
     return toCSV(Array.from({length:n},()=>genRecord()));
   }
 
-  // ---- XML ----
-  if(/xml/.test(q)){
+  // ── XML ──
+  if(/\bxml\b/.test(q)){
     if(/product/.test(q)) return toXML(Array.from({length:n},()=>genProduct()),"products","product");
     if(/employee/.test(q)) return toXML(Array.from({length:n},()=>genEmployee()),"employees","employee");
     if(/order/.test(q)) return toXML(Array.from({length:n},()=>genOrder()),"orders","order");
     return toXML(Array.from({length:n},()=>genRecord()),"records","record");
   }
 
-  // ---- SQL ----
-  if(/sql|insert/.test(q)){
+  // ── SQL ──
+  if(/\bsql\b|\binsert\b/.test(q)){
     if(/product/.test(q)) return toSQL(Array.from({length:n},()=>genProduct()),"products");
     if(/employee/.test(q)) return toSQL(Array.from({length:n},()=>genEmployee()),"employees");
     if(/order/.test(q)) return toSQL(Array.from({length:n},()=>genOrder()),"orders");
-    return toSQL(Array.from({length:n},()=>genRecord()),"test_data");
+    return toSQL(Array.from({length:n},()=>genRecord()),"users");
   }
 
-  // ---- YAML ----
-  if(/yaml/.test(q)){
-    return toYAML(Array.from({length:n},()=>genRecord()));
+  // ── YAML ──
+  if(/\byaml\b/.test(q)) return toYAML(Array.from({length:n},()=>genRecord()));
+
+  // ── NAMES ──
+  if(/\bfull.?names?\b|\bperson.?names?\b|^names?$|generate.*\bnames?\b|\bpeople.*names?\b/.test(q))
+    return Array.from({length:n},()=>rndName()).join("\n");
+  if(/\bfirst.?names?\b/) return Array.from({length:n},()=>rndFirst()).join("\n");
+  if(/\blast.?names?\b|\bsurnames?\b/.test(q)) return Array.from({length:n},()=>rndLast()).join("\n");
+
+  // ── EMAIL ──
+  if(/\bemail/.test(q))
+    return Array.from({length:n},()=>rndEmail()).join("\n");
+
+  // ── PHONE — region aware ──
+  if(/\bphone|\bmobile|\bcell|\btelephone/.test(q)){
+    const region = detectPhoneRegion(q);
+    if(region){
+      return Array.from({length:n},()=>rndPhoneRegion(region)).join("\n");
+    }
+    // Multiple regions requested
+    if(/us.*uk|uk.*us|us.*india|india.*us|uk.*india|india.*uk|all.?region|multiple.?region/.test(q)){
+      const out=[];
+      for(let i=0;i<Math.ceil(n/3);i++) out.push("US: "+rndPhoneRegion('us'));
+      for(let i=0;i<Math.ceil(n/3);i++) out.push("UK: "+rndPhoneRegion('uk'));
+      for(let i=0;i<Math.ceil(n/3);i++) out.push("IN: "+rndPhoneRegion('india'));
+      return out.slice(0,n).join("\n");
+    }
+    return Array.from({length:n},()=>rndPhone()).join("\n");
   }
 
-  // ---- NUMBER / INTEGER ----
-  if(/random.?number|integer|number/.test(q)){
+  // ── ADDRESS ──
+  if(/\baddress(es)?\b|\bstreet\b/.test(q))
+    return Array.from({length:n},()=>rndAddress()).join("\n");
+
+  // ── UUID ──
+  if(/\buuids?\b|\bguids?\b/.test(q))
+    return Array.from({length:n},()=>rndUUID()).join("\n");
+
+  // ── IP ──
+  if(/\bip.?address|\bipv?4?\b/.test(q))
+    return Array.from({length:n},()=>rndIP()).join("\n");
+
+  // ── CREDIT CARD ──
+  if(/\bcredit.?card|\bcard.?number/.test(q))
+    return Array.from({length:n},()=>rndCC()).join("\n");
+
+  // ── DATE ──
+  if(/\bdates?\b|\bdob\b|\bbirth.?date\b/.test(q)){
+    const allYears=q.match(/\b(19|20)\d{2}\b/g)||[];
+    const startY=parseInt(allYears[0]||"2018");
+    const endY=parseInt(allYears[1]||"2024");
+    return Array.from({length:n},()=>rndDate(startY,endY)).join("\n");
+  }
+
+  // ── URL ──
+  if(/\burls?\b|\bwebsites?\b|\bdomains?\b/.test(q))
+    return Array.from({length:n},()=>rndUrl()).join("\n");
+
+  // ── USERNAME ──
+  if(/\busernames?\b/.test(q))
+    return Array.from({length:n},()=>rndUsername()).join("\n");
+
+  // ── COMPANY ──
+  if(/\bcompan(y|ies)\b|\borganization\b|\bfirm\b/.test(q)){
+    const pool=[...COMPANIES];
+    while(pool.length<n) pool.push(...COMPANIES);
+    return pool.slice(0,n).join("\n");
+  }
+
+  // ── PRODUCT ──
+  if(/\bproducts?\b/.test(q))
+    return Array.from({length:n},()=>`${rnd(PRODUCTS)} — $${rndPrice()} — Stock: ${rndQty()}`).join("\n");
+
+  // ── CITY ──
+  if(/\bcit(y|ies)\b/.test(q))
+    return Array.from({length:n},()=>`${rnd(CITIES)}, ${rnd(STATE_CODES)}`).join("\n");
+
+  // ── PARAGRAPH (non-lorem) ──
+  if(/\bparagraphs?\b|\bpassages?\b/.test(q))
+    return Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n");
+
+  // ── USER/EMPLOYEE/ORDER RECORDS ──
+  if(/\buser.?records?\b|\buser.?data\b|\buser.?info\b/.test(q))
+    return Array.from({length:n},()=>genRecord()).map((u,i)=>`--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n");
+  if(/\bemployees?\b|\bstaff\b|\bworkers?\b/.test(q))
+    return Array.from({length:n},()=>genEmployee()).map((e,i)=>`--- Employee ${i+1} ---\n`+Object.entries(e).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n");
+  if(/\borders?\b/.test(q))
+    return Array.from({length:n},()=>genOrder()).map((o,i)=>`--- Order ${i+1} ---\n`+Object.entries(o).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n");
+
+  // ── NUMBER ──
+  if(/\brandom.?numbers?\b|\bintegers?\b/.test(q)){
     const min=parseInt(q.match(/between\s+(\d+)/)?.[1]||"1");
     const max=parseInt(q.match(/and\s+(\d+)/)?.[1]||"1000");
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndInt(min,max)}`).join("\n");
+    return Array.from({length:n},()=>rndInt(min,max)).join("\n");
   }
 
-  // ---- PASSWORD ----
-  if(/password/.test(q)){
-    const chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-    return Array.from({length:n},(_,i)=>{
-      let p="";for(let c=0;c<16;c++) p+=chars[rndInt(0,chars.length-1)];
-      return `${i+1}. ${p}`;
-    }).join("\n");
+  // ── PASSWORD ──
+  if(/\bpasswords?\b/.test(q)){
+    const strength=detectPasswordStrength(q);
+    return Array.from({length:n},()=>`[${strength}] ${rndPassword(strength)}`).join("\n");
   }
 
-  // ---- BOOLEAN ----
-  if(/boolean|true.?false/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rndBoolean()}`).join("\n");
+  // ── COUPON ──
+  if(/\bcoupon|\bpromo.?code|\bdiscount.?code|\bvoucher/.test(q))
+    return Array.from({length:n},()=>rndCoupon()).join("\n");
+
+  // ── COMMENT ──
+  if(/\bcomments?\b|\breviews?\b|\bfeedback/.test(q))
+    return Array.from({length:n},()=>rndComment()).join("\n");
+
+  // ── ERROR MESSAGE ──
+  if(/\berror.?message|\bexception|\bstatus.?code/.test(q))
+    return Array.from({length:n},()=>rndErrorMessage()).join("\n");
+
+  // ── PLACEHOLDER ──
+  if(/\bplaceholder|\bform.?field|\bdummy.?text/.test(q)){
+    const fields=["name","email","phone","address","message","username","password","search","url"];
+    return fields.map(f=>`${f}: "${rndPlaceholder(f)}"`).join("\n");
   }
 
-  // ---- SALARY ----
-  if(/salary|wage|income/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. $${rndSalary().toLocaleString()}`).join("\n");
+  // ── BOOLEAN ──
+  if(/\bbooleans?\b|\btrue.?false\b/.test(q))
+    return Array.from({length:n},()=>rndBoolean()).join("\n");
+
+  // ── SALARY ──
+  if(/\bsalar(y|ies)\b|\bwages?\b|\bincome\b/.test(q))
+    return Array.from({length:n},()=>"$"+rndSalary().toLocaleString()).join("\n");
+
+  // ── DEPARTMENT ──
+  if(/\bdepartments?\b/.test(q))
+    return Array.from({length:n},()=>rnd(DEPARTMENTS)).join("\n");
+
+  // ── JOB TITLE ──
+  if(/\bjob.?titles?\b|\bpositions?\b|\broles?\b/.test(q))
+    return Array.from({length:n},()=>rnd(JOB_TITLES)).join("\n");
+
+  // ── CHARACTER-BASED (generic fallback with charCount) ──
+  if(charCount){
+    return rndEnglishChars(charCount);
   }
 
-  // ---- DEPARTMENT ----
-  if(/department/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(DEPARTMENTS)}`).join("\n");
-  }
-
-  // ---- JOB TITLE ----
-  if(/job.?title|position|role/.test(q)){
-    return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(JOB_TITLES)}`).join("\n");
-  }
-
-  // ---- DEFAULT: general record data ----
-  return Array.from({length:n},()=>genRecord()).map((u,i)=>
-    `--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")
-  ).join("\n\n");
+  // ── UNRECOGNISED ──
+  return `⚠ Query not recognised: "${rawQuery}"\n\nThis generator supports:\n  • Character text: "200 characters of random English text"\n  • Multilingual: "300 characters in Tamil", "Generate Hindi paragraph"\n  • Charset: "100 lowercase characters", "mixed charset 200 chars"\n  • Data types: names, emails, phones (US/UK/India), addresses, UUIDs, IPs, credit cards\n  • Formats: JSON, CSV, XML, SQL, YAML, HTML\n  • Special: regex patterns, coupon codes, passwords, comments, error messages\n\nExample: "generate 10 email addresses" or "500 characters of lorem ipsum"`;
 }
+
+
 
 // ============================================================
 //  STRUCTURED DATA SECTION
@@ -1152,12 +1734,15 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove("show"),2200);
 }
 
-// Chips → fill textarea
-document.querySelectorAll(".chip").forEach(chip=>{
+// Left pane chips → fill textarea + switch to text tab
+document.querySelectorAll(".pane-chip").forEach(chip=>{
   chip.addEventListener("click",()=>{
     document.getElementById("text-input").value=chip.dataset.prompt;
     updateTextBtns();
-    // Switch to text tab
+    // highlight active chip
+    document.querySelectorAll(".pane-chip").forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    // switch to text tab
     document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
     document.querySelectorAll(".section-panel").forEach(p=>p.classList.remove("active"));
     document.querySelector('[data-section="text-section"]').classList.add("active");
@@ -1285,13 +1870,10 @@ document.getElementById("struct-dl-btn").addEventListener("click",()=>{
 const fileType=document.getElementById("file-type");
 let selectedSize=null,generatedFileBlob=null,generatedFileName="";
 
-document.querySelectorAll(".size-chip").forEach(chip=>{
-  chip.addEventListener("click",()=>{
-    document.querySelectorAll(".size-chip").forEach(c=>c.classList.remove("selected"));
-    chip.classList.add("selected");
-    selectedSize=parseInt(chip.dataset.size);
-    updateFileBtns();
-  });
+const fileSizeSelect=document.getElementById("file-size-select");
+fileSizeSelect.addEventListener("change",()=>{
+  selectedSize=parseInt(fileSizeSelect.value);
+  updateFileBtns();
 });
 fileType.addEventListener("change",updateFileBtns);
 
@@ -1305,105 +1887,112 @@ function updateFileBtns(){
 // ---- Inline Web Worker code (runs file generation off main thread) ----
 const WORKER_CODE = `
 const ENC=new TextEncoder();
-const WORDS=["lorem","ipsum","dolor","sit","amet","consectetur","adipiscing","elit","sed","do","eiusmod","tempor","incididunt","labore","magna","aliqua","enim","veniam","nostrud","exercitation","ullamco","nisi","aliquip","commodo","consequat","duis","aute","irure","reprehenderit","voluptate","velit","esse","fugiat","nulla","pariatur","excepteur","sint","occaecat","proident","culpa","deserunt","mollit","anim","laborum"];
-const CITIES=["New York","Los Angeles","Chicago","Houston","Phoenix","San Diego","Dallas","San Jose","Austin","Seattle","Denver","Boston","Atlanta","Miami","Portland"];
+const NAMES=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black","Grace Hall","Henry Adams","Iris Clark","Jack Davis","Karen Lee","Leo Morris","Mia Clark","Ned Brown","Opal Davis"];
+const CITIES=["New York","Los Angeles","Chicago","Houston","Phoenix","San Diego","Dallas","Austin","Seattle","Denver","Boston","Atlanta","Miami","Portland","Nashville"];
 const DEPTS=["Engineering","Marketing","Sales","Finance","HR","Operations","IT","Design"];
-const NAMES=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black","Grace Hall","Henry Adams","Iris Clark","Jack Davis"];
+const LOREM="Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum. ";
 function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-function rw(){return WORDS[ri(0,WORDS.length-1)];}
-function rs(){const l=8+ri(0,12);const w=Array.from({length:l},()=>rw());return w[0].charAt(0).toUpperCase()+w[0].slice(1)+" "+w.slice(1).join(" ")+".";}
 function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
 function email(){const u=["alice","bob","carol","dan","eva","frank","grace","henry"][ri(0,7)];const d=["gmail.com","yahoo.com","outlook.com","company.com"][ri(0,3)];return u+ri(10,99)+"@"+d;}
 function salary(){return ri(35,180)*1000;}
 
-function makeBytes(tb,prefix,suffix,lineGen){
+function fastFill(tb,prefix,suffix,rowFn){
   const pre=ENC.encode(prefix),suf=ENC.encode(suffix);
   const bodyTarget=tb-pre.length-suf.length;
-  const chunks=[pre];let filled=pre.length;
-  while(filled<pre.length+bodyTarget){
-    const line=ENC.encode(lineGen()+"\\n");
-    const space=pre.length+bodyTarget-filled;
-    if(line.length<=space){chunks.push(line);filled+=line.length;}
-    else{chunks.push(line.slice(0,space));filled+=space;}
-    if(filled%500000<200) self.postMessage({type:"progress",value:Math.round(filled/tb*90)});
+  let sample="";
+  while(ENC.encode(sample).length<Math.min(8192,bodyTarget)) sample+=rowFn()+"\n";
+  const sampleEnc=ENC.encode(sample);
+  const out=new Uint8Array(tb);
+  let pos=0;
+  out.set(pre,pos);pos+=pre.length;
+  let iter=0;
+  while(pos-pre.length<bodyTarget){
+    const remaining=bodyTarget-(pos-pre.length);
+    if(sampleEnc.length<=remaining){out.set(sampleEnc,pos);pos+=sampleEnc.length;}
+    else{out.set(sampleEnc.slice(0,remaining),pos);pos+=remaining;}
+    iter++;
+    if(iter%30===0) self.postMessage({type:"progress",value:Math.min(90,Math.round(pos/tb*93))});
   }
-  chunks.push(suf);
-  const out=new Uint8Array(tb);let pos=0;
-  chunks.forEach(c=>{out.set(c,pos);pos+=c.length;});
+  out.set(suf,pos);
   return out;
 }
 
-function genTXT(tb){return makeBytes(tb,"","",rs);}
+function genTXT(tb){return fastFill(tb,"","",()=>LOREM);}
 function genCSV(tb){
-  const row=()=>uuid()+","+NAMES[ri(0,9)]+","+email()+","+CITIES[ri(0,14)]+","+DEPTS[ri(0,7)]+","+salary();
-  return makeBytes(tb,"id,name,email,city,department,salary\\n","",row);
+  const row=()=>uuid()+","+NAMES[ri(0,14)]+","+email()+","+CITIES[ri(0,14)]+","+DEPTS[ri(0,7)]+","+salary();
+  return fastFill(tb,"id,name,email,city,department,salary\n","",row);
 }
 function genXML(tb){
-  const row=()=>'  <record><id>'+uuid()+'</id><name>'+NAMES[ri(0,9)]+'</name><email>'+email()+'</email><city>'+CITIES[ri(0,14)]+'</city></record>';
-  return makeBytes(tb,'<?xml version="1.0" encoding="UTF-8"?>\\n<records>\\n',"\\n</records>",row);
+  const row=()=>'  <record><id>'+uuid()+'</id><name>'+NAMES[ri(0,14)]+'</name><email>'+email()+'</email><city>'+CITIES[ri(0,14)]+'</city></record>';
+  return fastFill(tb,'<?xml version="1.0" encoding="UTF-8"?>\n<records>\n',"\n</records>",row);
 }
 function genHTML(tb){
-  const row=()=>'<p>'+rs()+' '+rs()+'</p>';
-  return makeBytes(tb,'<!DOCTYPE html><html><body>\\n',"\\n</body></html>",row);
+  return fastFill(tb,'<!DOCTYPE html><html><body>\n',"\n</body></html>",()=>'<p>'+LOREM+'</p>');
 }
 function genDOCX(tb){
-  const row=()=>'<w:p><w:r><w:t>'+rs().replace(/[<>&]/g,c=>c==="<"?"&lt;":c===">"?"&gt;":"&amp;")+'</w:t></w:r></w:p>';
-  return makeBytes(tb,'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\\n',"\\n</w:body></w:document>",row);
+  const safe=LOREM.replace(/[<>&]/g,c=>c==="<"?"&lt;":c===">"?"&gt;":"&amp;");
+  return fastFill(tb,'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n',"\n</w:body></w:document>",()=>'<w:p><w:r><w:t>'+safe+'</w:t></w:r></w:p>');
 }
 function genJSON(tb){
-  const obj=()=>({id:uuid(),name:NAMES[ri(0,9)],email:email(),city:CITIES[ri(0,14)],salary:salary(),active:Math.random()>0.5});
-  const pre="[\\n",suf="\\n]";
+  const pre="[\n",suf="\n]";
   const preEnc=ENC.encode(pre),sufEnc=ENC.encode(suf);
   const bodyTarget=tb-preEnc.length-sufEnc.length;
-  const chunks=[preEnc];let filled=preEnc.length;let first=true;
-  while(filled<preEnc.length+bodyTarget-20){
-    const chunk=ENC.encode((first?"":",\\n")+"  "+JSON.stringify(obj()));first=false;
-    const space=preEnc.length+bodyTarget-filled;
-    if(chunk.length<=space){chunks.push(chunk);filled+=chunk.length;}else break;
-    if(filled%500000<500) self.postMessage({type:"progress",value:Math.round(filled/tb*90)});
+  const rowStr=()=>'  {"id":"'+uuid()+'","name":"'+NAMES[ri(0,14)]+'","email":"'+email()+'","city":"'+CITIES[ri(0,14)]+'","salary":'+salary()+',"active":'+(Math.random()>0.5)+'}';
+  let sample="";
+  while(ENC.encode(sample).length<Math.min(8192,bodyTarget)) sample+=rowStr()+",\n";
+  const sampleEnc=ENC.encode(sample);
+  const out=new Uint8Array(tb);
+  let pos=0;out.set(preEnc,pos);pos+=preEnc.length;
+  let iter=0;
+  while(pos-preEnc.length<bodyTarget){
+    const remaining=bodyTarget-(pos-preEnc.length);
+    if(sampleEnc.length<=remaining){out.set(sampleEnc,pos);pos+=sampleEnc.length;}
+    else{out.set(sampleEnc.slice(0,remaining),pos);pos+=remaining;}
+    iter++;
+    if(iter%30===0) self.postMessage({type:"progress",value:Math.min(90,Math.round(pos/tb*93))});
   }
-  chunks.push(sufEnc);
-  const out=new Uint8Array(filled+sufEnc.length);let pos=0;
-  chunks.forEach(c=>{out.set(c,pos);pos+=c.length;});
+  out.set(sufEnc,pos);
   return out;
 }
 function genPDF(tb){
-  let body="";const textTarget=Math.floor(tb*0.35);
-  while(ENC.encode(body).length<textTarget) body+=rs()+" ";
-  self.postMessage({type:"progress",value:30});
-  const stream=body.substring(0,Math.floor(body.length*0.9)).replace(/[()\\\\]/g,"");
+  const stream=LOREM.repeat(5).replace(/[()\\\\]/g,"").slice(0,1000);
   const streamBytes=ENC.encode(stream).length;
   const objs=[
-    "1 0 obj\\n<< /Type /Catalog /Pages 2 0 R >>\\nendobj",
-    "2 0 obj\\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\\nendobj",
-    "3 0 obj\\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\\nendobj",
-    "4 0 obj\\n<< /Length "+streamBytes+" >>\\nstream\\nBT /F1 12 Tf 50 750 Td ("+stream+") Tj ET\\nendstream\\nendobj",
-    "5 0 obj\\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\\nendobj",
+    "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj",
+    "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj",
+    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj",
+    "4 0 obj\n<< /Length "+streamBytes+" >>\nstream\nBT /F1 10 Tf 50 750 Td ("+stream+") Tj ET\nendstream\nendobj",
+    "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj",
   ];
-  let pdf="%PDF-1.4\\n";const offs=[];
-  objs.forEach(o=>{offs.push(ENC.encode(pdf).length);pdf+=o+"\\n";});
+  let pdf="%PDF-1.4\n";const offs=[];
+  objs.forEach(o=>{offs.push(ENC.encode(pdf).length);pdf+=o+"\n";});
   const xp=ENC.encode(pdf).length;
-  let xref="xref\\n0 "+(objs.length+1)+"\\n0000000000 65535 f \\n";
-  offs.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \\n");
-  pdf+=xref+"trailer\\n<< /Size "+(objs.length+1)+" /Root 1 0 R >>\\nstartxref\\n"+xp+"\\n%%EOF\\n";
-  self.postMessage({type:"progress",value:60});
-  const pdfBytes=ENC.encode(pdf);
-  const remaining=tb-pdfBytes.length;
-  let padding="";
-  if(remaining>0){
-    while(ENC.encode(padding).length<remaining-10) padding+="% "+rw()+" "+rw()+"\\n";
-    const eof=pdf.lastIndexOf("%%EOF");
-    pdf=pdf.slice(0,eof)+padding+"%%EOF\\n";
+  let xref="xref\n0 "+(objs.length+1)+"\n0000000000 65535 f \n";
+  offs.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \n");
+  pdf+=xref+"trailer\n<< /Size "+(objs.length+1)+" /Root 1 0 R >>\nstartxref\n"+xp+"\n%%EOF\n";
+  self.postMessage({type:"progress",value:30});
+  const padLine="% "+LOREM+"\n";
+  const padEnc=ENC.encode(padLine);
+  const pdfBase=ENC.encode(pdf);
+  const out=new Uint8Array(tb);
+  out.set(pdfBase,0);
+  let pos=pdfBase.length-8;
+  let iter=0;
+  while(pos<tb-8){
+    const rem=tb-8-pos;
+    if(padEnc.length<=rem){out.set(padEnc,pos);pos+=padEnc.length;}
+    else{out.set(padEnc.slice(0,rem),pos);pos+=rem;}
+    iter++;
+    if(iter%200===0) self.postMessage({type:"progress",value:Math.min(90,Math.round(pos/tb*93))});
   }
-  self.postMessage({type:"progress",value:90});
-  return ENC.encode(pdf).slice(0,tb);
+  out.set(ENC.encode("\n%%EOF\n"),pos);
+  return out;
 }
 function genXLSX(tb){
   const header='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>Name</v></c><c r="B1" t="s"><v>Age</v></c><c r="C1" t="s"><v>City</v></c><c r="D1" t="s"><v>Salary</v></c></row>';
   const suf='</sheetData></worksheet>';
   let r=2;
-  const row=()=>'<row r="'+r+'"><c r="A'+r+'" t="s"><v>'+NAMES[ri(0,9)]+'</v></c><c r="B'+r+'"><v>'+ri(20,60)+'</v></c><c r="C'+r+'" t="s"><v>'+CITIES[ri(0,14)]+'</v></c><c r="D'+r+'"><v>'+salary()+'</v></c></row>';
-  return makeBytes(tb,header,suf,()=>{r++;return row();});
+  return fastFill(tb,header,suf,()=>{const rr=r++;return '<row r="'+rr+'"><c r="A'+rr+'" t="s"><v>'+NAMES[ri(0,14)]+'</v></c><c r="B'+rr+'"><v>'+ri(20,60)+'</v></c><c r="C'+rr+'" t="s"><v>'+CITIES[ri(0,14)]+'</v></c><c r="D'+rr+'"><v>'+salary()+'</v></c></row>';});
 }
 
 self.onmessage=function(e){
@@ -1477,7 +2066,7 @@ document.getElementById("file-gen-btn").addEventListener("click",()=>{
 
 document.getElementById("file-reset-btn").addEventListener("click",()=>{
   fileType.selectedIndex=0;
-  document.querySelectorAll(".size-chip").forEach(c=>c.classList.remove("selected"));
+  fileSizeSelect.selectedIndex=0;
   selectedSize=null;
   updateFileBtns();
 });
