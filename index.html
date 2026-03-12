@@ -457,6 +457,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   </div>
 </div><!-- text-main-area -->
 </div><!-- text-section-inner -->
+</div><!-- text-section -->
 
 <!-- SECTION 2: Structured Data -->
 <div id="structured-section" class="section-panel">
@@ -1024,6 +1025,23 @@ function genPaginationJSON(n){
   return JSON.stringify({page:1,limit:n,total:n*10,hasNext:true,hasPrev:false,data:records},null,2);
 }
 
+function genCamelCaseJSON(n){
+  const records=Array.from({length:n},()=>{
+    const first=rnd(FIRST),last=rnd(LAST);
+    return {
+      userId:rndUUID(),
+      firstName:first,
+      lastName:last,
+      emailAddress:rndEmail(first,last),
+      phoneNumber:rndPhone(),
+      homeCity:rnd(CITIES),
+      isActive:rndBoolean(),
+      createdAt:rndDate(),
+    };
+  });
+  return JSON.stringify(records,null,2);
+}
+
 // ============================================================
 //  RECORD GENERATORS
 // ============================================================
@@ -1514,7 +1532,7 @@ const INTENTS = [
     run:(q,n)=>Array.from({length:n},()=>genOrder()).map((o,i)=>`--- Order ${i+1} ---\n`+Object.entries(o).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n") },
   { id:'api_response',score:q=>/\bapi\b/.test(q)?75:0, run:(q,n)=>genPaginationJSON(n) },
   { id:'script_tags',score:q=>/script.?tag|test.*<script/.test(q)?88:0,
-    run:(q,n)=>["<script>alert('test')</script>","<script src=\"test.js\"></script>","<SCRIPT>document.write('x')</SCRIPT>","<script type=\"text/javascript\">var x=1;</script>","</script><script>alert(1)</script>","<script defer src=\"/test.js\"></script>","<script async src=\"https://example.com/test.js\"></script>","<noscript>Please enable JavaScript</noscript>","<!-- <script>commented</script> -->","<script>// empty</script>"].slice(0,n).join("\n") },
+    run:(q,n)=>["<script>alert('test')<\/script>","<script src=\"test.js\"><\/script>","<SCRIPT>document.write('x')<\/SCRIPT>","<script type=\"text/javascript\">var x=1;<\/script>","<\/script><script>alert(1)<\/script>","<script defer src=\"/test.js\"><\/script>","<script async src=\"https://example.com/test.js\"><\/script>","<noscript>Please enable JavaScript<\/noscript>","<!-- <script>commented<\/script> -->","<script>// empty<\/script>"].slice(0,n).join("\n") },
 
   // ── CHARCOUNT FALLBACK ──
   { id:'charcount_fallback', score:(q,raw,cc)=>cc?50:0,
