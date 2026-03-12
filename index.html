@@ -298,37 +298,38 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 /* ── RESPONSE ACTIONS ── */
 .response-actions{display:flex;gap:10px;flex-wrap:wrap;}
 
-/* ── TWO COLUMN LAYOUT ── */
-.app-body{display:flex;min-height:calc(100vh - 120px);}
+/* ── TEXT SECTION TWO-COLUMN LAYOUT ── */
+.text-section-inner{display:flex;min-height:0;}
+.text-main-area{flex:1;min-width:0;}
 .left-pane{
-  width:220px;flex-shrink:0;
+  width:210px;flex-shrink:0;
   background:var(--bg2);border-right:1px solid var(--border);
-  padding:16px 12px;display:flex;flex-direction:column;gap:4px;
-  position:sticky;top:0;height:calc(100vh - 120px);overflow-y:auto;
+  padding:8px 8px 16px;display:flex;flex-direction:column;gap:2px;
+  height:calc(100vh - 116px);overflow-y:auto;
+  position:sticky;top:0;
 }
 .left-pane::-webkit-scrollbar{width:4px;}
 .left-pane::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .pane-label{
   font-size:10px;font-weight:700;text-transform:uppercase;
   letter-spacing:.8px;color:var(--text-muted);
-  padding:12px 8px 4px;margin-top:4px;
+  padding:10px 8px 3px;margin-top:2px;
   border-top:1px solid var(--border);
 }
 .left-pane .pane-label:first-child{border-top:none;padding-top:4px;}
 .pane-chip{
-  padding:8px 12px;border-radius:8px;font-size:12px;font-weight:500;
+  padding:7px 10px;border-radius:7px;font-size:12px;font-weight:500;
   font-family:'Outfit',sans-serif;cursor:pointer;
   background:transparent;color:var(--text-muted);border:none;
   text-align:left;transition:all .15s;line-height:1.4;
 }
 .pane-chip:hover{background:var(--primary-dim);color:var(--primary-glow);}
 .pane-chip.active{background:var(--primary-dim2);color:var(--primary-glow);font-weight:600;}
-.right-pane{flex:1;min-width:0;}
 
 @media(max-width:700px){
-  .app-body{flex-direction:column;}
-  .left-pane{width:100%;height:auto;flex-direction:row;flex-wrap:wrap;position:static;border-right:none;border-bottom:1px solid var(--border);}
-  .pane-label{display:none;}
+  .text-section-inner{flex-direction:column;}
+  .left-pane{width:100%;height:auto;flex-direction:row;flex-wrap:wrap;position:static;border-right:none;border-bottom:1px solid var(--border);padding:8px;}
+  .pane-label{width:100%;}
   .main{padding:16px 12px 56px;}
   .select-row{grid-template-columns:1fr;}
   .btn-row{flex-direction:column;}
@@ -358,8 +359,10 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="nav-tab" data-section="file-section">⬡ File Generator</button>
 </div>
 
-<div class="app-body">
-<!-- Left pane: sample prompts -->
+<!-- SECTION 1: Text Generator -->
+<div id="text-section" class="section-panel active">
+<div class="text-section-inner">
+<!-- Left pane: sample prompts (only shown in Text Generator tab) -->
 <div class="left-pane" id="left-pane">
 
   <div class="pane-label">📝 Text &amp; Characters</div>
@@ -426,10 +429,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="pane-chip" data-prompt="generate 8 company names">Company Names</button>
 
 </div>
-<div class="right-pane">
-
-<!-- SECTION 1: Text Generator -->
-<div id="text-section" class="section-panel active">
+<div class="text-main-area">
   <div class="main">
     <div class="card">
       <div class="card-header">
@@ -455,7 +455,8 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
       </div>
     </div>
   </div>
-</div>
+</div><!-- text-main-area -->
+</div><!-- text-section-inner -->
 
 <!-- SECTION 2: Structured Data -->
 <div id="structured-section" class="section-panel">
@@ -565,9 +566,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   </div>
 </div>
 
-</div><!-- right-pane -->
-</div><!-- app-body -->
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -602,7 +600,7 @@ const SPANISH_WORDS = ["Hola","gracias","amor","casa","escuela","árbol","agua",
 const ARABIC_WORDS = ["مرحبا","شكرا","حب","بيت","مدرسة","شجرة","ماء","سماء","أرض","صديق","طفل","زهرة","بلد","قرية","بحر","جبل","ريح","نار","نور","ليل","نهار","شمس","مطر","عاصفة","أرز","حليب","فاكهة","خضار","تراب","ذهب","فضة","حديد","حجر","غابة","نهر","بركة","بحيرة","طائر","سمكة","حيوان"];
 
 // ── SPECIAL CHARACTER POOLS ──
-const ASCII_SPECIAL = "!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
+const ASCII_SPECIAL = "!@#$%&'()*+,-./:;<=>?@[\\]^_{|}~";
 const EMOJI_LIST = ["😀","😂","🥰","😎","🤔","👍","👏","🎉","🔥","💯","⭐","🌟","✨","🎯","🚀","💡","🎨","🌈","🦋","🌸","🍕","🎵","🏆","💪","🙌","👀","💬","📱","💻","🔑"];
 
 // ============================================================
@@ -1188,363 +1186,377 @@ function toHTMLTable(records){
 }
 
 // ============================================================
-//  SMART TEXT QUERY ENGINE  v2
+//  QUERY ENGINE  v3  — Intent Scoring Architecture
+//  Every query is scored against ALL intents simultaneously.
+//  The highest-scoring intent wins. Ties resolved by priority.
+//  This handles combined phrases, synonyms, and any word order.
 // ============================================================
 
-// ── Intent parser helpers ──
-function parseCount(q){
-  // "a few" → 5, "some" → 7, "many"/"lots" → 20, "a couple" → 2
-  if(/\ba\s+couple\b/.test(q)) return 2;
-  if(/\ba\s+few\b/.test(q)) return 5;
-  if(/\bsome\b/.test(q)) return 7;
-  if(/\bmany\b|\blots?\s+of\b|\btonne?\s+of\b/.test(q)) return 20;
+// ── Synonym normaliser — collapses variants before matching ──
+function normalise(raw){
+  return raw.toLowerCase()
+    .replace(/generate|create|give\s+me|make|produce|show|list|i\s+need|i\s+want|provide|get\s+me|can\s+you|please/g,' ')
+    .replace(/\bsome\b/g,' 7 ')
+    .replace(/\ba\s+few\b/g,' 5 ')
+    .replace(/\ba\s+couple\b/g,' 2 ')
+    .replace(/\bmany\b|\blots?\s+of\b|\btonnes?\s+of\b/g,' 20 ')
+    .replace(/\bfake\b|\bdummy\b|\bmock\b|\bsample\b|\btest\b|\brandom\b|\bsynthetic\b/g,' ')
+    .replace(/\brecords?\b|\brows?\b|\bentries\b|\bdata\b|\bitems?\b|\bexamples?\b/g,' records ')
+    .replace(/\baddresses\b/g,' address ')
+    .replace(/\bnumbers?\b/g,' number ')
+    .replace(/\bpasswords?\b/g,' password ')
+    .replace(/\bemails?\b/g,' email ')
+    .replace(/\bphones?\b|\bmobiles?\b|\bcells?\b|\btelephones?\b/g,' phone ')
+    .replace(/\buuids?\b|\bguids?\b/g,' uuid ')
+    .replace(/\bnames?\b/g,' name ')
+    .replace(/\bcompan(y|ies)\b|\borganizations?\b|\bfirms?\b|\bbrands?\b/g,' company ')
+    .replace(/\bproducts?\b|\bgoods?\b|\bitems?\b/g,' product ')
+    .replace(/\bcit(y|ies)\b|\btown\b|\blocation\b/g,' city ')
+    .replace(/\bemployees?\b|\bstaff\b|\bworkers?\b|\bpersonnel\b/g,' employee ')
+    .replace(/\borders?\b|\btransactions?\b|\bpurchases?\b/g,' order ')
+    .replace(/\bparagraphs?\b|\bpassages?\b|\bblurb\b/g,' paragraph ')
+    .replace(/\busernames?\b|\bhandles?\b|\bscreennames?\b/g,' username ')
+    .replace(/\bcredit\s*cards?\b|\bcard\s*numbers?\b|\bpayment\s*cards?\b/g,' creditcard ')
+    .replace(/\bcoupons?\b|\bpromo\s*codes?\b|\bdiscount\s*codes?\b|\bvouchers?\b/g,' coupon ')
+    .replace(/\bcomments?\b|\breviews?\b|\bfeedback\b|\bopinions?\b/g,' comment ')
+    .replace(/\berror\s*messages?\b|\bexceptions?\b|\bstack\s*traces?\b/g,' errormsg ')
+    .replace(/\bplaceholders?\b|\bform\s*fields?\b/g,' placeholder ')
+    .replace(/\bsalary\b|\bsalaries\b|\bwages?\b|\bincome\b|\bpay\b/g,' salary ')
+    .replace(/\bjob\s*titles?\b|\bpositions?\b|\broles?\b|\bdesignations?\b/g,' jobtitle ')
+    .replace(/\bdepartments?\b|\bteams?\b|\bdivisions?\b/g,' department ')
+    .replace(/\bbooleans?\b|\btrue.?false\b|\bflags?\b/g,' boolean ')
+    .replace(/\bintegers?\b|\bwhole\s*numbers?\b/g,' integer ')
+    .replace(/\bsentences?\b|\bstatements?\b/g,' sentence ')
+    .replace(/\bparagraph\b/g,' paragraph ')
+    .replace(/\s+/g,' ').trim();
+}
+
+function parseCount(raw,q){
+  if(/\ba\s+couple\b/.test(raw)) return 2;
+  if(/\ba\s+few\b/.test(raw)) return 5;
+  if(/\bsome\b/.test(raw)) return 7;
+  if(/\bmany\b|\blots?\s+of\b/.test(raw)) return 20;
   const patterns=[
     /\b(?:generate|give|create|make|list|show|produce|get|need|want)\s+(\d+)\b/,
-    /\b(\d+)\s+(?:rows?|records?|items?|entries|results?|samples?|examples?|names?|emails?|phones?|addresses?|uuids?|dates?|numbers?|users?|people|persons?|employees?|products?|orders?|paragraphs?|lines?|passwords?|companies?|urls?|websites?|ips?|coupons?|comments?|usernames?)\b/,
+    /\b(\d+)\s+(?:rows?|records?|items?|entries|results?|samples?|examples?|names?|emails?|phones?|addresses?|uuids?|dates?|numbers?|users?|people|persons?|employees?|products?|orders?|paragraphs?|lines?|passwords?|companies?|coupons?|comments?|usernames?)\b/,
     /\b(\d+)\b/,
   ];
-  for(const p of patterns){const m=q.match(p);if(m) return Math.min(Math.max(parseInt(m[1]),1),500);}
+  for(const p of patterns){const m=raw.match(p);if(m) return Math.min(Math.max(parseInt(m[1]),1),500);}
   return 10;
 }
 
-// ── Extract character count: "200 characters", "500 chars" ──
-function parseCharCount(q){
-  const m=q.match(/\b(\d+)\s*(?:char(?:acter)?s?)\b/);
+function parseCharCount(raw){
+  const m=raw.match(/\b(\d+)\s*(?:char(?:acter)?s?)\b/i);
   return m?parseInt(m[1]):null;
 }
 
-// ── Detect language ──
 function detectLang(q){
-  if(/\btamil\b/.test(q)) return 'tamil';
-  if(/\bhindi\b/.test(q)) return 'hindi';
-  if(/\bjapanese\b/.test(q)) return 'japanese';
-  if(/\bchinese\b|\bmandarin\b/.test(q)) return 'chinese';
-  if(/\bfrench\b/.test(q)) return 'french';
-  if(/\bspanish\b/.test(q)) return 'spanish';
-  if(/\barabic\b/.test(q)) return 'arabic';
+  const langs={tamil:/\btamil\b/,hindi:/\bhindi\b/,japanese:/\bjapanese\b/,chinese:/\bchinese\b|\bmandarin\b/,french:/\bfrench\b/,spanish:/\bspanish\b/,arabic:/\barabic\b/,german:/\bgerman\b/,portuguese:/\bportuguese\b/};
+  for(const[l,r] of Object.entries(langs)) if(r.test(q)) return l;
   return null;
 }
 
-// ── Detect phone region ──
 function detectPhoneRegion(q){
-  if(/\buk\b|united.kingdom|british/.test(q)) return 'uk';
-  if(/\bindia\b|\bindian\b|\bin\b/.test(q)) return 'india';
-  if(/\bus\b|united.states|american/.test(q)) return 'us';
-  return null; // mixed/any
-}
-
-// ── Detect password strength ──
-function detectPasswordStrength(q){
-  if(/\bweak\b|simple|easy/.test(q)) return 'weak';
-  if(/\bmedium\b|moderate/.test(q)) return 'medium';
-  return 'strong'; // default
-}
-
-// ── Unsupported detection ──
-function detectUnsupported(q){
-  const blocks=[
-    {test:/xss|cross.?site|script.?inject|html.?inject/,      label:"XSS payloads"},
-    {test:/sql.?inject|drop.?table|union.?select/,             label:"SQL injection payloads"},
-    {test:/exploit|malware|shellcode|buffer.?overflow/,        label:"exploit/security payloads"},
-    {test:/sentiment|classify|summarize|analyse|analyze|predict\b/,label:"AI analysis tasks"},
-    {test:/translate\b|convert.+language/,                     label:"language translation"},
-    {test:/\bimage\b|\bphoto\b|\bpicture\b|\bvideo\b|\baudio\b/,label:"media generation"},
-  ];
-  for(const u of blocks){if(u.test.test(q)) return u.label;}
+  if(/\buk\b|\bunited\s*kingdom\b|\bbritish\b/.test(q)) return 'uk';
+  if(/\bindia\b|\bindian\b/.test(q)) return 'india';
+  if(/\bus\b|\busa\b|\bunited\s*states\b|\bamerican\b/.test(q)) return 'us';
+  if(/\baustralia\b|\baustrali/. test(q)) return 'au';
+  if(/\bgermany\b|\bgerman\b/.test(q)) return 'de';
   return null;
 }
 
-// ── Main ──
-function processQuery(rawQuery){
-  const q = rawQuery.toLowerCase().trim();
-  const n = parseCount(q);
-  const charCount = parseCharCount(q);
-  const lang = detectLang(q);
+function detectPasswordStrength(q){
+  if(/\bweak\b|\bsimple\b|\beasy\b|\bbasic\b/.test(q)) return 'weak';
+  if(/\bmedium\b|\bmoderate\b|\bmid\b/.test(q)) return 'medium';
+  return 'strong';
+}
 
-  // ── BLOCKED ──
-  const blocked = detectUnsupported(q);
-  if(blocked) return `⚠ This generator cannot produce ${blocked}.\n\nSupported categories:\n  • Character-based text (English, Tamil, Hindi, Japanese, Chinese, French, Spanish, Arabic)\n  • Names, emails, phones, addresses, UUIDs, dates, passwords, IPs\n  • JSON (plain, nested, mixed-type, paginated)\n  • CSV, XML, SQL, YAML records\n  • HTML (form, table, email template, snippet)\n  • Regex patterns, coupon codes, usernames, comments\n\nExample: "generate 200 characters of random English text"`;
+function detectFormat(q){
+  if(/\bjson\b/.test(q)) return 'json';
+  if(/\bcsv\b/.test(q)) return 'csv';
+  if(/\bxml\b/.test(q)) return 'xml';
+  if(/\bsql\b|\binsert\b|\bdatabase\b|\bseed\b/.test(q)) return 'sql';
+  if(/\byaml\b/.test(q)) return 'yaml';
+  if(/\bhtml\b/.test(q)) return 'html';
+  return null;
+}
 
-  // ── ESCAPE CHARACTERS / SPECIAL STRINGS ──
-  if(/escape.?char|special.?char|ascii.?special|all.?special|punctuation/.test(q)){
-    if(charCount){
-      return rndCharset(charCount, ASCII_SPECIAL + " ");
+// ── Field extractor — picks what fields the user mentioned ──
+function extractFields(q){
+  const fields=[];
+  if(/\bid\b/.test(q)) fields.push('id');
+  if(/first\s*name/.test(q)){ fields.push('firstName'); fields.push('lastName'); }
+  else if(/\bname\b/.test(q)) fields.push('name');
+  if(/\bemail\b/.test(q)) fields.push('email');
+  if(/\bphone\b/.test(q)) fields.push('phone');
+  if(/\bage\b/.test(q)) fields.push('age');
+  if(/\baddress\b/.test(q)) fields.push('address');
+  if(/\bcity\b/.test(q)) fields.push('city');
+  if(/\bcountry\b/.test(q)) fields.push('country');
+  if(/\busername\b/.test(q)) fields.push('username');
+  if(/\bpassword\b/.test(q)) fields.push('password');
+  if(/\bsalary\b/.test(q)) fields.push('salary');
+  if(/\bdepartment\b/.test(q)) fields.push('department');
+  if(/\bjobtitle\b|\bjob\s+title\b|\brole\b/.test(q)) fields.push('jobTitle');
+  if(/\bactive\b|\bstatus\b/.test(q)) fields.push('active');
+  if(/\bdate\b|\bcreated\b/.test(q)) fields.push('createdAt');
+  if(/\burl\b|\bwebsite\b/.test(q)) fields.push('website');
+  if(/\bcompany\b/.test(q)) fields.push('company');
+  return fields;
+}
+
+// ── Build record from explicit field list ──
+function buildCustomRecord(fields){
+  const first=rnd(FIRST),last=rnd(LAST);
+  const obj={};
+  fields.forEach(f=>{
+    switch(f){
+      case 'id': obj.id=rndInt(1000,9999); break;
+      case 'name': obj.name=first+" "+last; break;
+      case 'firstName': obj.firstName=first; break;
+      case 'lastName': obj.lastName=last; break;
+      case 'email': obj.email=rndEmail(first,last); break;
+      case 'phone': obj.phone=rndPhone(); break;
+      case 'age': obj.age=rndAge(); break;
+      case 'address': obj.address=rndAddress(); break;
+      case 'city': obj.city=rnd(CITIES); break;
+      case 'country': obj.country=rnd(["USA","UK","Canada","Australia","Germany","France","India","Japan"]); break;
+      case 'username': obj.username=rndUsername(first,last); break;
+      case 'password': obj.password=rndPassword('strong'); break;
+      case 'salary': obj.salary=rndSalary(); break;
+      case 'department': obj.department=rnd(DEPARTMENTS); break;
+      case 'jobTitle': obj.jobTitle=rnd(JOB_TITLES); break;
+      case 'active': obj.active=rndBoolean(); break;
+      case 'createdAt': obj.createdAt=rndDate(); break;
+      case 'website': obj.website=rndUrl(); break;
+      case 'company': obj.company=rnd(COMPANIES); break;
     }
-    return `All ASCII special characters:\n${ASCII_SPECIAL}\n\nSample strings:\n`+
-      Array.from({length:n},()=>rndCharset(rndInt(10,30), ASCII_SPECIAL+" abcdefghijklmnopqrstuvwxyz0123456789")).join("\n");
-  }
+  });
+  return obj;
+}
 
-  // ── REGEX PATTERN GENERATOR ──
-  if(/regex|pattern|matching|format/.test(q)){
-    // Extract pattern from query e.g. [A-Z]{5}[0-9]{3}
-    const patternMatch = rawQuery.match(/`([^`]+)`|\[[\w\-\]]+\{[^}]+\}(?:\[[\w\-\]]+\{[^}]+\})*/);
-    if(patternMatch){
-      const pat = patternMatch[1]||patternMatch[0];
-      return Array.from({length:n},()=>rndRegexPattern(pat)).join("\n");
+// ── Format dispatcher: take array of records → render in target format ──
+function renderRecords(records, format, entityHint){
+  switch(format){
+    case 'csv': return toCSV(records);
+    case 'xml': {
+      const root=entityHint+'s', item=entityHint;
+      return toXML(records,root,item);
     }
-    // Default: generate alphanumeric codes
-    return Array.from({length:n},()=>rndRegexPattern("[A-Z]{5}[0-9]{3}")).join("\n");
+    case 'sql': return toSQL(records, entityHint+'s');
+    case 'yaml': return toYAML(records);
+    case 'html': return toHTMLTable(records);
+    default: return toJSON(records);
   }
+}
 
-  // ── EMOJI / EMOJI+TEXT ──
-  if(/emoji/.test(q)){
-    if(charCount){
-      let out="";
-      while(out.length<charCount){
-        out+=rnd(EMOJI_LIST)+" "+rnd(["great","love","amazing","wow","yes","nice","cool","best"])+" ";
-      }
-      return out.slice(0,charCount);
-    }
-    return Array.from({length:n},()=>Array.from({length:rndInt(3,8)},()=>rnd(EMOJI_LIST)).join(" ")).join("\n");
-  }
+// ── Intent scoring table ──
+// Each intent has: test (regex on normalised q), score fn, handler
+const INTENTS = [
 
-  // ── UNICODE (large, mixed) ──
-  if(/unicode|multilingual/.test(q)){
-    const len = charCount || (n*100);
-    return rndMixedUnicode(Math.min(len,10000));
-  }
+  // ── CHAR-BASED TEXT ──
+  { id:'char_english',   score:q=>(/\benglish\b|\brandom\s+text\b|\bsample\s+text\b|\bascii\s+text\b/.test(q) && parseCharCount(q)) ? 90:0,
+    run:(q,n,cc)=>rndEnglishChars(cc||n*15) },
+  { id:'char_lorem',     score:q=>((/\blorem\b|\bipsum\b/.test(q)) && parseCharCount(q)) ? 90:(/\blorem\b|\bipsum\b/.test(q))?70:0,
+    run:(q,n,cc,raw)=>cc?rndLoremChars(cc):Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n") },
+  { id:'char_lowercase', score:q=>/lower.?case|only\s+lower/.test(q)?85:0,
+    run:(q,n,cc)=>rndCharset(cc||n*10,"abcdefghijklmnopqrstuvwxyz") },
+  { id:'char_uppercase', score:q=>/upper.?case.*number|number.*upper.?case|\buppercase\b/.test(q)?85:0,
+    run:(q,n,cc)=>rndCharset(cc||n*10,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") },
+  { id:'char_mixed',     score:q=>/letter.*number.*special|mixed.?char|alphanumeric.*special|special.*char.*letter|containing.*letter|letters.*numbers.*special/.test(q)?90:0,
+    run:(q,n,cc)=>rndCharset(cc||n*10,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?") },
+  { id:'char_punctuation',score:q=>/\bpunctuation\b/.test(q)&&!detectLang(q)?80:0,
+    run:(q,n,cc)=>cc?rndCharset(cc,"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()"): Array.from({length:n},()=>rndCharset(rndInt(20,60),"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()" )).join("\n") },
+  { id:'char_emoji',     score:q=>/\bemojis?\b/.test(q)?92:0,
+    run:(q,n,cc)=>{ if(cc){let o="";while(o.length<cc)o+=rnd(EMOJI_LIST)+" "+rnd(["great","love","awesome","wow","cool"])+" ";return o.slice(0,cc);}
+      return Array.from({length:n},()=>Array.from({length:rndInt(3,8)},()=>rnd(EMOJI_LIST)).join(" ")).join("\n"); } },
+  { id:'char_unicode',   score:q=>/\bunicode\b|\bmultilingual\b/.test(q)?85:0,
+    run:(q,n,cc)=>rndMixedUnicode(Math.min(cc||(n*100),10000)) },
+  { id:'char_special',   score:q=>/escape.?char|special.?char|ascii.?special|all.?special/.test(q)?88:0,
+    run:(q,n,cc)=>cc?rndCharset(cc,ASCII_SPECIAL+" "):`All ASCII special characters:\n${ASCII_SPECIAL}\n\nSample strings:\n`+Array.from({length:n},()=>rndCharset(rndInt(10,30),ASCII_SPECIAL+" abcdefghijklmnopqrstuvwxyz0123456789")).join("\n") },
 
   // ── MULTILINGUAL ──
-  if(lang){
-    const pool = lang==='tamil'?TAMIL_WORDS:lang==='hindi'?HINDI_WORDS:lang==='japanese'?JAPANESE_WORDS:lang==='chinese'?CHINESE_WORDS:lang==='french'?FRENCH_WORDS:lang==='spanish'?SPANISH_WORDS:ARABIC_WORDS;
-    if(charCount){
-      return rndMultilingualChars(pool, charCount);
-    }
-    return Array.from({length:n},()=>rndMultilingualWords(pool, rndInt(8,15))).join("\n");
+  { id:'multilingual',   score:q=>detectLang(q)?92:0,
+    run:(q,n,cc)=>{
+      const lang=detectLang(q);
+      const pool=lang==='tamil'?TAMIL_WORDS:lang==='hindi'?HINDI_WORDS:lang==='japanese'?JAPANESE_WORDS:lang==='chinese'?CHINESE_WORDS:lang==='french'?FRENCH_WORDS:lang==='spanish'?SPANISH_WORDS:lang==='arabic'?ARABIC_WORDS:LOREM_WORDS;
+      // if a format is also requested, inject multilingual words into records
+      const fmt=detectFormat(q);
+      if(fmt==='csv'){
+        return toCSV(Array.from({length:n},()=>{const r=genRecord();r.note=rndMultilingualWords(pool,rndInt(3,6));return r;}));
+      }
+      if(cc) return rndMultilingualChars(pool,cc);
+      return Array.from({length:n},()=>rndMultilingualWords(pool,rndInt(8,15))).join("\n");
+    }},
+
+  // ── HTML ──
+  { id:'html_email',  score:q=>/\bhtml\b/.test(q)&&/email.?template|newsletter|html.*email/.test(q)?95:0, run:()=>genHTMLEmailTemplate() },
+  { id:'html_snippet',score:q=>/\bhtml\b/.test(q)&&/snippet|button|link|component|\bui\b/.test(q)?97:0,    run:()=>genHTMLSnippet() },
+  { id:'html_table',  score:q=>/\bhtml\b/.test(q)&&/\btable\b/.test(q)?93:0, run:(q,n)=>toHTMLTable(Array.from({length:n},()=>genRecord())) },
+  { id:'html_form',   score:q=>/\bhtml\b/.test(q)&&!/snippet|button|link/.test(q)&&/form|field|input|contact|placeholder|validation|page.*form/.test(q)?96:0, run:()=>genHTMLForm() },
+  { id:'html_any',    score:q=>/\bhtml\b/.test(q)?70:0, run:()=>genHTMLForm() },
+
+  // ── JSON variants ──
+  { id:'json_nested', score:q=>/\bjson\b/.test(q)&&/nest|department.*manager|employee.*department/.test(q)?95:0, run:(q,n)=>genNestedEmployeeJSON(n) },
+  { id:'json_mixed',  score:q=>/\bjson\b/.test(q)&&/mix|boolean.*null|null.*boolean|different.?type|various.?type|number.*string.*boolean/.test(q)?95:0, run:(q,n)=>genMixedJSON(n) },
+  { id:'json_paged',  score:q=>/\bjson\b/.test(q)&&/paginat|api.?response|wrapper|meta.*data/.test(q)?95:0, run:(q,n)=>genPaginationJSON(n) },
+  { id:'json_camel',  score:q=>/\bjson\b/.test(q)&&/camel.?case/.test(q)?93:0, run:(q,n)=>genCamelCaseJSON(n) },
+
+  // ── FORMAT + ENTITY (generic) ──
+  // These fire when a format word + entity word are both present
+  { id:'fmt_product', score:q=>(detectFormat(q)||/\btable\b/.test(q))&&/\bproduct\b/.test(q)?88:0,
+    run:(q,n)=>renderRecords(Array.from({length:n},()=>genProduct()),detectFormat(q),'product') },
+  { id:'fmt_employee',score:q=>(detectFormat(q)||/\btable\b/.test(q))&&/\bemployee\b/.test(q)?88:0,
+    run:(q,n)=>renderRecords(Array.from({length:n},()=>genEmployee()),detectFormat(q),'employee') },
+  { id:'fmt_order',   score:q=>detectFormat(q)&&/\border\b/.test(q)?88:0,
+    run:(q,n)=>renderRecords(Array.from({length:n},()=>genOrder()),detectFormat(q),'order') },
+  { id:'fmt_user',    score:q=>detectFormat(q)?75:0,
+    run:(q,n)=>renderRecords(Array.from({length:n},()=>genRecord()),detectFormat(q),'user') },
+
+  // ── CUSTOM FIELD LIST ──
+  // "JSON with fields: name, email, age" or "records including name email phone"
+  { id:'custom_fields', score:q=>{
+      const fmt=detectFormat(q)||/records?\s+(?:with|including|having|containing)|fields?:/.test(q);
+      const fields=extractFields(q);
+      return (fmt&&fields.length>=2)?86:0;
+    },
+    run:(q,n)=>{
+      const fields=extractFields(q);
+      const fmt=detectFormat(q)||'json';
+      return renderRecords(Array.from({length:n},()=>buildCustomRecord(fields)),fmt,'record');
+    }},
+
+  // ── REGEX PATTERN ──
+  { id:'regex', score:q=>/regex|pattern.*match|match.*pattern|strings?\s+matching/.test(q)?90:0,
+    run:(q,n,cc,raw)=>{
+      const m=raw.match(/`([^`]+)`/)||raw.match(/(\[[\w\-]+\]\{[^}]+\}(?:\[[\w\-]+\]\{[^}]+\})*)/);
+      const pat=m?(m[1]||m[0]):"[A-Z]{5}[0-9]{3}";
+      return Array.from({length:n},()=>rndRegexPattern(pat)).join("\n");
+    }},
+
+  // ── PASSWORDS ──
+  { id:'password_all',    score:q=>/\bpassword\b/.test(q)&&(/all.*strength|various.*password|different.*strength|uppercase.*lowercase|lowercase.*uppercase/.test(q))?92:0,
+    run:()=>`[weak]   ${rndPassword('weak')}\n[weak]   ${rndPassword('weak')}\n[medium] ${rndPassword('medium')}\n[medium] ${rndPassword('medium')}\n[strong] ${rndPassword('strong')}\n[strong] ${rndPassword('strong')}` },
+  { id:'password',        score:q=>/\bpassword\b/.test(q)?85:0,
+    run:(q,n)=>{ const s=detectPasswordStrength(q); return Array.from({length:n},()=>`[${s}] ${rndPassword(s)}`).join("\n"); }},
+
+  // ── INDIVIDUAL DATA TYPES ──
+  { id:'name',      score:q=>/\bname\b/.test(q)&&!/json|csv|xml|sql|yaml|html|employee|user\s+records?|order|department|jobtitle|company|product|city/.test(q)?80:0,
+    run:(q,n)=>{
+      if(/\bfirst\s*name\b/.test(q)) return Array.from({length:n},()=>rndFirst()).join("\n");
+      if(/\blast\s*name\b|\bsurname\b/.test(q)) return Array.from({length:n},()=>rndLast()).join("\n");
+      return Array.from({length:n},()=>rndName()).join("\n");
+    }},
+  { id:'email',     score:q=>/\bemail\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?80:0,
+    run:(q,n)=>Array.from({length:n},()=>rndEmail()).join("\n") },
+  { id:'phone',     score:q=>/\bphone\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?80:0,
+    run:(q,n)=>{
+      const r=detectPhoneRegion(q);
+      if(r) return Array.from({length:n},()=>rndPhoneRegion(r)).join("\n");
+      if(/us.*uk|uk.*india|india.*us|us.*india|uk.*us|india.*uk|multiple|all\s+region|,/.test(q)){
+        const o=[];
+        for(let i=0;i<Math.ceil(n/3);i++) o.push("US: "+rndPhoneRegion('us'));
+        for(let i=0;i<Math.ceil(n/3);i++) o.push("UK: "+rndPhoneRegion('uk'));
+        for(let i=0;i<Math.ceil(n/3);i++) o.push("IN: "+rndPhoneRegion('india'));
+        return o.slice(0,n).join("\n");
+      }
+      return Array.from({length:n},()=>rndPhone()).join("\n");
+    }},
+  { id:'address',   score:q=>/\baddress\b|\bstreet\b/.test(q)&&!/\bip\b/.test(q)?80:0,
+    run:(q,n)=>Array.from({length:n},()=>rndAddress()).join("\n") },
+  { id:'uuid',      score:q=>/\buuid\b|\bguid\b/.test(q)?85:0,
+    run:(q,n)=>Array.from({length:n},()=>rndUUID()).join("\n") },
+  { id:'ip',        score:q=>/\bip\b|\bip\s*address\b|\bipv?4?\b/.test(q)?85:0,
+    run:(q,n)=>Array.from({length:n},()=>rndIP()).join("\n") },
+  { id:'creditcard',score:q=>/\bcreditcard\b|\bcredit\s*card\b|\bcard\s*number\b/.test(q)?85:0,
+    run:(q,n)=>Array.from({length:n},()=>rndCC()).join("\n") },
+  { id:'date',      score:q=>/\bdate\b|\bdob\b|\bbirth.?date\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?80:0,
+    run:(q,n,cc,raw)=>{ const y=raw.match(/\b(19|20)\d{2}\b/g)||[]; return Array.from({length:n},()=>rndDate(parseInt(y[0]||"2018"),parseInt(y[1]||"2024"))).join("\n"); }},
+  { id:'url',       score:q=>/\burl\b|\bwebsite\b|\bdomain\b/.test(q)?80:0,
+    run:(q,n)=>Array.from({length:n},()=>rndUrl()).join("\n") },
+  { id:'username',  score:q=>/\busername\b/.test(q)&&!/json|csv|xml|sql/.test(q)?80:0,
+    run:(q,n)=>Array.from({length:n},()=>rndUsername()).join("\n") },
+  { id:'company',   score:q=>/\bcompany\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?78:0,
+    run:(q,n)=>{ const p=[...COMPANIES]; while(p.length<n)p.push(...COMPANIES); return p.slice(0,n).join("\n"); }},
+  { id:'product',   score:q=>/\bproduct\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?78:0,
+    run:(q,n)=>Array.from({length:n},()=>`${rnd(PRODUCTS)} — $${rndPrice()} — Stock: ${rndQty()}`).join("\n") },
+  { id:'city',      score:q=>/\bcity\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?78:0,
+    run:(q,n)=>Array.from({length:n},()=>`${rnd(CITIES)}, ${rnd(STATE_CODES)}`).join("\n") },
+  { id:'boolean',   score:q=>/\bboolean\b/.test(q)?80:0,
+    run:(q,n)=>Array.from({length:n},()=>rndBoolean()).join("\n") },
+  { id:'integer',   score:q=>/\binteger\b|\brandom.*number\b/.test(q)?80:0,
+    run:(q,n,cc,raw)=>{ const mn=parseInt(raw.match(/between\s+(\d+)/)?.[1]||"1"); const mx=parseInt(raw.match(/and\s+(\d+)/)?.[1]||"1000"); return Array.from({length:n},()=>rndInt(mn,mx)).join("\n"); }},
+  { id:'salary',    score:q=>/\bsalary\b/.test(q)&&!/json|csv|xml|sql/.test(q)?78:0,
+    run:(q,n)=>Array.from({length:n},()=>"$"+rndSalary().toLocaleString()).join("\n") },
+  { id:'jobtitle',  score:q=>/\bjobtitle\b|\bjob\s+title\b/.test(q)&&!/json|csv|xml|sql/.test(q)?78:0,
+    run:(q,n)=>Array.from({length:n},()=>rnd(JOB_TITLES)).join("\n") },
+  { id:'department',score:q=>/\bdepartment\b/.test(q)&&!/json|csv|xml|sql/.test(q)?78:0,
+    run:(q,n)=>Array.from({length:n},()=>rnd(DEPARTMENTS)).join("\n") },
+  { id:'coupon',    score:q=>/\bcoupon\b/.test(q)?85:0,
+    run:(q,n)=>Array.from({length:n},()=>rndCoupon()).join("\n") },
+  { id:'comment',   score:q=>/\bcomment\b/.test(q)?82:0,
+    run:(q,n)=>Array.from({length:n},()=>rndComment()).join("\n") },
+  { id:'errormsg',  score:q=>/\berrormsg\b/.test(q)?82:0,
+    run:(q,n)=>Array.from({length:n},()=>rndErrorMessage()).join("\n") },
+  { id:'placeholder',score:q=>/\bplaceholder\b/.test(q)?82:0,
+    run:()=>["name","email","phone","address","message","username","password","search","url"].map(f=>`${f}: "${rndPlaceholder(f)}"`).join("\n") },
+  { id:'paragraph', score:q=>/\bparagraph\b/.test(q)&&!/lorem|ipsum/.test(q)?72:0,
+    run:(q,n)=>Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n") },
+
+  // ── COMBINED RECORDS ──
+  { id:'login',     score:q=>/\blogin\b|\bsign.?in\b|\bauth\b|\bcredential\b/.test(q)?87:0,
+    run:(q,n)=>Array.from({length:n},()=>JSON.stringify({username:rndUsername(),email:rndEmail(),password:rndPassword('strong'),role:rnd(["admin","user","editor","viewer"]),active:rndBoolean()})).join("\n") },
+  { id:'user_rec',  score:q=>/\buser\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?65:0,
+    run:(q,n)=>Array.from({length:n},()=>genRecord()).map((u,i)=>`--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n") },
+  { id:'employee_rec',score:q=>/\bemployee\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?65:0,
+    run:(q,n)=>Array.from({length:n},()=>genEmployee()).map((e,i)=>`--- Employee ${i+1} ---\n`+Object.entries(e).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n") },
+  { id:'order_rec', score:q=>/\border\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?65:0,
+    run:(q,n)=>Array.from({length:n},()=>genOrder()).map((o,i)=>`--- Order ${i+1} ---\n`+Object.entries(o).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n") },
+  { id:'api_response',score:q=>/\bapi\b/.test(q)?75:0, run:(q,n)=>genPaginationJSON(n) },
+  { id:'script_tags',score:q=>/script.?tag|test.*<script/.test(q)?88:0,
+    run:(q,n)=>["<script>alert('test')</script>","<script src=\"test.js\"></script>","<SCRIPT>document.write('x')</SCRIPT>","<script type=\"text/javascript\">var x=1;</script>","</script><script>alert(1)</script>","<script defer src=\"/test.js\"></script>","<script async src=\"https://example.com/test.js\"></script>","<noscript>Please enable JavaScript</noscript>","<!-- <script>commented</script> -->","<script>// empty</script>"].slice(0,n).join("\n") },
+
+  // ── CHARCOUNT FALLBACK ──
+  { id:'charcount_fallback', score:(q,raw,cc)=>cc?50:0,
+    run:(q,n,cc)=>rndEnglishChars(cc) },
+
+  // ── DEFAULT fallback ──
+  { id:'default',   score:()=>1,
+    run:(q,n)=>Array.from({length:n},()=>genRecord()).map((u,i)=>`--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n") },
+];
+
+// ── Blocked intents (checked before scoring) ──
+const BLOCKED=[
+  {test:/\bxss\b|cross.?site\s+script|html\s+inject/,           label:"XSS payloads"},
+  {test:/sql.?inject|drop\s+table|union\s+select/,              label:"SQL injection payloads"},
+  {test:/\bexploit\b|\bmalware\b|\bshellcode\b|\bbuffer.?overflow\b/, label:"exploit payloads"},
+  {test:/\bsentiment\b|\bclassify\b|\bsummariz\b|\banalyze?\b|\bpredict\b/, label:"AI analysis tasks"},
+  {test:/\btranslate\b/,                                         label:"language translation"},
+  {test:/\bimage\b|\bphoto\b|\bpicture\b|\bvideo\b|\baudio\b/,  label:"media generation"},
+];
+
+// ── Main dispatcher ──
+function processQuery(rawQuery){
+  const raw = rawQuery.trim();
+  const q   = normalise(raw);
+  const n   = parseCount(raw, q);
+  const cc  = parseCharCount(raw);
+
+  // Blocked check
+  for(const b of BLOCKED){
+    if(b.test.test(raw.toLowerCase())) return `⚠ This generator cannot produce ${b.label}.\n\nIt generates realistic test data — names, emails, addresses, JSON, CSV, HTML, multilingual text, passwords, and more.\n\nExample: "generate 10 email addresses" or "500 characters of lorem ipsum"`;
   }
 
-  // ── LOREM IPSUM (character-exact) ──
-  if(/\blorem\b|\bipsum\b/.test(q)){
-    if(charCount) return rndLoremChars(charCount);
-    return Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n");
+  // Score all intents
+  let best=null, bestScore=0;
+  for(const intent of INTENTS){
+    const s = intent.score(q, raw, cc);
+    if(s > bestScore){ bestScore=s; best=intent; }
   }
 
-  // ── CHARACTER-BASED ENGLISH TEXT ──
-  if(charCount && /english|random.?text|sample.?text|text/.test(q)){
-    return rndEnglishChars(charCount);
-  }
-
-  // ── LOWERCASE ONLY ──
-  if(/lower.?case|only.?lower/.test(q)){
-    const len = charCount || n*10;
-    return rndCharset(len, "abcdefghijklmnopqrstuvwxyz");
-  }
-
-  // ── UPPERCASE + NUMBERS ──
-  if(/upper.?case.*number|number.*upper.?case|uppercase/.test(q)){
-    const len = charCount || n*10;
-    return rndCharset(len, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
-  }
-
-  // ── MIXED CHARSET (letters + numbers + special) ──
-  if(/letter.*number.*special|special.*char|mixed.?char|alphanumeric.*special/.test(q)){
-    const len = charCount || n*10;
-    return rndCharset(len, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?");
-  }
-
-  // ── LONG PARAGRAPH with emojis/symbols ──
-  if(/long.*paragraph|paragraph.*emoji|paragraph.*symbol/.test(q)){
-    const base = rndLorem(5);
-    const emojis = Array.from({length:10},()=>rnd(EMOJI_LIST)).join(" ");
-    return base + " " + emojis;
-  }
-
-  // ── HTML OUTPUTS ──
-  if(/html/.test(q)){
-    if(/form|contact|input|field/.test(q)) return genHTMLForm();
-    if(/email.?template|email.?html|newsletter/.test(q)) return genHTMLEmailTemplate();
-    if(/snippet|button|link|component/.test(q)) return genHTMLSnippet();
-    if(/table/.test(q)){
-      const records = Array.from({length:n},()=>genRecord());
-      return toHTMLTable(records);
-    }
-    // default: form
-    return genHTMLForm();
-  }
-
-  // ── JSON ──
-  if(/json/.test(q)){
-    if(/nest|department.*manager|manager.*department|employee.*department/.test(q))
-      return genNestedEmployeeJSON(n);
-    if(/mix|boolean.*null|null.*boolean|different.?type|various.?type/.test(q))
-      return genMixedJSON(n);
-    if(/paginat|wrapper|meta.*data|api.?response/.test(q))
-      return genPaginationJSON(n);
-    if(/product/.test(q)) return toJSON(Array.from({length:n},()=>genProduct()));
-    if(/employee|staff/.test(q)) return toJSON(Array.from({length:n},()=>genEmployee()));
-    if(/order/.test(q)) return toJSON(Array.from({length:n},()=>genOrder()));
-    return toJSON(Array.from({length:n},()=>genRecord()));
-  }
-
-  // ── CSV ──
-  if(/csv/.test(q)){
-    if(/product/.test(q)) return toCSV(Array.from({length:n},()=>genProduct()));
-    if(/employee|staff/.test(q)) return toCSV(Array.from({length:n},()=>genEmployee()));
-    if(/order/.test(q)) return toCSV(Array.from({length:n},()=>genOrder()));
-    return toCSV(Array.from({length:n},()=>genRecord()));
-  }
-
-  // ── XML ──
-  if(/\bxml\b/.test(q)){
-    if(/product/.test(q)) return toXML(Array.from({length:n},()=>genProduct()),"products","product");
-    if(/employee/.test(q)) return toXML(Array.from({length:n},()=>genEmployee()),"employees","employee");
-    if(/order/.test(q)) return toXML(Array.from({length:n},()=>genOrder()),"orders","order");
-    return toXML(Array.from({length:n},()=>genRecord()),"records","record");
-  }
-
-  // ── SQL ──
-  if(/\bsql\b|\binsert\b/.test(q)){
-    if(/product/.test(q)) return toSQL(Array.from({length:n},()=>genProduct()),"products");
-    if(/employee/.test(q)) return toSQL(Array.from({length:n},()=>genEmployee()),"employees");
-    if(/order/.test(q)) return toSQL(Array.from({length:n},()=>genOrder()),"orders");
-    return toSQL(Array.from({length:n},()=>genRecord()),"users");
-  }
-
-  // ── YAML ──
-  if(/\byaml\b/.test(q)) return toYAML(Array.from({length:n},()=>genRecord()));
-
-  // ── NAMES ──
-  if(/\bfull.?names?\b|\bperson.?names?\b|^names?$|generate.*\bnames?\b|\bpeople.*names?\b/.test(q))
-    return Array.from({length:n},()=>rndName()).join("\n");
-  if(/\bfirst.?names?\b/) return Array.from({length:n},()=>rndFirst()).join("\n");
-  if(/\blast.?names?\b|\bsurnames?\b/.test(q)) return Array.from({length:n},()=>rndLast()).join("\n");
-
-  // ── EMAIL ──
-  if(/\bemail/.test(q))
-    return Array.from({length:n},()=>rndEmail()).join("\n");
-
-  // ── PHONE — region aware ──
-  if(/\bphone|\bmobile|\bcell|\btelephone/.test(q)){
-    const region = detectPhoneRegion(q);
-    if(region){
-      return Array.from({length:n},()=>rndPhoneRegion(region)).join("\n");
-    }
-    // Multiple regions requested
-    if(/us.*uk|uk.*us|us.*india|india.*us|uk.*india|india.*uk|all.?region|multiple.?region/.test(q)){
-      const out=[];
-      for(let i=0;i<Math.ceil(n/3);i++) out.push("US: "+rndPhoneRegion('us'));
-      for(let i=0;i<Math.ceil(n/3);i++) out.push("UK: "+rndPhoneRegion('uk'));
-      for(let i=0;i<Math.ceil(n/3);i++) out.push("IN: "+rndPhoneRegion('india'));
-      return out.slice(0,n).join("\n");
-    }
-    return Array.from({length:n},()=>rndPhone()).join("\n");
-  }
-
-  // ── ADDRESS ──
-  if(/\baddress(es)?\b|\bstreet\b/.test(q))
-    return Array.from({length:n},()=>rndAddress()).join("\n");
-
-  // ── UUID ──
-  if(/\buuids?\b|\bguids?\b/.test(q))
-    return Array.from({length:n},()=>rndUUID()).join("\n");
-
-  // ── IP ──
-  if(/\bip.?address|\bipv?4?\b/.test(q))
-    return Array.from({length:n},()=>rndIP()).join("\n");
-
-  // ── CREDIT CARD ──
-  if(/\bcredit.?card|\bcard.?number/.test(q))
-    return Array.from({length:n},()=>rndCC()).join("\n");
-
-  // ── DATE ──
-  if(/\bdates?\b|\bdob\b|\bbirth.?date\b/.test(q)){
-    const allYears=q.match(/\b(19|20)\d{2}\b/g)||[];
-    const startY=parseInt(allYears[0]||"2018");
-    const endY=parseInt(allYears[1]||"2024");
-    return Array.from({length:n},()=>rndDate(startY,endY)).join("\n");
-  }
-
-  // ── URL ──
-  if(/\burls?\b|\bwebsites?\b|\bdomains?\b/.test(q))
-    return Array.from({length:n},()=>rndUrl()).join("\n");
-
-  // ── USERNAME ──
-  if(/\busernames?\b/.test(q))
-    return Array.from({length:n},()=>rndUsername()).join("\n");
-
-  // ── COMPANY ──
-  if(/\bcompan(y|ies)\b|\borganization\b|\bfirm\b/.test(q)){
-    const pool=[...COMPANIES];
-    while(pool.length<n) pool.push(...COMPANIES);
-    return pool.slice(0,n).join("\n");
-  }
-
-  // ── PRODUCT ──
-  if(/\bproducts?\b/.test(q))
-    return Array.from({length:n},()=>`${rnd(PRODUCTS)} — $${rndPrice()} — Stock: ${rndQty()}`).join("\n");
-
-  // ── CITY ──
-  if(/\bcit(y|ies)\b/.test(q))
-    return Array.from({length:n},()=>`${rnd(CITIES)}, ${rnd(STATE_CODES)}`).join("\n");
-
-  // ── PARAGRAPH (non-lorem) ──
-  if(/\bparagraphs?\b|\bpassages?\b/.test(q))
-    return Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n");
-
-  // ── USER/EMPLOYEE/ORDER RECORDS ──
-  if(/\buser.?records?\b|\buser.?data\b|\buser.?info\b/.test(q))
-    return Array.from({length:n},()=>genRecord()).map((u,i)=>`--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n");
-  if(/\bemployees?\b|\bstaff\b|\bworkers?\b/.test(q))
-    return Array.from({length:n},()=>genEmployee()).map((e,i)=>`--- Employee ${i+1} ---\n`+Object.entries(e).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n");
-  if(/\borders?\b/.test(q))
-    return Array.from({length:n},()=>genOrder()).map((o,i)=>`--- Order ${i+1} ---\n`+Object.entries(o).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n");
-
-  // ── NUMBER ──
-  if(/\brandom.?numbers?\b|\bintegers?\b/.test(q)){
-    const min=parseInt(q.match(/between\s+(\d+)/)?.[1]||"1");
-    const max=parseInt(q.match(/and\s+(\d+)/)?.[1]||"1000");
-    return Array.from({length:n},()=>rndInt(min,max)).join("\n");
-  }
-
-  // ── PASSWORD ──
-  if(/\bpasswords?\b/.test(q)){
-    const strength=detectPasswordStrength(q);
-    return Array.from({length:n},()=>`[${strength}] ${rndPassword(strength)}`).join("\n");
-  }
-
-  // ── COUPON ──
-  if(/\bcoupon|\bpromo.?code|\bdiscount.?code|\bvoucher/.test(q))
-    return Array.from({length:n},()=>rndCoupon()).join("\n");
-
-  // ── COMMENT ──
-  if(/\bcomments?\b|\breviews?\b|\bfeedback/.test(q))
-    return Array.from({length:n},()=>rndComment()).join("\n");
-
-  // ── ERROR MESSAGE ──
-  if(/\berror.?message|\bexception|\bstatus.?code/.test(q))
-    return Array.from({length:n},()=>rndErrorMessage()).join("\n");
-
-  // ── PLACEHOLDER ──
-  if(/\bplaceholder|\bform.?field|\bdummy.?text/.test(q)){
-    const fields=["name","email","phone","address","message","username","password","search","url"];
-    return fields.map(f=>`${f}: "${rndPlaceholder(f)}"`).join("\n");
-  }
-
-  // ── BOOLEAN ──
-  if(/\bbooleans?\b|\btrue.?false\b/.test(q))
-    return Array.from({length:n},()=>rndBoolean()).join("\n");
-
-  // ── SALARY ──
-  if(/\bsalar(y|ies)\b|\bwages?\b|\bincome\b/.test(q))
-    return Array.from({length:n},()=>"$"+rndSalary().toLocaleString()).join("\n");
-
-  // ── DEPARTMENT ──
-  if(/\bdepartments?\b/.test(q))
-    return Array.from({length:n},()=>rnd(DEPARTMENTS)).join("\n");
-
-  // ── JOB TITLE ──
-  if(/\bjob.?titles?\b|\bpositions?\b|\broles?\b/.test(q))
-    return Array.from({length:n},()=>rnd(JOB_TITLES)).join("\n");
-
-  // ── CHARACTER-BASED (generic fallback with charCount) ──
-  if(charCount){
-    return rndEnglishChars(charCount);
-  }
-
-  // ── UNRECOGNISED ──
-  return `⚠ Query not recognised: "${rawQuery}"\n\nThis generator supports:\n  • Character text: "200 characters of random English text"\n  • Multilingual: "300 characters in Tamil", "Generate Hindi paragraph"\n  • Charset: "100 lowercase characters", "mixed charset 200 chars"\n  • Data types: names, emails, phones (US/UK/India), addresses, UUIDs, IPs, credit cards\n  • Formats: JSON, CSV, XML, SQL, YAML, HTML\n  • Special: regex patterns, coupon codes, passwords, comments, error messages\n\nExample: "generate 10 email addresses" or "500 characters of lorem ipsum"`;
+  if(!best) return `⚠ Could not understand: "${rawQuery}"\n\nTry: "generate 10 email addresses" or "5 user records in JSON"`;
+  return best.run(q, n, cc, raw);
 }
-
 
 
 // ============================================================
