@@ -312,8 +312,9 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 
 <div class="header">
   <div class="header-inner">
+    <div class="badge">Test Data Generator</div>
     <h1>Test Data Generator</h1>
-    <p>Instant test data — no API, no key, works anywhere</p>
+    <p>Generate test data in any format, instantly</p>
   </div>
   <button class="theme-btn" id="theme-btn">
     <span id="theme-icon">☀️</span>
@@ -355,7 +356,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
     <div class="card">
       <div class="card-header">
         <div class="card-icon blue">✦</div>
-        <div><div class="card-title">Text Generator</div><div class="card-sub">Describe what data you need — it generates instantly, no AI required</div></div>
+        <div><div class="card-title">Text Generator</div><div class="card-sub">Describe what data you need and it generates instantly</div></div>
       </div>
       <div class="card-body">
         <textarea id="text-input" placeholder="Examples:&#10;• generate 10 full names&#10;• give me 5 email addresses&#10;• create 8 phone numbers in US format&#10;• generate 3 paragraphs of lorem ipsum&#10;• give me 10 random dates between 2020 and 2024"></textarea>
@@ -365,7 +366,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         </div>
         <div class="error-banner" id="text-error"><span>⚠</span><span id="text-error-msg"></span></div>
         <div class="output-wrap">
-          <div class="output-label"><span>Output</span></div>
+          <div class="output-label"><span>Output</span><span id="text-item-count" style="font-size:11px;color:var(--success);display:none;"></span></div>
           <div class="output-area" id="text-output"><span class="placeholder">Generated content will appear here…</span></div>
         </div>
         <div class="response-actions">
@@ -384,28 +385,20 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
     <div class="card">
       <div class="card-header">
         <div class="card-icon green">⊞</div>
-        <div><div class="card-title">Structured Data Generator</div><div class="card-sub">Pick format and row count — get clean structured test data instantly</div></div>
+        <div><div class="card-title">Structured Data Generator</div><div class="card-sub">Pick format and row count — get clean structured data instantly</div></div>
       </div>
       <div class="card-body">
         <div class="select-row">
           <div class="field-group">
-            <label class="field-label">Data Type</label>
+            <label class="field-label">Format</label>
             <select id="struct-type">
               <option value="" disabled selected>Select format…</option>
-              <option value="json-users">JSON — Users</option>
-              <option value="json-products">JSON — Products</option>
-              <option value="json-orders">JSON — Orders</option>
-              <option value="json-employees">JSON — Employees</option>
-              <option value="csv-users">CSV — Users</option>
-              <option value="csv-products">CSV — Products</option>
-              <option value="csv-employees">CSV — Employees</option>
-              <option value="csv-orders">CSV — Orders</option>
-              <option value="xml-users">XML — Users</option>
-              <option value="xml-products">XML — Products</option>
-              <option value="sql-users">SQL — Users (INSERT)</option>
-              <option value="sql-products">SQL — Products (INSERT)</option>
-              <option value="yaml-users">YAML — Users</option>
-              <option value="html-table">HTML — Table</option>
+              <option value="json">JSON</option>
+              <option value="csv">CSV</option>
+              <option value="xml">XML</option>
+              <option value="sql">SQL (INSERT)</option>
+              <option value="yaml">YAML</option>
+              <option value="html">HTML Table</option>
             </select>
           </div>
           <div class="field-group">
@@ -421,7 +414,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         </div>
         <div class="error-banner" id="struct-error"><span>⚠</span><span id="struct-error-msg"></span></div>
         <div class="output-wrap">
-          <div class="output-label"><span>Output</span></div>
+          <div class="output-label"><span>Output</span><span id="struct-record-count" style="font-size:11px;color:var(--success);display:none;"></span></div>
           <div class="output-area" id="struct-output"><span class="placeholder">Generated structured data will appear here…</span></div>
         </div>
         <div class="response-actions">
@@ -678,7 +671,25 @@ function genOrder(){
 // ============================================================
 //  STRUCTURED DATA FORMATTERS
 // ============================================================
-function toJSON(records){ return JSON.stringify(records,null,2); }
+// Compact record — fewer fields, easier to read as "rows"
+function genRecord(){
+  const first=rnd(FIRST),last=rnd(LAST);
+  return {
+    id:       rndInt(1000,9999),
+    name:     first+" "+last,
+    email:    rndEmail(first,last),
+    phone:    rndPhone(),
+    city:     rnd(CITIES),
+    country:  rnd(["USA","UK","Canada","Australia","Germany","France","India","Japan"]),
+    age:      rndAge(),
+    active:   rndBoolean(),
+  };
+}
+
+function toJSON(records){
+  // Each record on one line — easy to count rows visually
+  return "[\n"+records.map(r=>"  "+JSON.stringify(r)).join(",\n")+"\n]";
+}
 
 function toCSV(records){
   if(!records.length) return "";
@@ -756,8 +767,17 @@ function toHTMLTable(records){
 //  SMART TEXT QUERY ENGINE
 // ============================================================
 function parseCount(q){
-  const m=q.match(/\b(\d+)\b/);
-  return m?Math.min(parseInt(m[1]),200):10;
+  // Match patterns like "10 names", "generate 5", "give me 20", "create 3"
+  const patterns=[
+    /\b(?:generate|give|create|make|list|show|produce|get)\s+(\d+)\b/,
+    /\b(\d+)\s+(?:rows?|records?|items?|entries|results?|names?|emails?|phones?|addresses?|uuids?|dates?|numbers?|users?|people|persons?|employees?|products?|orders?|paragraphs?|lines?|passwords?|companies?|urls?|websites?|ips?)\b/,
+    /\b(\d+)\b/,
+  ];
+  for(const p of patterns){
+    const m=q.match(p);
+    if(m) return Math.min(Math.max(parseInt(m[1]),1),200);
+  }
+  return 10;
 }
 
 function processQuery(query){
@@ -847,7 +867,7 @@ function processQuery(query){
 
   // ---- USER RECORDS ----
   if(/user.?record|user.?data|user.?info/.test(q)){
-    return Array.from({length:n},()=>genUser()).map((u,i)=>
+    return Array.from({length:n},()=>genRecord()).map((u,i)=>
       `--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")
     ).join("\n\n");
   }
@@ -871,7 +891,7 @@ function processQuery(query){
     if(/product/.test(q)) return toJSON(Array.from({length:n},()=>genProduct()));
     if(/employee|staff/.test(q)) return toJSON(Array.from({length:n},()=>genEmployee()));
     if(/order/.test(q)) return toJSON(Array.from({length:n},()=>genOrder()));
-    return toJSON(Array.from({length:n},()=>genUser()));
+    return toJSON(Array.from({length:n},()=>genRecord()));
   }
 
   // ---- CSV ----
@@ -879,7 +899,7 @@ function processQuery(query){
     if(/product/.test(q)) return toCSV(Array.from({length:n},()=>genProduct()));
     if(/employee|staff/.test(q)) return toCSV(Array.from({length:n},()=>genEmployee()));
     if(/order/.test(q)) return toCSV(Array.from({length:n},()=>genOrder()));
-    return toCSV(Array.from({length:n},()=>genUser()));
+    return toCSV(Array.from({length:n},()=>genRecord()));
   }
 
   // ---- XML ----
@@ -887,7 +907,7 @@ function processQuery(query){
     if(/product/.test(q)) return toXML(Array.from({length:n},()=>genProduct()),"products","product");
     if(/employee/.test(q)) return toXML(Array.from({length:n},()=>genEmployee()),"employees","employee");
     if(/order/.test(q)) return toXML(Array.from({length:n},()=>genOrder()),"orders","order");
-    return toXML(Array.from({length:n},()=>genUser()),"users","user");
+    return toXML(Array.from({length:n},()=>genRecord()),"records","record");
   }
 
   // ---- SQL ----
@@ -895,12 +915,12 @@ function processQuery(query){
     if(/product/.test(q)) return toSQL(Array.from({length:n},()=>genProduct()),"products");
     if(/employee/.test(q)) return toSQL(Array.from({length:n},()=>genEmployee()),"employees");
     if(/order/.test(q)) return toSQL(Array.from({length:n},()=>genOrder()),"orders");
-    return toSQL(Array.from({length:n},()=>genUser()),"users");
+    return toSQL(Array.from({length:n},()=>genRecord()),"test_data");
   }
 
   // ---- YAML ----
   if(/yaml/.test(q)){
-    return toYAML(Array.from({length:n},()=>genUser()));
+    return toYAML(Array.from({length:n},()=>genRecord()));
   }
 
   // ---- NUMBER / INTEGER ----
@@ -939,9 +959,9 @@ function processQuery(query){
     return Array.from({length:n},(_,i)=>`${i+1}. ${rnd(JOB_TITLES)}`).join("\n");
   }
 
-  // ---- DEFAULT: general person data ----
-  return Array.from({length:n},()=>genUser()).map((u,i)=>
-    `--- Person ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")
+  // ---- DEFAULT: general record data ----
+  return Array.from({length:n},()=>genRecord()).map((u,i)=>
+    `--- Record ${i+1} ---\n`+Object.entries(u).map(([k,v])=>`  ${k}: ${v}`).join("\n")
   ).join("\n\n");
 }
 
@@ -950,22 +970,15 @@ function processQuery(query){
 // ============================================================
 function genStructured(type, count){
   const n = count;
+  const records = Array.from({length:n}, ()=>genRecord());
   switch(type){
-    case "json-users":     return { data: toJSON(Array.from({length:n},()=>genUser())),      ext:"json", mime:"application/json" };
-    case "json-products":  return { data: toJSON(Array.from({length:n},()=>genProduct())),   ext:"json", mime:"application/json" };
-    case "json-orders":    return { data: toJSON(Array.from({length:n},()=>genOrder())),     ext:"json", mime:"application/json" };
-    case "json-employees": return { data: toJSON(Array.from({length:n},()=>genEmployee())), ext:"json", mime:"application/json" };
-    case "csv-users":      return { data: toCSV(Array.from({length:n},()=>genUser())),       ext:"csv",  mime:"text/csv" };
-    case "csv-products":   return { data: toCSV(Array.from({length:n},()=>genProduct())),    ext:"csv",  mime:"text/csv" };
-    case "csv-employees":  return { data: toCSV(Array.from({length:n},()=>genEmployee())),   ext:"csv",  mime:"text/csv" };
-    case "csv-orders":     return { data: toCSV(Array.from({length:n},()=>genOrder())),      ext:"csv",  mime:"text/csv" };
-    case "xml-users":      return { data: toXML(Array.from({length:n},()=>genUser()),"users","user"),         ext:"xml", mime:"application/xml" };
-    case "xml-products":   return { data: toXML(Array.from({length:n},()=>genProduct()),"products","product"),ext:"xml", mime:"application/xml" };
-    case "sql-users":      return { data: toSQL(Array.from({length:n},()=>genUser()),"users"),     ext:"sql", mime:"text/plain" };
-    case "sql-products":   return { data: toSQL(Array.from({length:n},()=>genProduct()),"products"),ext:"sql", mime:"text/plain" };
-    case "yaml-users":     return { data: toYAML(Array.from({length:n},()=>genUser())),      ext:"yaml", mime:"text/yaml" };
-    case "html-table":     return { data: toHTMLTable(Array.from({length:n},()=>genUser())), ext:"html", mime:"text/html" };
-    default: return { data:"Unknown type", ext:"txt", mime:"text/plain" };
+    case "json": return { data: toJSON(records),                          ext:"json", mime:"application/json" };
+    case "csv":  return { data: toCSV(records),                           ext:"csv",  mime:"text/csv" };
+    case "xml":  return { data: toXML(records,"records","record"),        ext:"xml",  mime:"application/xml" };
+    case "sql":  return { data: toSQL(records,"test_data"),               ext:"sql",  mime:"text/plain" };
+    case "yaml": return { data: toYAML(records),                          ext:"yaml", mime:"text/yaml" };
+    case "html": return { data: toHTMLTable(records),                     ext:"html", mime:"text/html" };
+    default:     return { data:"Unknown format", ext:"txt", mime:"text/plain" };
   }
 }
 
@@ -1177,11 +1190,16 @@ textGenBtn.addEventListener("click",()=>{
   textGenBtn.disabled=true;
   setTimeout(()=>{
     try{
+      const n=parseCount(q);
       textContent=processQuery(q);
       textOutput.textContent=textContent;
+      const badge=document.getElementById("text-item-count");
+      badge.textContent=`✓ ${n} item${n===1?"":"s"} generated`;
+      badge.style.display="inline";
     }catch(e){
       textOutput.innerHTML='<span class="placeholder">Could not understand the query. Try rephrasing.</span>';
       textContent="";
+      document.getElementById("text-item-count").style.display="none";
     }
     textGenLabel.textContent="Generate";
     updateTextBtns();
@@ -1194,6 +1212,7 @@ document.getElementById("text-reset-btn").addEventListener("click",()=>{
 document.getElementById("text-clear-btn").addEventListener("click",()=>{
   textContent="";
   textOutput.innerHTML='<span class="placeholder">Generated content will appear here…</span>';
+  document.getElementById("text-item-count").style.display="none";
   updateTextBtns();
 });
 document.getElementById("text-copy-btn").addEventListener("click",async()=>{
@@ -1212,11 +1231,11 @@ let structContent="",structExt="txt";
 
 // populate rows
 const rowsSel=document.getElementById("struct-rows");
-for(let i=1;i<=20;i++){
+[1,2,5,10,20,50,100].forEach(v=>{
   const o=document.createElement("option");
-  o.value=i;o.textContent=i+(i===1?" row":" rows");
+  o.value=v;o.textContent=v+(v===1?" row":" rows");
   rowsSel.appendChild(o);
-}
+});
 
 function updateStructBtns(){
   document.getElementById("struct-gen-btn").disabled=!structType.value||!structRows.value;
@@ -1232,10 +1251,14 @@ document.getElementById("struct-gen-btn").addEventListener("click",()=>{
   const label=document.getElementById("struct-gen-label");
   label.innerHTML='<span class="spinner"></span> Generating…';
   setTimeout(()=>{
-    const result=genStructured(structType.value,parseInt(structRows.value));
+    const count=parseInt(structRows.value);
+    const result=genStructured(structType.value,count);
     structContent=result.data;structExt=result.ext;
     structOutput.textContent=structContent;
     document.getElementById("struct-dl-btn").textContent="Download as "+result.ext.toUpperCase();
+    const badge=document.getElementById("struct-record-count");
+    badge.textContent=`✓ ${count} record${count===1?"":"s"} generated`;
+    badge.style.display="inline";
     label.textContent="Generate";
     updateStructBtns();
   },80);
@@ -1246,6 +1269,7 @@ document.getElementById("struct-reset-btn").addEventListener("click",()=>{
 document.getElementById("struct-clear-btn").addEventListener("click",()=>{
   structContent="";
   structOutput.innerHTML='<span class="placeholder">Generated structured data will appear here…</span>';
+  document.getElementById("struct-record-count").style.display="none";
   updateStructBtns();
 });
 document.getElementById("struct-copy-btn").addEventListener("click",async()=>{
@@ -1278,6 +1302,133 @@ function updateFileBtns(){
   document.getElementById("file-clear-btn").disabled=!generatedFileBlob;
 }
 
+// ---- Inline Web Worker code (runs file generation off main thread) ----
+const WORKER_CODE = `
+const ENC=new TextEncoder();
+const WORDS=["lorem","ipsum","dolor","sit","amet","consectetur","adipiscing","elit","sed","do","eiusmod","tempor","incididunt","labore","magna","aliqua","enim","veniam","nostrud","exercitation","ullamco","nisi","aliquip","commodo","consequat","duis","aute","irure","reprehenderit","voluptate","velit","esse","fugiat","nulla","pariatur","excepteur","sint","occaecat","proident","culpa","deserunt","mollit","anim","laborum"];
+const CITIES=["New York","Los Angeles","Chicago","Houston","Phoenix","San Diego","Dallas","San Jose","Austin","Seattle","Denver","Boston","Atlanta","Miami","Portland"];
+const DEPTS=["Engineering","Marketing","Sales","Finance","HR","Operations","IT","Design"];
+const NAMES=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black","Grace Hall","Henry Adams","Iris Clark","Jack Davis"];
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rw(){return WORDS[ri(0,WORDS.length-1)];}
+function rs(){const l=8+ri(0,12);const w=Array.from({length:l},()=>rw());return w[0].charAt(0).toUpperCase()+w[0].slice(1)+" "+w.slice(1).join(" ")+".";}
+function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
+function email(){const u=["alice","bob","carol","dan","eva","frank","grace","henry"][ri(0,7)];const d=["gmail.com","yahoo.com","outlook.com","company.com"][ri(0,3)];return u+ri(10,99)+"@"+d;}
+function salary(){return ri(35,180)*1000;}
+
+function makeBytes(tb,prefix,suffix,lineGen){
+  const pre=ENC.encode(prefix),suf=ENC.encode(suffix);
+  const bodyTarget=tb-pre.length-suf.length;
+  const chunks=[pre];let filled=pre.length;
+  while(filled<pre.length+bodyTarget){
+    const line=ENC.encode(lineGen()+"\\n");
+    const space=pre.length+bodyTarget-filled;
+    if(line.length<=space){chunks.push(line);filled+=line.length;}
+    else{chunks.push(line.slice(0,space));filled+=space;}
+    if(filled%500000<200) self.postMessage({type:"progress",value:Math.round(filled/tb*90)});
+  }
+  chunks.push(suf);
+  const out=new Uint8Array(tb);let pos=0;
+  chunks.forEach(c=>{out.set(c,pos);pos+=c.length;});
+  return out;
+}
+
+function genTXT(tb){return makeBytes(tb,"","",rs);}
+function genCSV(tb){
+  const row=()=>uuid()+","+NAMES[ri(0,9)]+","+email()+","+CITIES[ri(0,14)]+","+DEPTS[ri(0,7)]+","+salary();
+  return makeBytes(tb,"id,name,email,city,department,salary\\n","",row);
+}
+function genXML(tb){
+  const row=()=>'  <record><id>'+uuid()+'</id><name>'+NAMES[ri(0,9)]+'</name><email>'+email()+'</email><city>'+CITIES[ri(0,14)]+'</city></record>';
+  return makeBytes(tb,'<?xml version="1.0" encoding="UTF-8"?>\\n<records>\\n',"\\n</records>",row);
+}
+function genHTML(tb){
+  const row=()=>'<p>'+rs()+' '+rs()+'</p>';
+  return makeBytes(tb,'<!DOCTYPE html><html><body>\\n',"\\n</body></html>",row);
+}
+function genDOCX(tb){
+  const row=()=>'<w:p><w:r><w:t>'+rs().replace(/[<>&]/g,c=>c==="<"?"&lt;":c===">"?"&gt;":"&amp;")+'</w:t></w:r></w:p>';
+  return makeBytes(tb,'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\\n',"\\n</w:body></w:document>",row);
+}
+function genJSON(tb){
+  const obj=()=>({id:uuid(),name:NAMES[ri(0,9)],email:email(),city:CITIES[ri(0,14)],salary:salary(),active:Math.random()>0.5});
+  const pre="[\\n",suf="\\n]";
+  const preEnc=ENC.encode(pre),sufEnc=ENC.encode(suf);
+  const bodyTarget=tb-preEnc.length-sufEnc.length;
+  const chunks=[preEnc];let filled=preEnc.length;let first=true;
+  while(filled<preEnc.length+bodyTarget-20){
+    const chunk=ENC.encode((first?"":",\\n")+"  "+JSON.stringify(obj()));first=false;
+    const space=preEnc.length+bodyTarget-filled;
+    if(chunk.length<=space){chunks.push(chunk);filled+=chunk.length;}else break;
+    if(filled%500000<500) self.postMessage({type:"progress",value:Math.round(filled/tb*90)});
+  }
+  chunks.push(sufEnc);
+  const out=new Uint8Array(filled+sufEnc.length);let pos=0;
+  chunks.forEach(c=>{out.set(c,pos);pos+=c.length;});
+  return out;
+}
+function genPDF(tb){
+  let body="";const textTarget=Math.floor(tb*0.35);
+  while(ENC.encode(body).length<textTarget) body+=rs()+" ";
+  self.postMessage({type:"progress",value:30});
+  const stream=body.substring(0,Math.floor(body.length*0.9)).replace(/[()\\\\]/g,"");
+  const streamBytes=ENC.encode(stream).length;
+  const objs=[
+    "1 0 obj\\n<< /Type /Catalog /Pages 2 0 R >>\\nendobj",
+    "2 0 obj\\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\\nendobj",
+    "3 0 obj\\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\\nendobj",
+    "4 0 obj\\n<< /Length "+streamBytes+" >>\\nstream\\nBT /F1 12 Tf 50 750 Td ("+stream+") Tj ET\\nendstream\\nendobj",
+    "5 0 obj\\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\\nendobj",
+  ];
+  let pdf="%PDF-1.4\\n";const offs=[];
+  objs.forEach(o=>{offs.push(ENC.encode(pdf).length);pdf+=o+"\\n";});
+  const xp=ENC.encode(pdf).length;
+  let xref="xref\\n0 "+(objs.length+1)+"\\n0000000000 65535 f \\n";
+  offs.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \\n");
+  pdf+=xref+"trailer\\n<< /Size "+(objs.length+1)+" /Root 1 0 R >>\\nstartxref\\n"+xp+"\\n%%EOF\\n";
+  self.postMessage({type:"progress",value:60});
+  const pdfBytes=ENC.encode(pdf);
+  const remaining=tb-pdfBytes.length;
+  let padding="";
+  if(remaining>0){
+    while(ENC.encode(padding).length<remaining-10) padding+="% "+rw()+" "+rw()+"\\n";
+    const eof=pdf.lastIndexOf("%%EOF");
+    pdf=pdf.slice(0,eof)+padding+"%%EOF\\n";
+  }
+  self.postMessage({type:"progress",value:90});
+  return ENC.encode(pdf).slice(0,tb);
+}
+function genXLSX(tb){
+  const header='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>Name</v></c><c r="B1" t="s"><v>Age</v></c><c r="C1" t="s"><v>City</v></c><c r="D1" t="s"><v>Salary</v></c></row>';
+  const suf='</sheetData></worksheet>';
+  let r=2;
+  const row=()=>'<row r="'+r+'"><c r="A'+r+'" t="s"><v>'+NAMES[ri(0,9)]+'</v></c><c r="B'+r+'"><v>'+ri(20,60)+'</v></c><c r="C'+r+'" t="s"><v>'+CITIES[ri(0,14)]+'</v></c><c r="D'+r+'"><v>'+salary()+'</v></c></row>';
+  return makeBytes(tb,header,suf,()=>{r++;return row();});
+}
+
+self.onmessage=function(e){
+  const {type,sizeMB}=e.data;
+  const tb=sizeMB*1024*1024;
+  let bytes,mime,ext;
+  try{
+    switch(type){
+      case"txt": bytes=genTXT(tb);mime="text/plain";ext="txt";break;
+      case"csv": bytes=genCSV(tb);mime="text/csv";ext="csv";break;
+      case"json":bytes=genJSON(tb);mime="application/json";ext="json";break;
+      case"xml": bytes=genXML(tb);mime="application/xml";ext="xml";break;
+      case"html":bytes=genHTML(tb);mime="text/html";ext="html";break;
+      case"pdf": bytes=genPDF(tb);mime="application/pdf";ext="pdf";break;
+      case"docx":bytes=genDOCX(tb);mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document";ext="docx";break;
+      case"xlsx":bytes=genXLSX(tb);mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";ext="xlsx";break;
+      default:   bytes=genTXT(tb);mime="text/plain";ext="txt";
+    }
+    self.postMessage({type:"done",bytes,mime,ext},[bytes.buffer]);
+  }catch(err){
+    self.postMessage({type:"error",message:err.message});
+  }
+};
+`;
+
 document.getElementById("file-gen-btn").addEventListener("click",()=>{
   const label=document.getElementById("file-gen-label");
   const pw=document.getElementById("file-progress-wrap");
@@ -1285,24 +1436,43 @@ document.getElementById("file-gen-btn").addEventListener("click",()=>{
   pw.classList.add("visible");pb.style.width="0%";
   label.innerHTML='<span class="spinner"></span> Generating…';
   document.getElementById("file-gen-btn").disabled=true;
+  document.getElementById("file-reset-btn").disabled=true;
 
-  let prog=0;
-  const iv=setInterval(()=>{prog=Math.min(prog+rndInt(8,18),85);pb.style.width=prog+"%";},120);
+  // Spin up inline worker
+  const blob=new Blob([WORKER_CODE],{type:"application/javascript"});
+  const workerUrl=URL.createObjectURL(blob);
+  const worker=new Worker(workerUrl);
 
-  setTimeout(()=>{
-    clearInterval(iv);pb.style.width="100%";
-    const result=generateFile(fileType.value,selectedSize);
-    generatedFileBlob=new Blob([result.bytes],{type:result.mime});
-    generatedFileName=`sample-${selectedSize}mb.${result.ext}`;
-    const actualSize=(generatedFileBlob.size/1024/1024).toFixed(2);
-    document.getElementById("file-status-icon").textContent=FILE_ICONS[fileType.value]||"📄";
-    document.getElementById("file-status-name").textContent=generatedFileName;
-    document.getElementById("file-status-size").textContent=`${generatedFileBlob.size.toLocaleString()} bytes (${actualSize} MB)`;
-    document.getElementById("file-status").classList.add("visible");
-    setTimeout(()=>pw.classList.remove("visible"),600);
-    label.textContent="Generate";
-    updateFileBtns();
-  },1200);
+  worker.onmessage=function(e){
+    const msg=e.data;
+    if(msg.type==="progress"){
+      pb.style.width=msg.value+"%";
+    } else if(msg.type==="done"){
+      pb.style.width="100%";
+      generatedFileBlob=new Blob([msg.bytes],{type:msg.mime});
+      generatedFileName=`sample-${selectedSize}mb.${msg.ext}`;
+      const actualSize=(generatedFileBlob.size/1024/1024).toFixed(2);
+      document.getElementById("file-status-icon").textContent=FILE_ICONS[fileType.value]||"📄";
+      document.getElementById("file-status-name").textContent=generatedFileName;
+      document.getElementById("file-status-size").textContent=`${generatedFileBlob.size.toLocaleString()} bytes (${actualSize} MB)`;
+      document.getElementById("file-status").classList.add("visible");
+      setTimeout(()=>pw.classList.remove("visible"),600);
+      label.textContent="Generate";
+      document.getElementById("file-reset-btn").disabled=false;
+      updateFileBtns();
+      worker.terminate();URL.revokeObjectURL(workerUrl);
+    } else if(msg.type==="error"){
+      label.textContent="Generate";
+      document.getElementById("file-reset-btn").disabled=false;
+      const eb=document.getElementById("file-error");
+      document.getElementById("file-error-msg").textContent=msg.message||"Generation failed.";
+      eb.classList.add("visible");
+      updateFileBtns();
+      worker.terminate();URL.revokeObjectURL(workerUrl);
+    }
+  };
+
+  worker.postMessage({type:fileType.value,sizeMB:selectedSize});
 });
 
 document.getElementById("file-reset-btn").addEventListener("click",()=>{
