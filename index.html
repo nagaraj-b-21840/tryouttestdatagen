@@ -111,6 +111,22 @@ body{
 }
 .theme-btn:hover{border-color:var(--primary);color:var(--primary-glow);background:var(--primary-dim);}
 
+/* ── IMAGE PREVIEW ── */
+.img-preview-wrap{
+  display:none;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;text-align:center;padding:0;
+}
+.img-preview-wrap.visible{display:block;}
+.img-preview-wrap img{
+  max-width:100%;height:auto;display:block;margin:0 auto;
+  border-bottom:1px solid var(--border-soft);
+}
+.img-info{
+  padding:10px 14px;font-size:12px;color:var(--text-muted);
+  font-family:'JetBrains Mono',monospace;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+
 /* ── SUGGESTIONS BAR ── */
 .suggestions-bar{
   background:var(--bg2);border-bottom:1px solid var(--border);
@@ -357,6 +373,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="nav-tab active" data-section="text-section">✦ Text Generator</button>
   <button class="nav-tab" data-section="structured-section">⊞ Structured Data</button>
   <button class="nav-tab" data-section="file-section">⬡ File Generator</button>
+  <button class="nav-tab" data-section="image-section">◐ Image Generator</button>
 </div>
 
 <!-- SECTION 1: Text Generator -->
@@ -557,6 +574,55 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         <div class="response-actions">
           <button class="btn-dl" id="file-dl-btn" disabled>Download</button>
           <button class="btn-secondary" id="file-clear-btn" disabled>Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: Image Generator -->
+<div id="image-section" class="section-panel">
+  <div class="main">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">◐</div>
+        <div><div class="card-title">Image Generator</div><div class="card-sub">Generate sample placeholder images — landscape, abstract, gradient &amp; pattern</div></div>
+      </div>
+      <div class="card-body">
+        <div class="select-row">
+          <div class="field-group">
+            <label class="field-label">Image Style</label>
+            <select id="img-style">
+              <option value="" disabled selected>Select style…</option>
+              <option value="landscape">Landscape</option>
+              <option value="abstract">Abstract</option>
+              <option value="gradient">Gradient</option>
+              <option value="pattern">Pattern</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Format</label>
+            <select id="img-format">
+              <option value="" disabled selected>Select format…</option>
+              <option value="jpeg">JPEG</option>
+              <option value="png">PNG</option>
+              <option value="webp">WebP</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="img-gen-btn" disabled><span id="img-gen-label">Generate</span></button>
+          <button class="btn-secondary" id="img-reset-btn" disabled>Reset</button>
+        </div>
+        <div class="error-banner" id="img-error"><span>⚠</span><span id="img-error-msg"></span></div>
+        <div class="img-preview-wrap" id="img-preview-wrap">
+          <img id="img-preview" alt="Generated image preview">
+          <div class="img-info" id="img-info"></div>
+        </div>
+        <div class="response-actions">
+          <button class="btn-copy" id="img-copy-btn" disabled>Copy Image</button>
+          <button class="btn-dl" id="img-dl-btn" disabled>Download</button>
+          <button class="btn-secondary" id="img-clear-btn" disabled>Clear</button>
         </div>
       </div>
     </div>
@@ -2336,6 +2402,260 @@ document.getElementById("file-clear-btn").addEventListener("click",()=>{
 document.getElementById("file-dl-btn").addEventListener("click",()=>{
   downloadBlob(generatedFileBlob,generatedFileName);
   showToast("File downloaded!");
+});
+
+// ============================================================
+//  SECTION 4: IMAGE GENERATOR
+// ============================================================
+const IMG_W=1920,IMG_H=1080;
+const imgCanvas=document.createElement("canvas");
+imgCanvas.width=IMG_W;imgCanvas.height=IMG_H;
+const imgCtx=imgCanvas.getContext("2d");
+
+function rndColor(){return `hsl(${rndInt(0,360)},${rndInt(40,80)}%,${rndInt(30,70)}%)`;}
+function rndPastel(){return `hsl(${rndInt(0,360)},${rndInt(50,90)}%,${rndInt(65,85)}%)`;}
+
+function drawLandscape(ctx,w,h){
+  // Sky gradient
+  const skyH=rndInt(0,360);
+  const sky=ctx.createLinearGradient(0,0,0,h*0.65);
+  sky.addColorStop(0,`hsl(${skyH},${rndInt(60,80)}%,${rndInt(55,75)}%)`);
+  sky.addColorStop(1,`hsl(${(skyH+30)%360},${rndInt(40,70)}%,${rndInt(75,90)}%)`);
+  ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+
+  // Sun
+  const sunX=rndInt(w*0.15,w*0.85),sunY=rndInt(h*0.08,h*0.3);
+  const sunR=rndInt(40,80);
+  const sunGlow=ctx.createRadialGradient(sunX,sunY,sunR*0.3,sunX,sunY,sunR*3);
+  sunGlow.addColorStop(0,"rgba(255,250,200,0.9)");
+  sunGlow.addColorStop(0.3,"rgba(255,220,100,0.3)");
+  sunGlow.addColorStop(1,"rgba(255,200,50,0)");
+  ctx.fillStyle=sunGlow;ctx.fillRect(0,0,w,h);
+  ctx.fillStyle="rgba(255,250,220,0.95)";
+  ctx.beginPath();ctx.arc(sunX,sunY,sunR,0,Math.PI*2);ctx.fill();
+
+  // Clouds
+  for(let i=0;i<rndInt(3,6);i++){
+    const cx=rndInt(0,w),cy=rndInt(h*0.05,h*0.35);
+    ctx.fillStyle="rgba(255,255,255,0.6)";
+    for(let j=0;j<rndInt(3,5);j++){
+      ctx.beginPath();
+      ctx.ellipse(cx+j*rndInt(20,40),cy+rndInt(-10,10),rndInt(30,60),rndInt(18,35),0,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Mountains (back)
+  const mtnH1=rndInt(160,260);
+  ctx.fillStyle=`hsl(${rndInt(200,280)},${rndInt(15,35)}%,${rndInt(35,50)}%)`;
+  ctx.beginPath();ctx.moveTo(0,h*0.65);
+  for(let x=0;x<=w;x+=rndInt(80,200)){ctx.lineTo(x,h*0.65-rndInt(mtnH1*0.5,mtnH1));}
+  ctx.lineTo(w,h*0.65);ctx.closePath();ctx.fill();
+
+  // Mountains (front)
+  const mtnH2=rndInt(100,200);
+  ctx.fillStyle=`hsl(${rndInt(100,200)},${rndInt(15,40)}%,${rndInt(25,40)}%)`;
+  ctx.beginPath();ctx.moveTo(0,h*0.7);
+  for(let x=0;x<=w;x+=rndInt(60,160)){ctx.lineTo(x,h*0.7-rndInt(mtnH2*0.3,mtnH2));}
+  ctx.lineTo(w,h*0.7);ctx.closePath();ctx.fill();
+
+  // Ground
+  const gnd=ctx.createLinearGradient(0,h*0.65,0,h);
+  gnd.addColorStop(0,`hsl(${rndInt(90,150)},${rndInt(30,60)}%,${rndInt(30,50)}%)`);
+  gnd.addColorStop(1,`hsl(${rndInt(80,140)},${rndInt(20,50)}%,${rndInt(20,35)}%)`);
+  ctx.fillStyle=gnd;ctx.fillRect(0,h*0.65,w,h*0.35);
+
+  // Trees
+  for(let i=0;i<rndInt(5,12);i++){
+    const tx=rndInt(0,w),ty=rndInt(h*0.55,h*0.85);
+    const th=rndInt(40,100),tw=rndInt(25,50);
+    ctx.fillStyle=`hsl(${rndInt(20,40)},${rndInt(30,60)}%,${rndInt(20,35)}%)`;
+    ctx.fillRect(tx-4,ty,8,th*0.4);
+    ctx.fillStyle=`hsl(${rndInt(90,160)},${rndInt(40,70)}%,${rndInt(25,45)}%)`;
+    ctx.beginPath();ctx.moveTo(tx,ty-th);ctx.lineTo(tx-tw,ty);ctx.lineTo(tx+tw,ty);ctx.closePath();ctx.fill();
+  }
+}
+
+function drawAbstract(ctx,w,h){
+  // Background
+  ctx.fillStyle=`hsl(${rndInt(0,360)},${rndInt(10,30)}%,${rndInt(10,25)}%)`;
+  ctx.fillRect(0,0,w,h);
+  // Random shapes
+  for(let i=0;i<rndInt(20,50);i++){
+    ctx.globalAlpha=rndFloat(0.1,0.7,2);
+    ctx.fillStyle=rndColor();
+    const shape=rndInt(0,2);
+    if(shape===0){
+      ctx.beginPath();ctx.arc(rndInt(0,w),rndInt(0,h),rndInt(20,200),0,Math.PI*2);ctx.fill();
+    }else if(shape===1){
+      ctx.fillRect(rndInt(0,w),rndInt(0,h),rndInt(30,250),rndInt(30,250));
+    }else{
+      ctx.beginPath();
+      ctx.moveTo(rndInt(0,w),rndInt(0,h));
+      ctx.lineTo(rndInt(0,w),rndInt(0,h));
+      ctx.lineTo(rndInt(0,w),rndInt(0,h));
+      ctx.closePath();ctx.fill();
+    }
+  }
+  ctx.globalAlpha=1;
+  // Overlay circles with glow
+  for(let i=0;i<rndInt(3,8);i++){
+    const cx=rndInt(0,w),cy=rndInt(0,h),cr=rndInt(50,200);
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,cr);
+    g.addColorStop(0,`hsla(${rndInt(0,360)},80%,60%,0.4)`);
+    g.addColorStop(1,"transparent");
+    ctx.fillStyle=g;ctx.fillRect(cx-cr,cy-cr,cr*2,cr*2);
+  }
+}
+
+function drawGradient(ctx,w,h){
+  const angle=rndInt(0,3);
+  const h1=rndInt(0,360),h2=(h1+rndInt(40,180))%360;
+  let grd;
+  if(angle===0) grd=ctx.createLinearGradient(0,0,w,h);
+  else if(angle===1) grd=ctx.createLinearGradient(0,0,w,0);
+  else if(angle===2) grd=ctx.createLinearGradient(0,0,0,h);
+  else grd=ctx.createLinearGradient(w,0,0,h);
+  const stops=rndInt(2,5);
+  for(let i=0;i<stops;i++){
+    const hue=(h1+(h2-h1)*(i/(stops-1)))%360;
+    grd.addColorStop(i/(stops-1),`hsl(${hue<0?hue+360:hue},${rndInt(50,90)}%,${rndInt(40,70)}%)`);
+  }
+  ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+  // Subtle noise overlay
+  for(let i=0;i<rndInt(5,15);i++){
+    ctx.globalAlpha=rndFloat(0.03,0.1,2);
+    ctx.fillStyle=rndInt(0,1)?"#fff":"#000";
+    ctx.beginPath();ctx.arc(rndInt(0,w),rndInt(0,h),rndInt(80,300),0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
+function drawPattern(ctx,w,h){
+  // Background
+  const bgH=rndInt(0,360);
+  ctx.fillStyle=`hsl(${bgH},${rndInt(15,35)}%,${rndInt(90,97)}%)`;
+  ctx.fillRect(0,0,w,h);
+  const patType=rndInt(0,3);
+  const cellSize=rndInt(40,80);
+  const fgColor=`hsl(${bgH},${rndInt(30,60)}%,${rndInt(50,70)}%)`;
+  const fgColor2=`hsl(${(bgH+120)%360},${rndInt(30,60)}%,${rndInt(50,70)}%)`;
+  for(let x=0;x<w;x+=cellSize){
+    for(let y=0;y<h;y+=cellSize){
+      ctx.fillStyle=((x/cellSize+y/cellSize)%2===0)?fgColor:fgColor2;
+      ctx.globalAlpha=rndFloat(0.15,0.5,2);
+      if(patType===0){
+        ctx.beginPath();ctx.arc(x+cellSize/2,y+cellSize/2,cellSize*0.35,0,Math.PI*2);ctx.fill();
+      }else if(patType===1){
+        ctx.fillRect(x+4,y+4,cellSize-8,cellSize-8);
+      }else if(patType===2){
+        ctx.beginPath();
+        ctx.moveTo(x+cellSize/2,y+4);ctx.lineTo(x+cellSize-4,y+cellSize-4);ctx.lineTo(x+4,y+cellSize-4);
+        ctx.closePath();ctx.fill();
+      }else{
+        // Diamond
+        ctx.beginPath();
+        ctx.moveTo(x+cellSize/2,y+2);ctx.lineTo(x+cellSize-2,y+cellSize/2);
+        ctx.lineTo(x+cellSize/2,y+cellSize-2);ctx.lineTo(x+2,y+cellSize/2);
+        ctx.closePath();ctx.fill();
+      }
+    }
+  }
+  ctx.globalAlpha=1;
+}
+
+function generateImage(style){
+  const ctx=imgCtx;
+  ctx.clearRect(0,0,IMG_W,IMG_H);
+  switch(style){
+    case "landscape": drawLandscape(ctx,IMG_W,IMG_H); break;
+    case "abstract":  drawAbstract(ctx,IMG_W,IMG_H); break;
+    case "gradient":  drawGradient(ctx,IMG_W,IMG_H); break;
+    case "pattern":   drawPattern(ctx,IMG_W,IMG_H); break;
+  }
+}
+
+// ---- Image UI wiring ----
+const imgStyle=document.getElementById("img-style");
+const imgFormat=document.getElementById("img-format");
+const imgGenBtn=document.getElementById("img-gen-btn");
+const imgPreviewWrap=document.getElementById("img-preview-wrap");
+const imgPreview=document.getElementById("img-preview");
+const imgInfo=document.getElementById("img-info");
+let imgBlob=null,imgFileName="";
+
+function updateImgBtns(){
+  imgGenBtn.disabled=!imgStyle.value||!imgFormat.value;
+  document.getElementById("img-reset-btn").disabled=!imgStyle.value&&!imgFormat.value;
+  document.getElementById("img-copy-btn").disabled=!imgBlob;
+  document.getElementById("img-dl-btn").disabled=!imgBlob;
+  document.getElementById("img-clear-btn").disabled=!imgBlob;
+}
+imgStyle.addEventListener("change",updateImgBtns);
+imgFormat.addEventListener("change",updateImgBtns);
+
+imgGenBtn.addEventListener("click",()=>{
+  if(!imgStyle.value||!imgFormat.value) return;
+  const label=document.getElementById("img-gen-label");
+  label.innerHTML='<span class="spinner"></span> Generating…';
+  imgGenBtn.disabled=true;
+  // Hide previous error
+  document.getElementById("img-error").classList.remove("visible");
+
+  setTimeout(()=>{
+    try{
+      generateImage(imgStyle.value);
+      const mimeMap={jpeg:"image/jpeg",png:"image/png",webp:"image/webp"};
+      const mime=mimeMap[imgFormat.value]||"image/jpeg";
+      const quality=(imgFormat.value==="png")?undefined:0.75;
+      imgCanvas.toBlob(blob=>{
+        imgBlob=blob;
+        imgFileName=`sample-${imgStyle.value}-${IMG_W}x${IMG_H}.${imgFormat.value==="jpeg"?"jpg":imgFormat.value}`;
+        // Preview
+        const url=URL.createObjectURL(blob);
+        imgPreview.onload=()=>URL.revokeObjectURL(url);
+        imgPreview.src=url;
+        imgPreviewWrap.classList.add("visible");
+        const sizeKB=(blob.size/1024).toFixed(1);
+        imgInfo.innerHTML=`<span>${IMG_W} × ${IMG_H}</span><span>${imgFormat.value.toUpperCase()}</span><span>${sizeKB} KB</span><span>${imgStyle.value}</span>`;
+        label.textContent="Generate";
+        updateImgBtns();
+      },mime,quality);
+    }catch(e){
+      label.textContent="Generate";
+      document.getElementById("img-error-msg").textContent=e.message||"Image generation failed.";
+      document.getElementById("img-error").classList.add("visible");
+      updateImgBtns();
+    }
+  },30);
+});
+
+document.getElementById("img-reset-btn").addEventListener("click",()=>{
+  imgStyle.selectedIndex=0;imgFormat.selectedIndex=0;updateImgBtns();
+});
+
+document.getElementById("img-clear-btn").addEventListener("click",()=>{
+  imgBlob=null;imgFileName="";
+  imgPreviewWrap.classList.remove("visible");
+  imgPreview.src="";
+  imgInfo.innerHTML="";
+  updateImgBtns();
+});
+
+document.getElementById("img-dl-btn").addEventListener("click",()=>{
+  if(!imgBlob) return;
+  downloadBlob(imgBlob,imgFileName);
+  showToast("Image downloaded!");
+});
+
+document.getElementById("img-copy-btn").addEventListener("click",async()=>{
+  if(!imgBlob) return;
+  try{
+    await navigator.clipboard.write([new ClipboardItem({"image/png":imgCanvas.toBlob?new Promise(r=>imgCanvas.toBlob(r,"image/png")):imgBlob})]);
+    showToast("Image copied to clipboard!");
+  }catch(e){
+    showToast("Copy not supported in this browser");
+  }
 });
 </script>
 </body>
