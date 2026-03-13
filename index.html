@@ -1748,11 +1748,21 @@ const INTENTS = [
     run:(q,n,cc)=>rndCharset(cc||n*10,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?") },
   { id:'char_punctuation',score:q=>/\bpunctuation\b/.test(q)&&!detectLang(q)?80:0,
     run:(q,n,cc)=>cc?rndCharset(cc,"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()"): Array.from({length:n},()=>rndCharset(rndInt(20,60),"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()" )).join("\n") },
-  { id:'char_emoji',     score:q=>/\bemojis?\b/.test(q)&&!/.*containing.*uppercase|.*containing.*lowercase|\bexactly\b/.test(q)?92:0,
+  { id:'char_emoji',     score:q=>/\bemojis?\b|\bsmileys?\b|\bsmiley\s*face|\bemoticons?\b/.test(q)&&!/.*containing.*uppercase|.*containing.*lowercase|\bexactly\b/.test(q)?92:0,
     run:(q,n,cc,raw)=>{
+      const rq=(raw||'').toLowerCase();
+      const onlyEmoji=/\bonly\b|\bpure\b|\bnothing but\b|\bjust\b/.test(rq)&&!/with\s+(text|english|words)/.test(rq);
+      if(onlyEmoji){
+        if(cc){
+          let o="";
+          while(o.length<cc+10) o+=rnd(EMOJI_LIST);
+          return o.slice(0,cc);
+        }
+        return Array.from({length:n},()=>Array.from({length:rndInt(10,25)},()=>rnd(EMOJI_LIST)).join("")).join("\n");
+      }
       const words=["This is amazing","I really love this","Great work today","What a wonderful day","So happy right now","Feeling fantastic","Best experience ever","Totally awesome moment","Incredible results here","Such a great time"];
       const symbols="!@#$%^&*()-_=+[]{}|;:<>?/~";
-      const wantSymbols=/symbol|special/.test((raw||'').toLowerCase());
+      const wantSymbols=/symbol|special/.test(rq);
       function chunk(){ let s=rnd(words)+" "+rnd(EMOJI_LIST)+" "; if(wantSymbols) s+=symbols[Math.floor(Math.random()*symbols.length)]+" "; return s; }
       if(cc){
         let o="";
