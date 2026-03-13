@@ -1738,17 +1738,20 @@ const INTENTS = [
   { id:'char_punctuation',score:q=>/\bpunctuation\b/.test(q)&&!detectLang(q)?80:0,
     run:(q,n,cc)=>cc?rndCharset(cc,"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()"): Array.from({length:n},()=>rndCharset(rndInt(20,60),"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?;:'\"-()" )).join("\n") },
   { id:'char_emoji',     score:q=>/\bemojis?\b/.test(q)&&!/.*containing.*uppercase|.*containing.*lowercase|\bexactly\b/.test(q)?92:0,
-    run:(q,n,cc)=>{
+    run:(q,n,cc,raw)=>{
       const words=["This is amazing","I really love this","Great work today","What a wonderful day","So happy right now","Feeling fantastic","Best experience ever","Totally awesome moment","Incredible results here","Such a great time"];
+      const symbols="!@#$%^&*()-_=+[]{}|;:<>?/~";
+      const wantSymbols=/symbol|special/.test((raw||'').toLowerCase());
+      function chunk(){ let s=rnd(words)+" "+rnd(EMOJI_LIST)+" "; if(wantSymbols) s+=symbols[Math.floor(Math.random()*symbols.length)]+" "; return s; }
       if(cc){
         let o="";
-        while(o.length<cc+20) o+=rnd(words)+" "+rnd(EMOJI_LIST)+" ";
+        while(o.length<cc+30) o+=chunk();
         return o.slice(0,cc);
       }
       return Array.from({length:n},()=>{
         const wc=rndInt(3,6);
         let line="";
-        for(let i=0;i<wc;i++) line+=rnd(words)+" "+rnd(EMOJI_LIST)+" ";
+        for(let i=0;i<wc;i++) line+=chunk();
         return line.trim();
       }).join("\n");
     } },
@@ -2816,7 +2819,9 @@ function canvasToBMP(canvas){
   const w=canvas.width,h=canvas.height;
   const ctx=canvas.getContext('2d');
   const imgData=ctx.getImageData(0,0,w,h).data;
-  const rowSize=Math.ceil(w*3/4)*4;
+  const rowBytes=w*3;
+  const rowPadding=(4-(rowBytes%4))%4;
+  const rowSize=rowBytes+rowPadding;
   const pixelDataSize=rowSize*h;
   const fileSize=54+pixelDataSize;
   const buf=new ArrayBuffer(fileSize);
@@ -2841,8 +2846,7 @@ function canvasToBMP(canvas){
       view.setUint8(offset++,imgData[i+1]); // G
       view.setUint8(offset++,imgData[i]);   // R
     }
-    // Row padding to 4-byte boundary
-    while(offset%4!==0) view.setUint8(offset++,0);
+    for(let p=0;p<rowPadding;p++) view.setUint8(offset++,0);
   }
   return new Blob([buf],{type:'image/bmp'});
 }
@@ -2872,6 +2876,11 @@ imgGenBtn.addEventListener("click",()=>{
   imgGenBtn.disabled=true;
   // Hide previous error
   document.getElementById("img-error").classList.remove("visible");
+  // Clear previous result
+  imgBlob=null;imgFileName="";
+  imgPreviewWrap.classList.remove("visible");
+  imgPreview.src="";
+  imgInfo.innerHTML="";
 
   setTimeout(()=>{
     try{
