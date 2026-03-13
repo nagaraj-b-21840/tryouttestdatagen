@@ -383,22 +383,34 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 <div class="left-pane" id="left-pane">
 
   <div class="pane-label">📝 Text &amp; Characters</div>
-  <button class="pane-chip" data-prompt="generate 200 characters of random English text">200 chars English</button>
+  <button class="pane-chip" data-prompt="generate 250 characters of random English text">250 chars English</button>
   <button class="pane-chip" data-prompt="give 500 characters of lorem ipsum text">500 chars Lorem</button>
-  <button class="pane-chip" data-prompt="generate 300 characters containing letters, numbers, and special characters">Mixed charset 300</button>
-  <button class="pane-chip" data-prompt="generate 100 characters with only lowercase letters">100 lowercase chars</button>
-  <button class="pane-chip" data-prompt="generate 150 characters with uppercase letters and numbers">150 uppercase+nums</button>
-  <button class="pane-chip" data-prompt="generate long paragraph with emojis and symbols">Paragraph + Emojis</button>
-  <button class="pane-chip" data-prompt="generate 10000 characters of random Unicode text">10k Unicode chars</button>
+  <button class="pane-chip" data-prompt="generate 750 characters containing letters, numbers, and special characters">Mixed charset 750</button>
+  <button class="pane-chip" data-prompt="generate 120 characters with only lowercase letters">120 lowercase chars</button>
+  <button class="pane-chip" data-prompt="generate 350 characters with uppercase letters and numbers">350 uppercase+nums</button>
+  <button class="pane-chip" data-prompt="generate 600 characters paragraph with emojis and symbols">600 chars Emojis+Symbols</button>
+  <button class="pane-chip" data-prompt="generate 5000 characters of random Unicode text">5k Unicode chars</button>
+  <button class="pane-chip" data-prompt="generate 1000 characters of random punctuation and whitespace">1k punctuation chars</button>
 
-  <div class="pane-label">🌐 Multilingual</div>
-  <button class="pane-chip" data-prompt="generate 200 characters in Tamil">Tamil text</button>
-  <button class="pane-chip" data-prompt="generate paragraph in Hindi with 300 characters">Hindi paragraph</button>
-  <button class="pane-chip" data-prompt="create Japanese text with 100 characters">Japanese text</button>
-  <button class="pane-chip" data-prompt="provide Chinese lorem ipsum text">Chinese text</button>
-  <button class="pane-chip" data-prompt="generate French random text">French text</button>
-  <button class="pane-chip" data-prompt="give Spanish paragraph with punctuation">Spanish text</button>
-  <button class="pane-chip" data-prompt="create Arabic sample text">Arabic text</button>
+  <div class="pane-label">🌐 Single Language</div>
+  <button class="pane-chip" data-prompt="generate 500 characters of random English paragraph">English 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Tamil">Tamil 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Hindi">Hindi 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Japanese">Japanese 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Chinese">Chinese 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in French">French 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Spanish">Spanish 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Arabic">Arabic 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in German">German 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Portuguese">Portuguese 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters in Korean">Korean 500 chars</button>
+
+  <div class="pane-label">🌍 Multilingual Mix</div>
+  <button class="pane-chip" data-prompt="generate 300 characters mixing English, Tamil, Hindi, Japanese">4-lang mix 300 chars</button>
+  <button class="pane-chip" data-prompt="generate 500 characters mixing French, Spanish, Portuguese">Romance langs 500 chars</button>
+  <button class="pane-chip" data-prompt="generate 400 characters mixing Arabic, Hindi, Tamil">Asian mix 400 chars</button>
+  <button class="pane-chip" data-prompt="generate 600 characters mixing Korean, Japanese, Chinese">East Asian 600 chars</button>
+  <button class="pane-chip" data-prompt="generate 800 characters mixing English, German, French, Spanish">European mix 800 chars</button>
 
   <div class="pane-label">👤 Personal Data</div>
   <button class="pane-chip" data-prompt="generate 10 full names">10 Full Names</button>
@@ -664,6 +676,7 @@ const CHINESE_WORDS = ["你好","谢谢","爱","家","学校","树","水","天�
 const FRENCH_WORDS = ["Bonjour","merci","amour","maison","école","arbre","eau","ciel","terre","ami","enfant","fleur","pays","village","mer","montagne","vent","feu","lumière","nuit","jour","soleil","pluie","tempête","riz","lait","fruit","légume","sol","or","argent","fer","pierre","forêt","rivière","étang","lac","oiseau","poisson","animal"];
 const SPANISH_WORDS = ["Hola","gracias","amor","casa","escuela","árbol","agua","cielo","tierra","amigo","niño","flor","país","pueblo","mar","montaña","viento","fuego","luz","noche","día","sol","lluvia","tormenta","arroz","leche","fruta","verdura","suelo","oro","plata","hierro","piedra","bosque","río","estanque","lago","pájaro","pez","animal"];
 const ARABIC_WORDS = ["مرحبا","شكرا","حب","بيت","مدرسة","شجرة","ماء","سماء","أرض","صديق","طفل","زهرة","بلد","قرية","بحر","جبل","ريح","نار","نور","ليل","نهار","شمس","مطر","عاصفة","أرز","حليب","فاكهة","خضار","تراب","ذهب","فضة","حديد","حجر","غابة","نهر","بركة","بحيرة","طائر","سمكة","حيوان"];
+const KOREAN_WORDS = ["안녕하세요","감사합니다","사랑","집","학교","나무","물","하늘","지구","친구","아이","꽃","나라","마을","바다","산","바람","불","빛","밤","낮","햇빛","비","폭풍","밥","우유","과일","채소","흙","금","은","철","돌","숲","강","연못","호수","새","물고기","동물"];
 
 // ── SPECIAL CHARACTER POOLS ──
 const ASCII_SPECIAL = "!@#$%&'()*+,-./:;<=>?@[\\]^_{|}~";
@@ -1608,19 +1621,19 @@ function parseCharCount(raw){
 }
 
 function detectLang(q){
-  const langs={tamil:/\btamil\b/,hindi:/\bhindi\b/,japanese:/\bjapanese\b/,chinese:/\bchinese\b|\bmandarin\b/,french:/\bfrench\b/,spanish:/\bspanish\b/,arabic:/\barabic\b/,german:/\bgerman\b/,portuguese:/\bportuguese\b/};
+  const langs={tamil:/\btamil\b/,hindi:/\bhindi\b/,japanese:/\bjapanese\b/,chinese:/\bchinese\b|\bmandarin\b/,french:/\bfrench\b/,spanish:/\bspanish\b/,arabic:/\barabic\b/,german:/\bgerman\b/,portuguese:/\bportuguese\b/,korean:/\bkorean\b/};
   for(const[l,r] of Object.entries(langs)) if(r.test(q)) return l;
   return null;
 }
 
 function detectLangs(q){
-  const langs={tamil:/\btamil\b/,hindi:/\bhindi\b/,japanese:/\bjapanese\b/,chinese:/\bchinese\b|\bmandarin\b/,french:/\bfrench\b/,spanish:/\bspanish\b/,arabic:/\barabic\b/,german:/\bgerman\b/,portuguese:/\bportuguese\b/,english:/\benglish\b/};
+  const langs={tamil:/\btamil\b/,hindi:/\bhindi\b/,japanese:/\bjapanese\b/,chinese:/\bchinese\b|\bmandarin\b/,french:/\bfrench\b/,spanish:/\bspanish\b/,arabic:/\barabic\b/,german:/\bgerman\b/,portuguese:/\bportuguese\b/,korean:/\bkorean\b/,english:/\benglish\b/};
   const found=[];
   for(const[l,r] of Object.entries(langs)) if(r.test(q)) found.push(l);
   return found;
 }
 
-const LANG_POOLS={tamil:()=>TAMIL_WORDS,hindi:()=>HINDI_WORDS,japanese:()=>JAPANESE_WORDS,chinese:()=>CHINESE_WORDS,french:()=>FRENCH_WORDS,spanish:()=>SPANISH_WORDS,arabic:()=>ARABIC_WORDS,german:()=>FRENCH_WORDS,portuguese:()=>SPANISH_WORDS,english:()=>LOREM_WORDS};
+const LANG_POOLS={tamil:()=>TAMIL_WORDS,hindi:()=>HINDI_WORDS,japanese:()=>JAPANESE_WORDS,chinese:()=>CHINESE_WORDS,french:()=>FRENCH_WORDS,spanish:()=>SPANISH_WORDS,arabic:()=>ARABIC_WORDS,german:()=>FRENCH_WORDS,portuguese:()=>SPANISH_WORDS,korean:()=>KOREAN_WORDS,english:()=>LOREM_WORDS};
 
 function detectPhoneRegion(q){
   if(/\buk\b|\bunited\s*kingdom\b|\bbritish\b/.test(q)) return 'uk';
@@ -1803,7 +1816,7 @@ const INTENTS = [
         }).join('\n');
       }
       const lang=detectLang(q);
-      const pool=lang==='tamil'?TAMIL_WORDS:lang==='hindi'?HINDI_WORDS:lang==='japanese'?JAPANESE_WORDS:lang==='chinese'?CHINESE_WORDS:lang==='french'?FRENCH_WORDS:lang==='spanish'?SPANISH_WORDS:lang==='arabic'?ARABIC_WORDS:LOREM_WORDS;
+      const pool=LANG_POOLS[lang]?LANG_POOLS[lang]():LOREM_WORDS;
       const fmt=detectFormat(q);
       if(fmt==='csv'){
         return toCSV(Array.from({length:n},()=>{const r=genRecord();r.note=rndMultilingualWords(pool,rndInt(3,6));return r;}));
@@ -2876,11 +2889,8 @@ imgGenBtn.addEventListener("click",()=>{
   imgGenBtn.disabled=true;
   // Hide previous error
   document.getElementById("img-error").classList.remove("visible");
-  // Clear previous result
+  // Clear previous blob but keep preview visible to avoid layout shift
   imgBlob=null;imgFileName="";
-  imgPreviewWrap.classList.remove("visible");
-  imgPreview.src="";
-  imgInfo.innerHTML="";
 
   setTimeout(()=>{
     try{
