@@ -1778,7 +1778,7 @@ const INTENTS = [
     } },
   { id:'char_unicode',   score:q=>/\bunicode\b|\bmultilingual\b/.test(q)?85:0,
     run:(q,n,cc)=>rndMixedUnicode(Math.min(cc||(n*100),10000)) },
-  { id:'char_special',   score:q=>/escape.?char|special.?char|ascii.?special|all.?special/.test(q)?88:0,
+  { id:'char_special',   score:q=>/escape.?char|special.?char|ascii.?special|all.?special/.test(q)&&!/\bemail\b|\bphone\b|\bname\b|\baddress\b|\bpassword\b|\busername\b/.test(q)?88:0,
     run:(q,n,cc)=>cc?rndCharset(cc,ASCII_SPECIAL+" "):`All ASCII special characters:\n${ASCII_SPECIAL}\n\nSample strings:\n`+Array.from({length:n},()=>rndCharset(rndInt(10,30),ASCII_SPECIAL+" abcdefghijklmnopqrstuvwxyz0123456789")).join("\n") },
 
   // ── CONSTRAINED CHARACTERS ──
