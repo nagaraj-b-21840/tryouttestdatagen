@@ -1735,6 +1735,24 @@ function renderRecords(records, format, entityHint){
 // Each intent has: test (regex on normalised q), score fn, handler
 const INTENTS = [
 
+  // ── MAIL / EMAIL BODY ──
+  { id:'mail_body', score:(q,raw)=>{
+      const r=raw.toLowerCase();
+      return /\b(?:mail|email)\s*body\b|\bbody\s*(?:of|for)\s*(?:an?\s+)?(?:mail|email)\b/.test(r)?96:0;
+    },
+    run:(q,n,cc,raw)=>{
+      const templates=[
+        "Hi {NAME},\n\nI hope this email finds you well. I wanted to reach out regarding our upcoming meeting scheduled for next week. Please confirm your availability at your earliest convenience.\n\nBest regards,\n{SENDER}",
+        "Dear {NAME},\n\nThank you for your recent inquiry. We have reviewed your request and would like to schedule a follow-up call to discuss the details further.\n\nKind regards,\n{SENDER}",
+        "Hello {NAME},\n\nJust a quick reminder about the project deadline approaching this Friday. Please ensure all deliverables are submitted by end of day.\n\nThanks,\n{SENDER}",
+        "Hi {NAME},\n\nI am writing to confirm receipt of your application. Our team will review it and get back to you within five business days with next steps.\n\nWarm regards,\n{SENDER}",
+        "Dear {NAME},\n\nWe are pleased to inform you that your account has been successfully updated. If you have any questions or concerns please do not hesitate to contact our support team.\n\nSincerely,\n{SENDER}",
+      ];
+      let body=rnd(templates).replace(/{NAME}/g,rndName().split(' ')[0]).replace(/{SENDER}/g,rndName());
+      if(cc) body=body.length>=cc?body.slice(0,cc):body+' '+rndEnglishChars(cc-body.length);
+      return body;
+    }},
+
   // ── CHAR-BASED TEXT ──
   { id:'char_english',   score:q=>(/\benglish\b|\brandom\s+text\b|\bsample\s+text\b|\bascii\s+text\b/.test(q) && parseCharCount(q)) ? 90:0,
     run:(q,n,cc)=>rndEnglishChars(cc||n*15) },
@@ -2067,9 +2085,16 @@ function processQuery(rawQuery){
       hint:'Your query didn\'t match a specific pattern — showing sample data instead.\nTry: "generate 10 emails", "500 chars of lorem ipsum", "5 records in JSON", "20 strong passwords"'};
   }
 
-  const charBasedIds=['char_english','char_lorem','char_lowercase','char_uppercase','char_mixed','char_punctuation','char_emoji','char_unicode','char_special','charcount_fallback','constrained_chars','hex_chars','nth_char_pattern','whitespace_only'];
+  const charBasedIds=['char_english','char_lorem','char_lowercase','char_uppercase','char_mixed','char_punctuation','char_emoji','char_unicode','char_special','charcount_fallback','constrained_chars','hex_chars','nth_char_pattern','whitespace_only','mail_body'];
   const isCharBased = !!cc || charBasedIds.includes(best.id);
-  return {text: best.run(q, n, cc, raw), isCharBased, intentId: best.id, count: n};
+  let text = best.run(q, n, cc, raw);
+
+  // Post-processing: "space after each character" / "space between each character"
+  if(/space\s+(?:after|between|before)\s+(?:each|every)\s+(?:char|character|letter)/i.test(raw) && text){
+    text = text.split('').join(' ');
+  }
+
+  return {text, isCharBased, intentId: best.id, count: n};
 }
 
 
