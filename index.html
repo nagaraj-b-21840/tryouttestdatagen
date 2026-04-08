@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -342,6 +342,93 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 .pane-chip:hover{background:var(--primary-dim);color:var(--primary-glow);}
 .pane-chip.active{background:var(--primary-dim2);color:var(--primary-glow);font-weight:600;}
 
+/* ── CHARACTER COUNT TAB ── */
+.cc-textarea{
+  width:100%;min-height:200px;
+  background:var(--bg2);color:var(--text);
+  border:1px solid var(--border);border-radius:10px;
+  padding:13px 15px;font-size:14px;font-family:'Outfit',sans-serif;
+  line-height:1.7;resize:vertical;transition:border-color .2s,box-shadow .2s;
+}
+.cc-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
+.cc-textarea::placeholder{color:var(--text-muted);}
+.cc-options{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:4px 0;
+}
+.cc-checkbox-label{
+  display:flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;
+  user-select:none;
+}
+.cc-checkbox-label input[type="checkbox"]{
+  width:16px;height:16px;accent-color:var(--primary);cursor:pointer;
+}
+.cc-limit-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.cc-limit-chip{
+  padding:5px 12px;border:1px solid var(--border);border-radius:999px;
+  font-size:11px;font-weight:600;font-family:'Outfit',sans-serif;
+  cursor:pointer;background:var(--bg2);color:var(--text-muted);transition:all .18s;
+}
+.cc-limit-chip:hover{border-color:var(--primary);color:var(--primary-glow);background:var(--primary-dim);}
+.cc-limit-chip.active{background:var(--primary);color:#000;border-color:var(--primary);}
+.cc-stats-bar{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:10px;
+}
+.cc-stats-bar-secondary{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+}
+.cc-stat-secondary{
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 8px;text-align:center;
+}
+.cc-stat-secondary .cc-stat-value{
+  font-size:20px;
+}
+.cc-stat-secondary .cc-stat-label{
+  font-size:10px;
+}
+.cc-stat{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:14px 10px;text-align:center;transition:border-color .2s;
+}
+.cc-stat:hover{border-color:var(--primary-dim2);}
+.cc-stat-value{
+  font-size:28px;font-weight:800;letter-spacing:-1px;
+  color:var(--primary-glow);font-family:'JetBrains Mono',monospace;
+  line-height:1.2;
+}
+.cc-stat-label{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text-muted);margin-top:4px;
+}
+.cc-limit-bar-wrap{
+  background:var(--border);border-radius:999px;height:6px;overflow:hidden;
+  display:none;
+}
+.cc-limit-bar-wrap.visible{display:block;}
+.cc-limit-bar{
+  height:100%;border-radius:999px;
+  transition:width .15s ease,background .2s;
+}
+.cc-limit-info{
+  font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;
+  text-align:right;display:none;
+}
+.cc-limit-info.visible{display:block;}
+.cc-limit-info .over{color:var(--danger);font-weight:700;}
+.cc-generate-row{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.cc-gen-input{
+  width:120px;padding:9px 12px;
+  background:var(--bg2);color:var(--text);border:1px solid var(--border);
+  border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;
+  font-weight:500;transition:border-color .2s;
+}
+.cc-gen-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
+.cc-gen-input::placeholder{color:var(--text-muted);}
+
 @media(max-width:700px){
   .text-section-inner{flex-direction:column;}
   .left-pane{width:100%;height:auto;flex-direction:row;flex-wrap:wrap;position:static;border-right:none;border-bottom:1px solid var(--border);padding:8px;}
@@ -352,6 +439,14 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   .btn-row button{width:100%;justify-content:center;}
   .header h1{font-size:26px;}
   .theme-btn span:last-child{display:none;}
+  .cc-stats-bar{grid-template-columns:repeat(3,1fr);}
+  .cc-stats-bar-secondary{grid-template-columns:repeat(2,1fr);}
+  .cc-generate-row{flex-direction:column;}
+  .cc-gen-input{width:100%;}
+}
+@media(max-width:400px){
+  .cc-stats-bar{grid-template-columns:repeat(2,1fr);}
+  .cc-stats-bar-secondary{grid-template-columns:repeat(2,1fr);}
 }
 </style>
 </head>
@@ -363,8 +458,8 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
     <p>Generate test data in any format, instantly</p>
   </div>
   <button class="theme-btn" id="theme-btn">
-    <span id="theme-icon">☀️</span>
-    <span id="theme-label">Light</span>
+    <span id="theme-icon">🌙</span>
+    <span id="theme-label">Dark</span>
   </button>
 </div>
 
@@ -374,6 +469,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="nav-tab" data-section="structured-section">⊞ Structured Data</button>
   <button class="nav-tab" data-section="file-section">⬡ File Generator</button>
   <button class="nav-tab" data-section="image-section">◐ Image Generator</button>
+  <button class="nav-tab" data-section="charcount-section">▤ Character Count</button>
 </div>
 
 <!-- SECTION 1: Text Generator -->
@@ -381,7 +477,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 <div class="text-section-inner">
 <!-- Left pane: sample prompts (only shown in Text Generator tab) -->
 <div class="left-pane" id="left-pane">
-
   <div class="pane-label">📝 Text &amp; Characters</div>
   <button class="pane-chip" data-prompt="generate 250 characters of random English text">250 chars English</button>
   <button class="pane-chip" data-prompt="give 500 characters of lorem ipsum text">500 chars Lorem</button>
@@ -389,7 +484,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="pane-chip" data-prompt="generate 120 characters with only lowercase letters">120 lowercase chars</button>
   <button class="pane-chip" data-prompt="generate 350 characters with uppercase letters and numbers">350 uppercase+nums</button>
   <button class="pane-chip" data-prompt="generate 5000 characters of random Unicode text">5k Unicode chars</button>
-
   <div class="pane-label">🌐 Single Language</div>
   <button class="pane-chip" data-prompt="generate 500 characters of random English paragraph">English 500 chars</button>
   <button class="pane-chip" data-prompt="generate 500 characters in Tamil">Tamil 500 chars</button>
@@ -402,14 +496,26 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="pane-chip" data-prompt="generate 500 characters in German">German 500 chars</button>
   <button class="pane-chip" data-prompt="generate 500 characters in Portuguese">Portuguese 500 chars</button>
   <button class="pane-chip" data-prompt="generate 500 characters in Korean">Korean 500 chars</button>
-
   <div class="pane-label">🌍 Multilingual Mix</div>
   <button class="pane-chip" data-prompt="generate 300 characters mixing English, Tamil, Hindi, Japanese">4-lang mix 300 chars</button>
   <button class="pane-chip" data-prompt="generate 500 characters mixing French, Spanish, Portuguese">Romance langs 500 chars</button>
   <button class="pane-chip" data-prompt="generate 400 characters mixing Arabic, Hindi, Tamil">Asian mix 400 chars</button>
   <button class="pane-chip" data-prompt="generate 600 characters mixing Korean, Japanese, Chinese">East Asian 600 chars</button>
   <button class="pane-chip" data-prompt="generate 800 characters mixing English, German, French, Spanish">European mix 800 chars</button>
-
+  <div class="pane-label">🗂 Structured Formats</div>
+  <button class="pane-chip" data-prompt="generate JSON with 5 user records including name, email, phone, and address">User JSON</button>
+  <button class="pane-chip" data-prompt="generate nested JSON data for employee with department and manager details">Nested JSON</button>
+  <button class="pane-chip" data-prompt="generate JSON containing random numbers, strings, booleans and null values">Mixed JSON</button>
+  <button class="pane-chip" data-prompt="generate CSV with 20 rows of employee records">Employee CSV</button>
+  <button class="pane-chip" data-prompt="create CSV with product id, product name, price and quantity">Product CSV</button>
+  <button class="pane-chip" data-prompt="generate SQL insert statements for 20 users">SQL Inserts</button>
+  <button class="pane-chip" data-prompt="generate 5 order records in XML">Order XML</button>
+  <button class="pane-chip" data-prompt="generate 10 user records in YAML">YAML Records</button>
+  <div class="pane-label">🌍 HTML</div>
+  <button class="pane-chip" data-prompt="generate HTML page with form fields for name, email, phone, and message">HTML Form</button>
+  <button class="pane-chip" data-prompt="create HTML email template with header, body and footer">Email Template</button>
+  <button class="pane-chip" data-prompt="generate HTML table with 10 rows of random user data">HTML Table</button>
+  <button class="pane-chip" data-prompt="generate HTML snippet with buttons, links, and input fields">UI Snippet</button>
   <div class="pane-label">👤 Personal Data</div>
   <button class="pane-chip" data-prompt="generate 10 full names">10 Full Names</button>
   <button class="pane-chip" data-prompt="generate 10 email addresses">10 Emails</button>
@@ -420,36 +526,18 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="pane-chip" data-prompt="generate 5 credit card numbers">5 Credit Cards</button>
   <button class="pane-chip" data-prompt="generate 10 UUIDs">10 UUIDs</button>
   <button class="pane-chip" data-prompt="generate 10 IP addresses">10 IP Addresses</button>
-
-  <div class="pane-label">🔐 Security &amp; Auth</div>
-  <button class="pane-chip" data-prompt="generate 10 strong passwords">Strong Passwords</button>
-  <button class="pane-chip" data-prompt="generate 5 weak passwords">Weak Passwords</button>
-  <button class="pane-chip" data-prompt="generate 10 medium strength passwords">Medium Passwords</button>
-  <button class="pane-chip" data-prompt="generate strings matching regex [A-Z]{5}[0-9]{3}">Regex Pattern</button>
-  <button class="pane-chip" data-prompt="generate 10 random coupon codes">Coupon Codes</button>
-
-  <div class="pane-label">🗂 Structured Formats</div>
-  <button class="pane-chip" data-prompt="generate JSON with 5 user records including name, email, phone, and address">User JSON</button>
-  <button class="pane-chip" data-prompt="generate nested JSON data for employee with department and manager details">Nested JSON</button>
-  <button class="pane-chip" data-prompt="generate JSON containing random numbers, strings, booleans and null values">Mixed JSON</button>
-  <button class="pane-chip" data-prompt="generate CSV with 20 rows of employee records">Employee CSV</button>
-  <button class="pane-chip" data-prompt="create CSV with product id, product name, price and quantity">Product CSV</button>
-  <button class="pane-chip" data-prompt="generate SQL insert statements for 20 users">SQL Inserts</button>
-  <button class="pane-chip" data-prompt="generate 5 order records in XML">Order XML</button>
-  <button class="pane-chip" data-prompt="generate 10 user records in YAML">YAML Records</button>
-
-  <div class="pane-label">🌍 HTML</div>
-  <button class="pane-chip" data-prompt="generate HTML page with form fields for name, email, phone, and message">HTML Form</button>
-  <button class="pane-chip" data-prompt="create HTML email template with header, body and footer">Email Template</button>
-  <button class="pane-chip" data-prompt="generate HTML table with 10 rows of random user data">HTML Table</button>
-  <button class="pane-chip" data-prompt="generate HTML snippet with buttons, links, and input fields">UI Snippet</button>
-
   <div class="pane-label">🔒 Security Testing</div>
   <button class="pane-chip" data-prompt="provide XSS payload examples for testing input sanitization">XSS Payloads</button>
   <button class="pane-chip" data-prompt="generate SQL injection test strings">SQL Injection Tests</button>
   <button class="pane-chip" data-prompt="generate email test data with executable content like arithmetic operations, js, xss">Email Executable</button>
   <button class="pane-chip" data-prompt="produce phishing email content for security awareness testing">Phishing Simulation</button>
   <button class="pane-chip" data-prompt="generate HTML with nested script tags and encoded payloads">Nested Script HTML</button>
+  <div class="pane-label">🔐 Passwords &amp; Auth</div>
+  <button class="pane-chip" data-prompt="generate 10 strong passwords">Strong Passwords</button>
+  <button class="pane-chip" data-prompt="generate 5 weak passwords">Weak Passwords</button>
+  <button class="pane-chip" data-prompt="generate 10 medium strength passwords">Medium Passwords</button>
+  <button class="pane-chip" data-prompt="generate strings matching regex [A-Z]{5}[0-9]{3}">Regex Pattern</button>
+  <button class="pane-chip" data-prompt="generate 10 random coupon codes">Coupon Codes</button>
 
 </div>
 <div class="text-main-area">
@@ -636,6 +724,56 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         <div class="response-actions">
           <button class="btn-dl" id="img-dl-btn" disabled>Download</button>
           <button class="btn-secondary" id="img-clear-btn" disabled>Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: Character Count -->
+<div id="charcount-section" class="section-panel">
+  <div class="main">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon green">▤</div>
+        <div><div class="card-title">Character Count</div><div class="card-sub">Analyze text — characters, words, sentences, paragraphs and spaces in real time</div></div>
+      </div>
+      <div class="card-body">
+        <textarea class="cc-textarea" id="cc-input" placeholder="Type or paste your text here..."></textarea>
+        <div class="cc-options">
+          <label class="cc-checkbox-label"><input type="checkbox" id="cc-exclude-spaces"> Exclude Spaces</label>
+          <div class="cc-limit-chips">
+            <span class="suggest-label" style="font-size:10px;">Limit:</span>
+            <button class="cc-limit-chip" data-limit="160">160</button>
+            <button class="cc-limit-chip" data-limit="500">500</button>
+            <button class="cc-limit-chip" data-limit="1000">1000</button>
+            <button class="cc-limit-chip" data-limit="0">None</button>
+          </div>
+        </div>
+        <div class="cc-limit-info" id="cc-limit-info"></div>
+        <div class="cc-limit-bar-wrap" id="cc-limit-bar-wrap"><div class="cc-limit-bar" id="cc-limit-bar" style="width:0%"></div></div>
+        <div class="cc-stats-bar" id="cc-stats-bar">
+          <div class="cc-stat"><div class="cc-stat-value" id="cc-chars">0</div><div class="cc-stat-label">Characters</div></div>
+          <div class="cc-stat"><div class="cc-stat-value" id="cc-words">0</div><div class="cc-stat-label">Words</div></div>
+          <div class="cc-stat"><div class="cc-stat-value" id="cc-sentences">0</div><div class="cc-stat-label">Sentences</div></div>
+          <div class="cc-stat"><div class="cc-stat-value" id="cc-paragraphs">0</div><div class="cc-stat-label">Paragraphs</div></div>
+          <div class="cc-stat"><div class="cc-stat-value" id="cc-spaces">0</div><div class="cc-stat-label">Spaces</div></div>
+        </div>
+        <div class="cc-stats-bar-secondary">
+          <div class="cc-stat cc-stat-secondary"><div class="cc-stat-value" id="cc-lines">0</div><div class="cc-stat-label">Lines</div></div>
+          <div class="cc-stat cc-stat-secondary"><div class="cc-stat-value" id="cc-tabs">0</div><div class="cc-stat-label">Tabs</div></div>
+          <div class="cc-stat cc-stat-secondary"><div class="cc-stat-value" id="cc-newlines">0</div><div class="cc-stat-label">Line Breaks</div></div>
+          <div class="cc-stat cc-stat-secondary"><div class="cc-stat-value" id="cc-bytes">0</div><div class="cc-stat-label">Bytes (UTF-8)</div></div>
+        </div>
+        <div class="cc-generate-row">
+          <span class="field-label" style="white-space:nowrap;">Generate text</span>
+          <input type="number" class="cc-gen-input" id="cc-gen-count" placeholder="e.g. 500" min="1" max="15000">
+          <span class="field-label" style="white-space:nowrap;">characters</span>
+          <button class="btn-primary" id="cc-gen-btn" disabled>Generate</button>
+        </div>
+        <div class="response-actions">
+          <button class="btn-copy" id="cc-copy-btn" disabled>Copy Text</button>
+          <button class="btn-secondary" id="cc-clear-btn" disabled>Clear Text</button>
         </div>
       </div>
     </div>
@@ -2262,7 +2400,7 @@ function generateFile(type,sizeMB){
 // ============================================================
 // Theme
 const themeBtn=document.getElementById("theme-btn");
-let isDark=true;
+let isDark=false;
 themeBtn.addEventListener("click",()=>{
   isDark=!isDark;
   document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
@@ -3005,6 +3143,249 @@ document.getElementById("img-dl-btn").addEventListener("click",()=>{
   downloadBlob(imgBlob,imgFileName);
   showToast("Image downloaded!");
 });
+
+// ============================================================
+//  SECTION 5: CHARACTER COUNT
+// ============================================================
+(function(){
+  const input=document.getElementById('cc-input');
+  const excludeSpaces=document.getElementById('cc-exclude-spaces');
+  const elChars=document.getElementById('cc-chars');
+  const elWords=document.getElementById('cc-words');
+  const elSentences=document.getElementById('cc-sentences');
+  const elParagraphs=document.getElementById('cc-paragraphs');
+  const elSpaces=document.getElementById('cc-spaces');
+  const elLines=document.getElementById('cc-lines');
+  const elTabs=document.getElementById('cc-tabs');
+  const elNewlines=document.getElementById('cc-newlines');
+  const elBytes=document.getElementById('cc-bytes');
+  const limitInfo=document.getElementById('cc-limit-info');
+  const limitBarWrap=document.getElementById('cc-limit-bar-wrap');
+  const limitBar=document.getElementById('cc-limit-bar');
+  const genCountInput=document.getElementById('cc-gen-count');
+  const genBtn=document.getElementById('cc-gen-btn');
+  const copyBtn=document.getElementById('cc-copy-btn');
+  const clearBtn=document.getElementById('cc-clear-btn');
+  let charLimit=0;
+
+  // ── Grapheme segmenter: counts visual characters (handles compound emojis, flags, ZWJ sequences) ──
+  const hasSegmenter=typeof Intl!=='undefined'&&typeof Intl.Segmenter==='function';
+  let graphemeSegmenter=null,wordSegmenter=null;
+  if(hasSegmenter){
+    try{ graphemeSegmenter=new Intl.Segmenter(undefined,{granularity:'grapheme'}); }catch(e){}
+    try{ wordSegmenter=new Intl.Segmenter(undefined,{granularity:'word'}); }catch(e){}
+  }
+
+  function countGraphemes(text){
+    if(graphemeSegmenter){
+      let count=0;
+      for(const _ of graphemeSegmenter.segment(text)) count++;
+      return count;
+    }
+    return [...text].length; // fallback: Unicode code points
+  }
+
+  function countGraphemesExcludeWhitespace(text){
+    if(graphemeSegmenter){
+      let count=0;
+      for(const seg of graphemeSegmenter.segment(text)){
+        if(!/^\s+$/.test(seg.segment)) count++;
+      }
+      return count;
+    }
+    return [...text].filter(c=>!/\s/.test(c)).length;
+  }
+
+  function countWords(text){
+    if(!text.trim()) return 0;
+    if(wordSegmenter){
+      let count=0;
+      for(const seg of wordSegmenter.segment(text)){
+        if(seg.isWordLike) count++;
+      }
+      return count;
+    }
+    // Fallback: space-split + CJK individual counting
+    let words=0;
+    const tokens=text.trim().split(/\s+/);
+    for(const token of tokens){
+      const cjkChars=[...token].filter(c=>/[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u0E00-\u0E7F\uAC00-\uD7AF]/.test(c)).length;
+      const nonCjk=token.replace(/[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u0E00-\u0E7F\uAC00-\uD7AF]/g,'').trim();
+      words+=cjkChars;
+      if(nonCjk.length>0) words+=1;
+    }
+    return words;
+  }
+
+  // ── UTF-8 byte size calculation ──
+  function utf8ByteLength(str){
+    // TextEncoder is the fastest way
+    if(typeof TextEncoder!=='undefined') return new TextEncoder().encode(str).length;
+    // Fallback
+    let bytes=0;
+    for(let i=0;i<str.length;i++){
+      const c=str.charCodeAt(i);
+      if(c<=0x7F) bytes+=1;
+      else if(c<=0x7FF) bytes+=2;
+      else if(c>=0xD800&&c<=0xDBFF){ bytes+=4; i++; } // surrogate pair
+      else bytes+=3;
+    }
+    return bytes;
+  }
+
+  // ── Debounce for large inputs ──
+  let analyzeTimer=null;
+  function scheduleAnalyze(){
+    if(analyzeTimer) cancelAnimationFrame(analyzeTimer);
+    analyzeTimer=requestAnimationFrame(analyze);
+  }
+
+  function analyze(){
+    const text=input.value;
+
+    // ── Invisible character counts ──
+    const spaces=(text.match(/ /g)||[]).length;
+    const tabs=(text.match(/\t/g)||[]).length;
+    const newlines=(text.match(/\n/g)||[]).length;
+    const lines=text===''?0:text.split('\n').length;
+    const bytes=utf8ByteLength(text);
+
+    // ── Character count (grapheme-cluster-aware) ──
+    let chars;
+    if(excludeSpaces.checked){
+      chars=countGraphemesExcludeWhitespace(text);
+    } else {
+      chars=countGraphemes(text);
+    }
+
+    // ── Word count (Intl.Segmenter-aware for all languages) ──
+    const words=countWords(text);
+
+    // ── Sentence count ──
+    // Smart detection: ignores dots in numbers, code, URLs, abbreviations
+    // Handles Latin .!? plus multilingual sentence-enders:
+    //   Chinese/Japanese: \u3002 (。) \uFF01 (！) \uFF1F (？)
+    //   Arabic: \u061F (؟)  Devanagari: \u0964 (।)  Thai: \u0E2F (ฯ)  Ellipsis: \u2026 (…)
+    let sentences=0;
+    const stripped=text.replace(/\s+/g,' ').trim();
+    if(stripped.length>0){
+      let normalized=stripped
+        // --- Code & Programming ---
+        .replace(/(\w)\.(\w)/g,'$1\u0000$2')                         // property access: console.log
+        .replace(/(\w)\.\(/g,'$1\u0000(')                            // method call: .call(
+        .replace(/\.(\w+)\(/g,'\u0000$1(')                           // .getElementById(
+        .replace(/\.\.\./g,'\u2026')                                  // spread / ellipsis
+        .replace(/\/\/.*$/gm,m=>m.replace(/\./g,'\u0000'))           // single-line comments
+        .replace(/\/\*[\s\S]*?\*\//g,m=>m.replace(/\./g,'\u0000'))   // block comments
+        .replace(/(['"`])(?:(?!\1).)*?\1/g,m=>m.replace(/[.!?]/g,'\u0000')) // string literals
+        .replace(/=>/g,'\u0000>')                                    // arrow functions
+        .replace(/\$\{[^}]*\}/g,m=>m.replace(/[.!?]/g,'\u0000'))    // template literals ${}
+        .replace(/<[^>]+>/g,m=>m.replace(/[.!?]/g,'\u0000'))         // HTML/XML tags
+        .replace(/\{[^}]*\}/g,m=>m.replace(/[.!?]/g,'\u0000'))      // JSON/object braces
+        .replace(/\[[^\]]*\]/g,m=>m.replace(/[.!?]/g,'\u0000'))     // array brackets
+        // --- URLs, Paths, Domains, Emails ---
+        .replace(/https?:\/\/[^\s]+/g,m=>m.replace(/\./g,'\u0000'))
+        .replace(/www\.[^\s]+/g,m=>m.replace(/\./g,'\u0000'))
+        .replace(/[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}/g,m=>m.replace(/\./g,'\u0000')) // email addresses
+        .replace(/\w+\.(com|org|net|io|dev|js|ts|py|java|cpp|html|css|json|xml|yaml|yml|md|txt|pdf|png|jpg|jpeg|gif|svg|go|rs|rb|php|sh|bat|sql|csv|env|log|cfg|ini|toml|jsx|tsx|vue|scss|sass|less|wasm|docker|gradle|maven|lock|map|min|d\.ts)\b/gi,m=>m.replace(/\./g,'\u0000'))
+        .replace(/\b\d+\.\d+\.\d+[\w.-]*/g,m=>m.replace(/\./g,'\u0000')) // version: 2.1.3, semver: 1.0.0-beta.1
+        // --- File paths ---
+        .replace(/[\\/][\w.-]+\.[\w]+/g,m=>m.replace(/\./g,'\u0000')) // /path/file.ext, \dir\file.txt
+        // --- Numbers & Math ---
+        .replace(/(\d)\.(\d)/g,'$1\u0000$2')                         // 3.14, $9.99
+        // --- Abbreviations ---
+        .replace(/\b([A-Z]\.){2,}/g,m=>m.replace(/\./g,'\u0000'))
+        .replace(/\b(?:Mr|Mrs|Ms|Dr|Prof|Jr|Sr|Inc|Ltd|Corp|etc|vs|eg|ie|approx|dept|govt|est|min|max|avg|arr|obj|fn|func|var|val|str|num|int|bool|char|len|idx|src|dst|div|img|btn|nav|init|config|impl|util|pkg|lib|mod|env|ref|ctx|req|res|err|msg|cmd|arg|param|fmt|gen|del|tmp|std|buf|ptr|mem|addr|reg|asm|sys|proc|exec|eval|async|util|repo|apt|npm|pip|gem|fig|vol|ch|sec|no|ext|ver|rev|rel|op)\./gi,m=>m.replace('.', '\u0000'))
+        // --- Code punctuation (not sentence enders) ---
+        .replace(/[;:{}()\[\]<>@#$%^&*+=|\\~`]/g,'\u0000');
+      const sentenceEnders=/[.!?\u3002\uFF01\uFF1F\u061F\u0964\u0E2F\u2026]+/g;
+      const enders=normalized.match(sentenceEnders);
+      sentences=enders?enders.length:0;
+      if(sentences===0&&stripped.length>0) sentences=1;
+    }
+
+    // ── Paragraph count ──
+    const paragraphs=text.trim()===''?0:text.split(/\n\s*\n|\n/).filter(p=>p.trim().length>0).length;
+
+    // ── Update UI ──
+    elChars.textContent=chars.toLocaleString();
+    elWords.textContent=words.toLocaleString();
+    elSentences.textContent=sentences.toLocaleString();
+    elParagraphs.textContent=paragraphs.toLocaleString();
+    elSpaces.textContent=spaces.toLocaleString();
+    elLines.textContent=lines.toLocaleString();
+    elTabs.textContent=tabs.toLocaleString();
+    elNewlines.textContent=newlines.toLocaleString();
+    elBytes.textContent=bytes.toLocaleString();
+
+    // ── Limit bar (grapheme-aware) ──
+    if(charLimit>0){
+      const rawChars=countGraphemes(text);
+      const pct=Math.min((rawChars/charLimit)*100,100);
+      limitBarWrap.classList.add('visible');
+      limitInfo.classList.add('visible');
+      limitBar.style.width=pct+'%';
+      if(rawChars>charLimit){
+        limitBar.style.background='var(--danger)';
+        limitInfo.innerHTML=`<span class="over">${rawChars.toLocaleString()} / ${charLimit.toLocaleString()}</span> \u2014 ${(rawChars-charLimit).toLocaleString()} over limit`;
+      } else {
+        limitBar.style.background='linear-gradient(90deg,var(--primary),var(--primary-glow))';
+        limitInfo.textContent=`${rawChars.toLocaleString()} / ${charLimit.toLocaleString()} characters`;
+      }
+    } else {
+      limitBarWrap.classList.remove('visible');
+      limitInfo.classList.remove('visible');
+    }
+
+    // Button states
+    const hasText=text.length>0;
+    copyBtn.disabled=!hasText;
+    clearBtn.disabled=!hasText;
+  }
+
+  input.addEventListener('input',scheduleAnalyze);
+  excludeSpaces.addEventListener('change',analyze);
+
+  // Limit chips
+  document.querySelectorAll('.cc-limit-chip').forEach(chip=>{
+    chip.addEventListener('click',()=>{
+      document.querySelectorAll('.cc-limit-chip').forEach(c=>c.classList.remove('active'));
+      const lim=parseInt(chip.dataset.limit);
+      if(lim>0){
+        chip.classList.add('active');
+        charLimit=lim;
+      } else {
+        charLimit=0;
+      }
+      analyze();
+    });
+  });
+
+  // Generate X characters
+  genCountInput.addEventListener('input',()=>{
+    genBtn.disabled=!genCountInput.value||parseInt(genCountInput.value)<1;
+  });
+  genBtn.addEventListener('click',()=>{
+    const count=Math.min(Math.max(parseInt(genCountInput.value)||0,1),15000);
+    input.value=rndEnglishChars(count);
+    analyze();
+  });
+
+  // Copy
+  copyBtn.addEventListener('click',async()=>{
+    await navigator.clipboard.writeText(input.value);
+    showToast('Copied!');
+  });
+
+  // Clear
+  clearBtn.addEventListener('click',()=>{
+    input.value='';
+    analyze();
+  });
+
+  // Init
+  analyze();
+})();
 
 
 </script>
