@@ -30,32 +30,36 @@
   --amber-dim:rgba(251,191,36,0.12);
 }
 [data-theme="light"]{
-  --bg:#f0f6ff;
-  --bg2:#e6f0fd;
+  --bg:#f8fafc;
+  --bg2:#f1f5f9;
   --surface:#ffffff;
-  --surface2:#f0f6ff;
-  --border:#c8ddf5;
-  --border-soft:#dceeff;
-  --text:#0d1f35;
-  --text-muted:#4a6fa5;
-  --text-faint:#c8ddf5;
-  --primary:#0284c7;
-  --primary-glow:#0369a1;
-  --primary-dim:rgba(2,132,199,0.08);
-  --primary-dim2:rgba(2,132,199,0.15);
-  --success:#059669;
-  --success-dim:rgba(5,150,105,0.08);
+  --surface2:#f8fafc;
+  --border:#d0d7e2;
+  --border-soft:#e2e8f0;
+  --text:#111827;
+  --text-muted:#64748b;
+  --text-faint:#d0d7e2;
+  --primary:#0369a1;
+  --primary-glow:#0c4a6e;
+  --primary-dim:rgba(3,105,161,0.07);
+  --primary-dim2:rgba(3,105,161,0.13);
+  --success:#16a34a;
+  --success-dim:rgba(22,163,74,0.08);
   --danger:#dc2626;
   --amber:#d97706;
   --amber-dim:rgba(217,119,6,0.10);
 }
 
+html{
+  scrollbar-gutter:stable;
+}
 body{
   font-family:'Outfit',sans-serif;
   background:var(--bg);
   color:var(--text);
   min-height:100vh;
   transition:background .3s,color .3s;
+  overflow-y:scroll;
 }
 
 /* ── HEADER ── */
@@ -317,8 +321,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 .nav-tab:hover{color:var(--text);}
 .nav-tab.active{color:var(--primary-glow);border-bottom-color:var(--primary);}
 .section-panel{display:none;}
-.section-panel.active{display:block;animation:fadeUp .22s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.section-panel.active{display:block;}
 
 /* ── RESPONSE ACTIONS ── */
 .response-actions{display:flex;gap:10px;flex-wrap:wrap;}
@@ -435,38 +438,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 .cc-gen-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
 .cc-gen-input::placeholder{color:var(--text-muted);}
 
-/* ── AI GENERATE SECTION ── */
-.ai-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.ai-key-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
-.ai-key-wrap{flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px;}
-.ai-key-input-group{display:flex;align-items:stretch;gap:0;position:relative;}
-.ai-key-input-group input{
-  flex:1;padding:10px 40px 10px 12px;
-  background:var(--bg2);color:var(--text);border:1px solid var(--border);
-  border-radius:10px;font-size:13px;font-family:'JetBrains Mono',monospace;font-weight:500;
-  transition:border-color .2s,box-shadow .2s;
-}
-.ai-key-input-group input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
-.ai-key-input-group input::placeholder{font-family:'Outfit',sans-serif;color:var(--text-muted);}
-.ai-eye-btn{
-  position:absolute;right:8px;top:50%;transform:translateY(-50%);
-  background:none;border:none;padding:4px 6px;cursor:pointer;
-  font-size:14px;color:var(--text-muted);opacity:.6;
-  transition:opacity .15s;
-}
-.ai-eye-btn:hover{opacity:1;}
-.ai-status{
-  font-size:12px;padding:6px 12px;border-radius:8px;
-  display:none;align-items:center;gap:6px;
-}
-.ai-status.success{display:flex;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);}
-.ai-status.error{display:flex;background:rgba(248,113,113,.08);color:#fca5a5;border:1px solid rgba(248,113,113,.25);}
-.ai-streaming-cursor{display:inline-block;width:2px;height:14px;background:var(--primary);animation:blink .8s infinite;vertical-align:text-bottom;margin-left:2px;}
-@media(max-width:700px){
-  .ai-settings-grid{grid-template-columns:1fr;}
-  .ai-key-row{flex-direction:column;align-items:stretch;}
-}
-
 @media(max-width:700px){
   .text-section-inner{flex-direction:column;}
   .left-pane{width:100%;height:auto;flex-direction:row;flex-wrap:wrap;position:static;border-right:none;border-bottom:1px solid var(--border);padding:8px;}
@@ -551,9 +522,14 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="pane-chip" data-prompt="generate 10 user records in YAML">YAML Records</button>
   <div class="pane-label">🌍 HTML</div>
   <button class="pane-chip" data-prompt="generate HTML page with form fields for name, email, phone, and message">HTML Form</button>
-  <button class="pane-chip" data-prompt="create HTML email template with header, body and footer">Email Template</button>
   <button class="pane-chip" data-prompt="generate HTML table with 10 rows of random user data">HTML Table</button>
   <button class="pane-chip" data-prompt="generate HTML snippet with buttons, links, and input fields">UI Snippet</button>
+  <div class="pane-label">🔒 Security Testing</div>
+  <button class="pane-chip" data-prompt="provide XSS payload examples for testing input sanitization">XSS Payloads</button>
+  <button class="pane-chip" data-prompt="generate SQL injection test strings">SQL Injection Tests</button>
+  <button class="pane-chip" data-prompt="generate email test data with executable content like arithmetic operations, js, xss">Email Executable</button>
+  <button class="pane-chip" data-prompt="produce phishing email content for security awareness testing">Phishing Simulation</button>
+  <button class="pane-chip" data-prompt="generate HTML with nested script tags and encoded payloads">Nested Script HTML</button>
   <div class="pane-label">👤 Personal Data</div>
   <button class="pane-chip" data-prompt="generate 10 full names">10 Full Names</button>
   <button class="pane-chip" data-prompt="generate 10 email addresses">10 Emails</button>
@@ -564,12 +540,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <button class="pane-chip" data-prompt="generate 5 credit card numbers">5 Credit Cards</button>
   <button class="pane-chip" data-prompt="generate 10 UUIDs">10 UUIDs</button>
   <button class="pane-chip" data-prompt="generate 10 IP addresses">10 IP Addresses</button>
-  <div class="pane-label">🔒 Security Testing</div>
-  <button class="pane-chip" data-prompt="provide XSS payload examples for testing input sanitization">XSS Payloads</button>
-  <button class="pane-chip" data-prompt="generate SQL injection test strings">SQL Injection Tests</button>
-  <button class="pane-chip" data-prompt="generate email test data with executable content like arithmetic operations, js, xss">Email Executable</button>
-  <button class="pane-chip" data-prompt="produce phishing email content for security awareness testing">Phishing Simulation</button>
-  <button class="pane-chip" data-prompt="generate HTML with nested script tags and encoded payloads">Nested Script HTML</button>
   <div class="pane-label">🔐 Passwords &amp; Auth</div>
   <button class="pane-chip" data-prompt="generate 10 strong passwords">Strong Passwords</button>
   <button class="pane-chip" data-prompt="generate 5 weak passwords">Weak Passwords</button>
@@ -603,64 +573,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         </div>
       </div>
     </div>
-
-    <!-- AI Generate Card -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon amber">✦</div>
-        <div><div class="card-title">Generate with AI</div><div class="card-sub">Use AI models to generate test data from natural language prompts</div></div>
-      </div>
-      <div class="card-body">
-        <!-- Provider + Model -->
-        <div class="ai-settings-grid">
-          <div class="field-group">
-            <label class="field-label">Provider</label>
-            <select id="ai-provider">
-              <option value="" disabled selected>Select provider…</option>
-              <option value="gemini">Google Gemini (Free)</option>
-              <option value="openai">OpenAI</option>
-              <option value="groq">Groq (Free)</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Model</label>
-            <select id="ai-model" disabled>
-              <option value="" disabled selected>Select provider first…</option>
-            </select>
-          </div>
-        </div>
-        <!-- API Key -->
-        <div class="ai-key-row">
-          <div class="ai-key-wrap">
-            <label class="field-label">API Key</label>
-            <div class="ai-key-input-group">
-              <input type="password" id="ai-key" placeholder="Paste your API key here…" autocomplete="off">
-              <button class="ai-eye-btn" id="ai-key-toggle" title="Show/hide key">👁</button>
-            </div>
-          </div>
-          <button class="btn-secondary" id="ai-test-btn" disabled>Test Connection</button>
-        </div>
-        <div class="ai-status" id="ai-status"></div>
-        <!-- Prompt -->
-        <textarea id="ai-prompt" placeholder="Describe what test data you need…&#10;Examples:&#10;• Generate 20 realistic user profiles with name, email, and bio&#10;• Create a REST API JSON response for a product catalog&#10;• Write 10 sample customer support tickets"></textarea>
-        <!-- Generate -->
-        <div class="btn-row">
-          <button class="btn-primary" id="ai-gen-btn" disabled><span id="ai-gen-label">Generate with AI</span></button>
-          <button class="btn-secondary" id="ai-reset-btn" disabled>Reset</button>
-        </div>
-        <div class="error-banner" id="ai-error"><span>⚠</span><span id="ai-error-msg"></span></div>
-        <div class="output-wrap">
-          <div class="output-label"><span>AI Output</span><span id="ai-token-info" style="font-size:11px;color:var(--success);display:none;"></span></div>
-          <div class="output-area" id="ai-output"><span class="placeholder">AI-generated content will appear here…</span></div>
-        </div>
-        <div class="response-actions">
-          <button class="btn-copy" id="ai-copy-btn" disabled>Copy</button>
-          <button class="btn-dl" id="ai-dl-btn" disabled>Download TXT</button>
-          <button class="btn-secondary" id="ai-clear-btn" disabled>Clear</button>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div><!-- text-main-area -->
 </div><!-- text-section-inner -->
@@ -844,6 +756,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
             <button class="cc-limit-chip" data-limit="200">200</button>
             <button class="cc-limit-chip" data-limit="500">500</button>
             <button class="cc-limit-chip" data-limit="1000">1000</button>
+            <button class="cc-limit-chip" data-limit="0">None</button>
           </div>
         </div>
         <div class="cc-limit-info" id="cc-limit-info"></div>
@@ -2511,6 +2424,7 @@ document.querySelectorAll(".nav-tab").forEach(tab=>{
     document.querySelectorAll(".section-panel").forEach(p=>p.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.section).classList.add("active");
+    window.scrollTo(0,0);
   });
 });
 
@@ -2616,301 +2530,6 @@ document.getElementById("text-dl-btn").addEventListener("click",()=>{
   downloadBlob(new Blob([textContent],{type:"text/plain"}), "generated.txt");
   showToast("Downloaded!");
 });
-
-// ---- AI GENERATE SECTION ----
-(function(){
-  const aiProvider=document.getElementById('ai-provider');
-  const aiModel=document.getElementById('ai-model');
-  const aiKey=document.getElementById('ai-key');
-  const aiKeyToggle=document.getElementById('ai-key-toggle');
-  const aiTestBtn=document.getElementById('ai-test-btn');
-  const aiStatus=document.getElementById('ai-status');
-  const aiPrompt=document.getElementById('ai-prompt');
-  const aiGenBtn=document.getElementById('ai-gen-btn');
-  const aiGenLabel=document.getElementById('ai-gen-label');
-  const aiResetBtn=document.getElementById('ai-reset-btn');
-  const aiError=document.getElementById('ai-error');
-  const aiErrorMsg=document.getElementById('ai-error-msg');
-  const aiOutput=document.getElementById('ai-output');
-  const aiTokenInfo=document.getElementById('ai-token-info');
-  const aiCopyBtn=document.getElementById('ai-copy-btn');
-  const aiDlBtn=document.getElementById('ai-dl-btn');
-  const aiClearBtn=document.getElementById('ai-clear-btn');
-  let aiContent='';
-  let aiAbort=null;
-
-  // Provider → Model mapping
-  const MODELS={
-    gemini:[
-      {value:'gemini-2.0-flash',label:'Gemini 2.0 Flash (Fast)',recommended:true},
-      {value:'gemini-2.0-flash-lite',label:'Gemini 2.0 Flash Lite'},
-      {value:'gemini-1.5-flash',label:'Gemini 1.5 Flash'},
-      {value:'gemini-1.5-pro',label:'Gemini 1.5 Pro'}
-    ],
-    openai:[
-      {value:'gpt-4o-mini',label:'GPT-4o Mini (Fast)',recommended:true},
-      {value:'gpt-4o',label:'GPT-4o'},
-      {value:'gpt-4.1-mini',label:'GPT-4.1 Mini'},
-      {value:'gpt-4.1-nano',label:'GPT-4.1 Nano'}
-    ],
-    groq:[
-      {value:'llama-3.3-70b-versatile',label:'Llama 3.3 70B (Best)',recommended:true},
-      {value:'llama-3.1-8b-instant',label:'Llama 3.1 8B (Fast)'},
-      {value:'mixtral-8x7b-32768',label:'Mixtral 8x7B'},
-      {value:'gemma2-9b-it',label:'Gemma 2 9B'}
-    ]
-  };
-
-  // localStorage keys
-  const LS_PREFIX='tdg_ai_';
-  function lsGet(k){return localStorage.getItem(LS_PREFIX+k)||'';}
-  function lsSet(k,v){localStorage.setItem(LS_PREFIX+k,v);}
-
-  // Restore saved settings
-  const savedProvider=lsGet('provider');
-  if(savedProvider&&MODELS[savedProvider]){
-    aiProvider.value=savedProvider;
-    populateModels(savedProvider);
-    const savedModel=lsGet('model_'+savedProvider);
-    if(savedModel) aiModel.value=savedModel;
-  }
-  const savedKey=lsGet('key_'+(savedProvider||''));
-  if(savedKey) aiKey.value=savedKey;
-
-  // Populate models when provider changes
-  function populateModels(provider){
-    aiModel.innerHTML='';
-    const models=MODELS[provider]||[];
-    models.forEach(m=>{
-      const opt=document.createElement('option');
-      opt.value=m.value;
-      opt.textContent=m.label+(m.recommended?' ★':'');
-      if(m.recommended) opt.selected=true;
-      aiModel.appendChild(opt);
-    });
-    aiModel.disabled=!models.length;
-  }
-
-  aiProvider.addEventListener('change',()=>{
-    const p=aiProvider.value;
-    populateModels(p);
-    lsSet('provider',p);
-    // Load saved key for this provider
-    const saved=lsGet('key_'+p);
-    aiKey.value=saved||'';
-    hideStatus();
-    updateAiBtns();
-  });
-
-  aiModel.addEventListener('change',()=>{
-    lsSet('model_'+aiProvider.value,aiModel.value);
-  });
-
-  // Save key on blur
-  aiKey.addEventListener('blur',()=>{
-    if(aiProvider.value) lsSet('key_'+aiProvider.value,aiKey.value);
-  });
-  aiKey.addEventListener('input',()=>{hideStatus();updateAiBtns();});
-
-  // Show/hide key
-  aiKeyToggle.addEventListener('click',()=>{
-    const isPassword=aiKey.type==='password';
-    aiKey.type=isPassword?'text':'password';
-    aiKeyToggle.textContent=isPassword?'🙈':'👁';
-  });
-
-  // Status helpers
-  function showStatus(msg,type){
-    aiStatus.className='ai-status '+type;
-    aiStatus.innerHTML=(type==='success'?'✓ ':'⚠ ')+msg;
-    aiStatus.style.display='flex';
-  }
-  function hideStatus(){aiStatus.style.display='none';aiStatus.className='ai-status';}
-
-  // Update button states
-  function updateAiBtns(){
-    const hasConfig=aiProvider.value&&aiModel.value&&aiKey.value.trim();
-    const hasPrompt=aiPrompt.value.trim();
-    aiGenBtn.disabled=!hasConfig||!hasPrompt;
-    aiTestBtn.disabled=!hasConfig;
-    aiResetBtn.disabled=!aiProvider.value&&!aiKey.value&&!aiPrompt.value;
-    aiCopyBtn.disabled=!aiContent;
-    aiDlBtn.disabled=!aiContent;
-    aiClearBtn.disabled=!aiContent;
-  }
-  aiPrompt.addEventListener('input',updateAiBtns);
-
-  // ── API call helpers ──
-  function buildRequest(provider,model,key,prompt){
-    const systemMsg='You are a test data generator. Generate exactly what the user asks for. Output only the requested data, no explanations or markdown formatting unless the user asks for it.';
-    if(provider==='gemini'){
-      return{
-        url:`https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`,
-        options:{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            system_instruction:{parts:[{text:systemMsg}]},
-            contents:[{parts:[{text:prompt}]}],
-            generationConfig:{temperature:0.7,maxOutputTokens:8192}
-          })
-        },
-        parseChunk(line){
-          if(!line.startsWith('data: ')) return '';
-          try{
-            const d=JSON.parse(line.slice(6));
-            return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
-          }catch{return '';}
-        }
-      };
-    }
-    // OpenAI and Groq use the same API shape
-    const base=provider==='openai'?'https://api.openai.com':'https://api.groq.com/openai';
-    return{
-      url:`${base}/v1/chat/completions`,
-      options:{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
-        body:JSON.stringify({
-          model,stream:true,
-          messages:[{role:'system',content:systemMsg},{role:'user',content:prompt}],
-          temperature:0.7,max_tokens:8192
-        })
-      },
-      parseChunk(line){
-        if(!line.startsWith('data: ')||line==='data: [DONE]') return '';
-        try{
-          const d=JSON.parse(line.slice(6));
-          return d.choices?.[0]?.delta?.content||'';
-        }catch{return '';}
-      }
-    };
-  }
-
-  // Test Connection
-  aiTestBtn.addEventListener('click',async()=>{
-    const provider=aiProvider.value,model=aiModel.value,key=aiKey.value.trim();
-    if(!provider||!model||!key) return;
-    aiTestBtn.disabled=true;
-    aiTestBtn.innerHTML='<span class="spinner"></span> Testing…';
-    hideStatus();
-    // Save key
-    lsSet('key_'+provider,key);
-    try{
-      const req=buildRequest(provider,model,key,'Say "Connection successful" in exactly 2 words.');
-      const resp=await fetch(req.url,{...req.options,body:req.options.body.replace('"stream":true','"stream":false').replace('"alt=sse&','"&')});
-      if(!resp.ok){
-        const err=await resp.json().catch(()=>null);
-        const msg=err?.error?.message||`HTTP ${resp.status}`;
-        throw new Error(msg);
-      }
-      showStatus('Connection successful! Key is valid.','success');
-    }catch(e){
-      showStatus(e.message||'Connection failed','error');
-    }
-    aiTestBtn.textContent='Test Connection';
-    updateAiBtns();
-  });
-
-  // ── Stream generate ──
-  aiGenBtn.addEventListener('click',async()=>{
-    const provider=aiProvider.value,model=aiModel.value,key=aiKey.value.trim(),prompt=aiPrompt.value.trim();
-    if(!provider||!model||!key||!prompt) return;
-    // Save key
-    lsSet('key_'+provider,key);
-    // UI: loading
-    aiGenLabel.innerHTML='<span class="spinner"></span> Generating…';
-    aiGenBtn.disabled=true;
-    aiError.classList.remove('visible');
-    aiOutput.innerHTML='<span class="ai-streaming-cursor"></span>';
-    aiContent='';
-    aiTokenInfo.style.display='none';
-    updateAiBtns();
-
-    const startTime=Date.now();
-    try{
-      const req=buildRequest(provider,model,key,prompt);
-      aiAbort=new AbortController();
-      const resp=await fetch(req.url,{...req.options,signal:aiAbort.signal});
-      if(!resp.ok){
-        const err=await resp.json().catch(()=>null);
-        throw new Error(err?.error?.message||`HTTP ${resp.status}: ${resp.statusText}`);
-      }
-      const reader=resp.body.getReader();
-      const decoder=new TextDecoder();
-      let buffer='';
-      while(true){
-        const{done,value}=await reader.read();
-        if(done) break;
-        buffer+=decoder.decode(value,{stream:true});
-        const lines=buffer.split('\n');
-        buffer=lines.pop()||'';
-        for(const line of lines){
-          const text=req.parseChunk(line.trim());
-          if(text){
-            aiContent+=text;
-            aiOutput.textContent=aiContent;
-          }
-        }
-      }
-      // Process remaining buffer
-      if(buffer.trim()){
-        const text=req.parseChunk(buffer.trim());
-        if(text){aiContent+=text;aiOutput.textContent=aiContent;}
-      }
-      if(!aiContent){
-        aiOutput.innerHTML='<span class="placeholder">No content returned. Try a different prompt.</span>';
-      } else {
-        const elapsed=((Date.now()-startTime)/1000).toFixed(1);
-        aiTokenInfo.textContent=`✓ Generated in ${elapsed}s`;
-        aiTokenInfo.style.display='inline';
-      }
-    }catch(e){
-      if(e.name==='AbortError') return;
-      aiContent='';
-      aiOutput.innerHTML='<span class="placeholder">AI-generated content will appear here…</span>';
-      aiErrorMsg.textContent=e.message||'Generation failed. Check your API key and try again.';
-      aiError.classList.add('visible');
-    }
-    aiAbort=null;
-    aiGenLabel.textContent='Generate with AI';
-    updateAiBtns();
-  });
-
-  // Reset
-  aiResetBtn.addEventListener('click',()=>{
-    aiPrompt.value='';
-    aiContent='';
-    aiOutput.innerHTML='<span class="placeholder">AI-generated content will appear here…</span>';
-    aiTokenInfo.style.display='none';
-    aiError.classList.remove('visible');
-    hideStatus();
-    if(aiAbort){aiAbort.abort();aiAbort=null;}
-    aiGenLabel.textContent='Generate with AI';
-    updateAiBtns();
-  });
-
-  // Copy
-  aiCopyBtn.addEventListener('click',async()=>{
-    await navigator.clipboard.writeText(aiContent);showToast('Copied!');
-  });
-
-  // Download
-  aiDlBtn.addEventListener('click',()=>{
-    downloadBlob(new Blob([aiContent],{type:'text/plain'}),'ai-generated.txt');
-    showToast('Downloaded!');
-  });
-
-  // Clear
-  aiClearBtn.addEventListener('click',()=>{
-    aiContent='';
-    aiOutput.innerHTML='<span class="placeholder">AI-generated content will appear here…</span>';
-    aiTokenInfo.style.display='none';
-    updateAiBtns();
-  });
-
-  updateAiBtns();
-})();
 
 // ---- SECTION 2: Structured Data ----
 const structType=document.getElementById("struct-type");
