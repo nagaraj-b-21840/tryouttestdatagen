@@ -415,6 +415,32 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 }
 .cc-stat-secondary .cc-stat-value{font-size:18px;}
 .cc-stat-secondary .cc-stat-label{font-size:9px;}
+.cc-breakdown{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;
+}
+.cc-breakdown-header{
+  padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--text-muted);border-bottom:1px solid var(--border);
+}
+.cc-breakdown-body{
+  padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px;
+  max-height:180px;overflow-y:auto;font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+}
+.cc-char-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:6px;
+  background:var(--surface);border:1px solid var(--border-soft);
+  color:var(--text);font-size:12px;line-height:1.3;
+}
+.cc-char-tag.ws{
+  background:var(--amber-dim);border-color:var(--amber);
+  color:var(--amber);
+}
+.cc-char-tag .cc-char-idx{
+  font-size:9px;color:var(--text-muted);font-weight:600;
+}
 .cc-limit-bar-wrap{
   background:var(--border);border-radius:999px;height:6px;overflow:hidden;
   display:none;
@@ -785,8 +811,11 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
           <div class="cc-stat cc-stat-secondary"><div class="cc-stat-value" id="cc-newlines">0</div><div class="cc-stat-label">Line Breaks</div></div>
           <div class="cc-stat cc-stat-secondary"><div class="cc-stat-value" id="cc-bytes">0</div><div class="cc-stat-label">Bytes (UTF-8)</div></div>
         </div>
+        <div class="cc-breakdown" id="cc-breakdown" style="display:none;">
+          <div class="cc-breakdown-header">Character Breakdown</div>
+          <div class="cc-breakdown-body" id="cc-breakdown-body"></div>
+        </div>
         <div class="response-actions">
-          <button class="btn-copy" id="cc-copy-btn" disabled>Copy Text</button>
           <button class="btn-secondary" id="cc-clear-btn" disabled>Clear Text</button>
         </div>
         <div class="cc-generate-row">
@@ -3299,6 +3328,32 @@ document.getElementById("img-dl-btn").addEventListener("click",()=>{
     elTabs.textContent=tabs.toLocaleString();
     elNewlines.textContent=newlines.toLocaleString();
     elBytes.textContent=bytes.toLocaleString();
+
+    // ── Character Breakdown ──
+    const breakdownEl=document.getElementById('cc-breakdown');
+    const breakdownBody=document.getElementById('cc-breakdown-body');
+    if(text.length>0&&text.length<=500){
+      breakdownEl.style.display='block';
+      const segments=graphemeSegmenter?[...graphemeSegmenter.segment(text)]:[...text].map(c=>({segment:c}));
+      let html='';
+      segments.forEach((seg,i)=>{
+        const ch=seg.segment;
+        const isWs=/^\s+$/.test(ch);
+        const excluded=excludeSpaces.checked&&isWs;
+        let label;
+        if(ch===' ') label='SP';
+        else if(ch==='\t') label='TAB';
+        else if(ch==='\n') label='LF';
+        else if(ch==='\r') label='CR';
+        else if(/^\s$/.test(ch)) label='U+'+ch.codePointAt(0).toString(16).toUpperCase().padStart(4,'0');
+        else label=ch;
+        html+='<span class="cc-char-tag'+(isWs?' ws':'')+'"'+(excluded?' style="opacity:0.4;text-decoration:line-through;"':'')+'><span class="cc-char-idx">'+(i+1)+'</span>'+label.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
+      });
+      breakdownBody.innerHTML=html;
+    } else {
+      breakdownEl.style.display='none';
+      breakdownBody.innerHTML='';
+    }
 
     // ── Limit bar (grapheme-aware) ──
     if(charLimit>0){
