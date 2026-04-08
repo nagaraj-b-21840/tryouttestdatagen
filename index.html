@@ -650,6 +650,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
               <option value="json">JSON (.json)</option>
               <option value="xml">XML (.xml)</option>
               <option value="html">HTML (.html)</option>
+              <option value="sql">SQL (.sql)</option>
             </select>
           </div>
           <div class="field-group">
@@ -657,15 +658,15 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
             <select id="file-size-select">
               <option value="" disabled selected>Select size…</option>
               <option value="1">1 MB</option>
-              <option value="2">2 MB</option>
-              <option value="3">3 MB</option>
-              <option value="4">4 MB</option>
               <option value="5">5 MB</option>
-              <option value="6">6 MB</option>
-              <option value="7">7 MB</option>
-              <option value="8">8 MB</option>
-              <option value="9">9 MB</option>
               <option value="10">10 MB</option>
+              <option value="25">25 MB</option>
+              <option value="50">50 MB</option>
+              <option value="100">100 MB</option>
+              <option value="250">250 MB</option>
+              <option value="500">500 MB</option>
+              <option value="1024">1 GB</option>
+              <option value="2048">2 GB</option>
             </select>
           </div>
         </div>
@@ -675,6 +676,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         </div>
         <div class="error-banner" id="file-error"><span>⚠</span><span id="file-error-msg"></span></div>
         <div class="progress-wrap" id="file-progress-wrap"><div class="progress-bar" id="file-progress-bar" style="width:0%"></div></div>
+        <div id="file-progress-text" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;display:none;padding:2px 0;"></div>
         <div class="file-status" id="file-status">
           <div class="file-icon-wrap"><span id="file-status-icon">📄</span></div>
           <div><div class="file-name" id="file-status-name">—</div><div class="file-size" id="file-status-size">—</div></div>
@@ -2265,144 +2267,213 @@ function genStructured(type, count){
 }
 
 // ============================================================
-//  FILE GENERATOR (exact size, no AI)
+//  FILE GENERATOR — Chunked streaming, supports up to 2GB
 // ============================================================
 const ENC = new TextEncoder();
 function downloadBlob(blob,name){
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
   a.href=url;a.download=name;document.body.appendChild(a);
-  a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 
-const WORDS=["lorem","ipsum","dolor","sit","amet","consectetur","adipiscing","elit","sed","do","eiusmod","tempor","incididunt","labore","magna","aliqua","enim","veniam","nostrud","exercitation","ullamco","nisi","aliquip","commodo","consequat","duis","aute","irure","reprehenderit","voluptate","velit","esse","fugiat","nulla","pariatur","excepteur","sint","occaecat","proident","culpa","deserunt","mollit","anim","laborum"];
-function randWord(){ return WORDS[Math.floor(Math.random()*WORDS.length)]; }
-function randSentence(){
-  const len=8+Math.floor(Math.random()*12);
-  const words=Array.from({length:len},()=>randWord());
-  return words[0].charAt(0).toUpperCase()+words[0].slice(1)+" "+words.slice(1).join(" ")+".";
-}
-function makeBytes(targetBytes,prefix,suffix,lineGen){
-  const pre=ENC.encode(prefix),suf=ENC.encode(suffix);
-  const bodyTarget=targetBytes-pre.length-suf.length;
-  const out=new Uint8Array(targetBytes);
-  let pos=0;
-  out.set(pre,0);pos+=pre.length;
-  while(pos<pre.length+bodyTarget){
-    const line=ENC.encode(lineGen()+"\n");
-    const space=pre.length+bodyTarget-pos;
-    if(line.length<=space){out.set(line,pos);pos+=line.length;}
-    else{out.set(line.slice(0,space),pos);pos+=space;}
-  }
-  out.set(suf,pos);
-  return out;
-}
-function genTXT(tb){ return makeBytes(tb,"","",randSentence); }
-function genCSV(tb){
-  const header="id,name,email,city,department,salary\n";
-  const names=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black"];
-  const cities=["New York","London","Paris","Tokyo","Sydney","Berlin"];
-  const depts=["Engineering","Marketing","Sales","Finance","HR"];
-  const row=()=>`${rndUUID()},${names[rndInt(0,5)]},${rndEmail()},${cities[rndInt(0,5)]},${depts[rndInt(0,4)]},${rndSalary()}`;
-  return makeBytes(tb,header,"",row);
-}
-function genJSON(tb){
-  const obj=()=>({id:rndUUID(),name:rndName(),email:rndEmail(),age:rndAge(),city:rnd(CITIES),active:rndBoolean(),score:rndScore()});
-  const pre="[\n",suf="\n]";
-  const bodyTarget=tb-ENC.encode(pre).length-ENC.encode(suf).length;
-  const out=new Uint8Array(tb);
-  const preEnc=ENC.encode(pre);
-  out.set(preEnc,0);let pos=preEnc.length;
-  let first=true;
-  while(pos<ENC.encode(pre).length+bodyTarget-10){
-    const chunk=ENC.encode((first?"":",\n")+"  "+JSON.stringify(obj()));
-    first=false;
-    const space=ENC.encode(pre).length+bodyTarget-pos;
-    if(chunk.length<=space){out.set(chunk,pos);pos+=chunk.length;}
-    else break;
-  }
-  const sufEnc=ENC.encode(suf);
-  out.set(sufEnc,pos);
-  return out.slice(0,pos+sufEnc.length);
-}
-function genXML(tb){
-  const pre=`<?xml version="1.0" encoding="UTF-8"?>\n<records>\n`,suf="\n</records>";
-  const row=()=>`  <record><id>${rndUUID()}</id><name>${rndName()}</name><email>${rndEmail()}</email><city>${rnd(CITIES)}</city></record>`;
-  return makeBytes(tb,pre,suf,row);
-}
-function genHTML(tb){
-  const pre=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Test Data</title></head><body>\n`,suf="\n</body></html>";
-  const row=()=>`<p>${randSentence()} ${randSentence()}</p>`;
-  return makeBytes(tb,pre,suf,row);
-}
-function genPDF(tb){
-  const textTarget=Math.floor(tb*0.4);
-  let body="";
-  while(ENC.encode(body).length<textTarget) body+=randSentence()+" ";
-  const stream=body.substring(0,Math.floor(body.length*0.95));
-  const streamBytes=ENC.encode(stream).length;
-  const objects=[
-    "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj",
-    "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj",
-    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj",
-    `4 0 obj\n<< /Length ${streamBytes} >>\nstream\nBT /F1 12 Tf 50 750 Td (${stream.replace(/[()\\]/g,"")}) Tj ET\nendstream\nendobj`,
-    "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj",
-  ];
-  let pdf="%PDF-1.4\n";
-  const offsets=[];
-  objects.forEach(o=>{offsets.push(ENC.encode(pdf).length);pdf+=o+"\n";});
-  const xrefPos=ENC.encode(pdf).length;
-  let xref=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n`;
-  offsets.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \n");
-  pdf+=xref+`trailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF\n`;
-  const pdfBytes=ENC.encode(pdf);
-  const remaining=tb-pdfBytes.length;
-  let padding="";
-  if(remaining>0){
-    while(ENC.encode(padding).length<remaining-10) padding+="% "+randWord()+" "+randWord()+"\n";
-    const eof=pdf.lastIndexOf("%%EOF");
-    pdf=pdf.slice(0,eof)+padding+"%%EOF\n";
-  }
-  const finalBytes=ENC.encode(pdf);
-  return finalBytes.slice(0,tb);
-}
-function genDOCX(tb){
-  const pre=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n`;
-  const suf=`\n</w:body></w:document>`;
-  const row=()=>`<w:p><w:r><w:t>${randSentence().replace(/[<>&]/g,c=>c==="<"?"&lt;":c===">"?"&gt;":"&amp;")}</w:t></w:r></w:p>`;
-  return makeBytes(tb,pre,suf,row);
-}
-function genXLSX(tb){
-  const names=["Alice","Bob","Carol","Dan","Eva","Frank","Grace","Henry","Iris","Jack"];
-  const cities=["New York","London","Paris","Tokyo","Sydney"];
-  const depts=["Engineering","Marketing","Sales","Finance","HR"];
-  let rows="";
-  let r=2;
-  while(ENC.encode(rows).length<tb*0.7){
-    rows+=`<row r="${r}"><c r="A${r}" t="s"><v>${names[rndInt(0,9)]}</v></c><c r="B${r}"><v>${rndInt(20,60)}</v></c><c r="C${r}" t="s"><v>${cities[rndInt(0,4)]}</v></c><c r="D${r}" t="s"><v>${depts[rndInt(0,4)]}</v></c><c r="E${r}"><v>${rndSalary()}</v></c></row>`;
-    r++;
-  }
-  const header=`<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>Name</v></c><c r="B1" t="s"><v>Age</v></c><c r="C1" t="s"><v>City</v></c><c r="D1" t="s"><v>Department</v></c><c r="E1" t="s"><v>Salary</v></c></row>`;
-  const suf=`</sheetData></worksheet>`;
-  return makeBytes(tb,header,suf,()=>`<row r="${r++}"><c r="A${r}"><v>${rndInt(1000,9999)}</v></c></row>`);
-}
+const FILE_ICONS={pdf:"📕",docx:"📘",xlsx:"📗",txt:"📄",csv:"📋",json:"📦",xml:"🗂️",html:"🌐",sql:"📜"};
 
-const FILE_ICONS={pdf:"📕",docx:"📘",xlsx:"📗",txt:"📄",csv:"📋",json:"📦",xml:"🗂️",html:"🌐"};
-
-function generateFile(type,sizeMB){
-  const tb=sizeMB*1024*1024;
-  switch(type){
-    case "txt":  return {bytes:genTXT(tb),  mime:"text/plain",ext:"txt"};
-    case "csv":  return {bytes:genCSV(tb),  mime:"text/csv",ext:"csv"};
-    case "json": return {bytes:genJSON(tb), mime:"application/json",ext:"json"};
-    case "xml":  return {bytes:genXML(tb),  mime:"application/xml",ext:"xml"};
-    case "html": return {bytes:genHTML(tb), mime:"text/html",ext:"html"};
-    case "pdf":  return {bytes:genPDF(tb),  mime:"application/pdf",ext:"pdf"};
-    case "docx": return {bytes:genDOCX(tb), mime:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",ext:"docx"};
-    case "xlsx": return {bytes:genXLSX(tb), mime:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",ext:"xlsx"};
-    default: return {bytes:genTXT(tb),mime:"text/plain",ext:"txt"};
+// ── Chunked file generator engine ──
+const FileGen=(function(){
+  const CHUNK_SIZE=4*1024*1024; // 4MB per chunk
+  const FNAMES=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black","Grace Hall","Henry Adams","Iris Clark","Jack Davis","Karen Lee","Leo Morris","Mia Clark","Ned Brown","Opal Davis"];
+  const FCITIES=["New York","Los Angeles","Chicago","Houston","Phoenix","San Diego","Dallas","Austin","Seattle","Denver","Boston","Atlanta","Miami","Portland","Nashville"];
+  const FDEPTS=["Engineering","Marketing","Sales","Finance","HR","Operations","IT","Design"];
+  const FSTATUS=["active","inactive","pending","suspended","verified"];
+  const FLOREM="Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum";
+  const LOREM_WORDS=FLOREM.split(' ');
+  function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
+  function femail(){const u=FNAMES[ri(0,14)].split(' ')[0].toLowerCase();const d=["gmail.com","yahoo.com","outlook.com","company.org","example.net"][ri(0,4)];return u+ri(10,999)+"@"+d;}
+  function salary(){return ri(35,180)*1000;}
+  function fdate(){return `${ri(2018,2025)}-${String(ri(1,12)).padStart(2,'0')}-${String(ri(1,28)).padStart(2,'0')}`;}
+  function randSentence(){
+    const len=8+ri(0,12);
+    const words=Array.from({length:len},()=>LOREM_WORDS[ri(0,LOREM_WORDS.length-1)]);
+    return words[0][0].toUpperCase()+words[0].slice(1)+' '+words.slice(1).join(' ')+'.';
   }
-}
+
+  // Build a tile of ~8KB content for fast chunk filling
+  function buildTile(rowFn){
+    let tile='';
+    while(tile.length<8192) tile+=rowFn()+'\n';
+    return ENC.encode(tile);
+  }
+
+  // Fill a chunk from a tile, with offset-based variation
+  function fillChunk(size,tileEnc,offset){
+    const chunk=new Uint8Array(size);
+    let pos=0;
+    // Offset into the tile for variation
+    const shift=offset%tileEnc.length;
+    while(pos<size){
+      const start=(pos===0)?shift:0;
+      const remaining=size-pos;
+      const available=tileEnc.length-start;
+      const copyLen=Math.min(remaining,available);
+      chunk.set(tileEnc.subarray(start,start+copyLen),pos);
+      pos+=copyLen;
+    }
+    return chunk;
+  }
+
+  // ── Format-specific chunk generators ──
+  const formats={
+    txt:{
+      mime:'text/plain',ext:'txt',
+      prefix:()=>'',suffix:()=>'',
+      tile:()=>buildTile(()=>randSentence()+' '+randSentence())
+    },
+    csv:{
+      mime:'text/csv',ext:'csv',
+      prefix:()=>'id,name,email,city,department,salary,date,status\n',
+      suffix:()=>'',
+      tile:()=>buildTile(()=>uuid()+','+FNAMES[ri(0,14)]+','+femail()+','+FCITIES[ri(0,14)]+','+FDEPTS[ri(0,7)]+','+salary()+','+fdate()+','+FSTATUS[ri(0,4)])
+    },
+    json:{
+      mime:'application/json',ext:'json',
+      prefix:()=>'[\n',suffix:()=>'\n]',
+      tile:()=>buildTile(()=>'  {"id":"'+uuid()+'","name":"'+FNAMES[ri(0,14)]+'","email":"'+femail()+'","city":"'+FCITIES[ri(0,14)]+'","salary":'+salary()+',"date":"'+fdate()+'","active":'+(Math.random()>0.5)+'},')
+    },
+    xml:{
+      mime:'application/xml',ext:'xml',
+      prefix:()=>'<?xml version="1.0" encoding="UTF-8"?>\n<records>\n',
+      suffix:()=>'\n</records>',
+      tile:()=>buildTile(()=>'  <record><id>'+uuid()+'</id><name>'+FNAMES[ri(0,14)]+'</name><email>'+femail()+'</email><city>'+FCITIES[ri(0,14)]+'</city><date>'+fdate()+'</date></record>')
+    },
+    html:{
+      mime:'text/html',ext:'html',
+      prefix:()=>'<!DOCTYPE html>\n<html><head><meta charset="UTF-8"><title>Test Data</title></head><body>\n',
+      suffix:()=>'\n</body></html>',
+      tile:()=>buildTile(()=>'<p>'+randSentence()+' '+randSentence()+'</p>')
+    },
+    sql:{
+      mime:'text/plain',ext:'sql',
+      prefix:()=>'CREATE TABLE IF NOT EXISTS users (id VARCHAR(36), name VARCHAR(100), email VARCHAR(100), city VARCHAR(50), department VARCHAR(50), salary INT, created_date DATE);\n',
+      suffix:()=>'',
+      tile:()=>buildTile(()=>"INSERT INTO users VALUES ('"+uuid()+"','"+FNAMES[ri(0,14)]+"','"+femail()+"','"+FCITIES[ri(0,14)]+"','"+FDEPTS[ri(0,7)]+"',"+salary()+",'"+fdate()+"');")
+    },
+    pdf:{
+      mime:'application/pdf',ext:'pdf',
+      prefix:()=>{
+        const stream=Array.from({length:20},()=>randSentence()).join(' ').replace(/[()\\]/g,'');
+        const sb=ENC.encode(stream).length;
+        const objs=[
+          "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj",
+          "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj",
+          "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj",
+          "4 0 obj\n<< /Length "+sb+" >>\nstream\nBT /F1 10 Tf 50 750 Td ("+stream+") Tj ET\nendstream\nendobj",
+          "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj"
+        ];
+        let pdf="%PDF-1.4\n";const offs=[];
+        objs.forEach(o=>{offs.push(ENC.encode(pdf).length);pdf+=o+"\n";});
+        const xp=ENC.encode(pdf).length;
+        let xref="xref\n0 "+(objs.length+1)+"\n0000000000 65535 f \n";
+        offs.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \n");
+        pdf+=xref+"trailer\n<< /Size "+(objs.length+1)+" /Root 1 0 R >>\nstartxref\n"+xp+"\n";
+        return pdf;
+      },
+      suffix:()=>'%%EOF\n',
+      tile:()=>buildTile(()=>'% '+randSentence())
+    },
+    docx:{
+      mime:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',ext:'docx',
+      prefix:()=>'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n',
+      suffix:()=>'\n</w:body></w:document>',
+      tile:()=>{
+        const safe=s=>s.replace(/[<>&]/g,c=>c==='<'?'&lt;':c==='>'?'&gt;':'&amp;');
+        return buildTile(()=>'<w:p><w:r><w:t>'+safe(randSentence()+' '+randSentence())+'</w:t></w:r></w:p>');
+      }
+    },
+    xlsx:{
+      mime:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',ext:'xlsx',
+      prefix:()=>'<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>Name</v></c><c r="B1" t="s"><v>Age</v></c><c r="C1" t="s"><v>City</v></c><c r="D1" t="s"><v>Department</v></c><c r="E1" t="s"><v>Salary</v></c></row>',
+      suffix:()=>'</sheetData></worksheet>',
+      tile:()=>{let r=2;return buildTile(()=>{const rr=r++;return '<row r="'+rr+'"><c r="A'+rr+'" t="s"><v>'+FNAMES[ri(0,14)]+'</v></c><c r="B'+rr+'"><v>'+ri(20,60)+'</v></c><c r="C'+rr+'" t="s"><v>'+FCITIES[ri(0,14)]+'</v></c><c r="D'+rr+'" t="s"><v>'+FDEPTS[ri(0,7)]+'</v></c><c r="E'+rr+'"><v>'+salary()+'</v></c></row>';});}
+    }
+  };
+
+  // ── Main async generator — streams chunks via callback ──
+  async function generate(type,sizeMB,onProgress,abortSignal){
+    const totalBytes=sizeMB*1024*1024;
+    const fmt=formats[type]||formats.txt;
+    const prefixStr=fmt.prefix();
+    const suffixStr=fmt.suffix();
+    const prefixEnc=ENC.encode(prefixStr);
+    const suffixEnc=ENC.encode(suffixStr);
+    const bodyTarget=totalBytes-prefixEnc.length-suffixEnc.length;
+    const tileEnc=fmt.tile();
+
+    // Try File System Access API (streaming to disk)
+    const hasFileAccess=typeof window.showSaveFilePicker==='function';
+    let writable=null,fallbackChunks=null;
+
+    if(hasFileAccess){
+      try{
+        const handle=await window.showSaveFilePicker({
+          suggestedName:`sample-${sizeMB>=1024?(sizeMB/1024)+'gb':sizeMB+'mb'}.${fmt.ext}`,
+          types:[{description:fmt.ext.toUpperCase()+' file',accept:{[fmt.mime]:['.'+fmt.ext]}}]
+        });
+        writable=await handle.createWritable();
+      }catch(e){
+        if(e.name==='AbortError') throw e; // user cancelled picker
+        writable=null; // fall through to blob fallback
+      }
+    }
+
+    if(!writable){
+      // Fallback: collect chunks in memory, then Blob download
+      fallbackChunks=[];
+    }
+
+    async function writeChunk(data){
+      if(writable) await writable.write(data);
+      else fallbackChunks.push(data.slice(0)); // copy since we reuse buffers
+    }
+
+    // Write prefix
+    await writeChunk(prefixEnc);
+    let written=prefixEnc.length;
+    onProgress(written,totalBytes);
+
+    // Write body in 4MB chunks
+    let bodyWritten=0;
+    while(bodyWritten<bodyTarget){
+      if(abortSignal&&abortSignal.aborted) throw new DOMException('Aborted','AbortError');
+      const remaining=bodyTarget-bodyWritten;
+      const chunkSize=Math.min(CHUNK_SIZE,remaining);
+      const chunk=fillChunk(chunkSize,tileEnc,bodyWritten);
+      await writeChunk(chunk);
+      bodyWritten+=chunkSize;
+      written+=chunkSize;
+      onProgress(written,totalBytes);
+      // Yield to keep UI responsive
+      await new Promise(r=>setTimeout(r,0));
+    }
+
+    // Write suffix
+    await writeChunk(suffixEnc);
+    written+=suffixEnc.length;
+    onProgress(written,totalBytes);
+
+    if(writable){
+      await writable.close();
+      return {streamed:true,totalBytes:written,ext:fmt.ext,mime:fmt.mime};
+    } else {
+      const blob=new Blob(fallbackChunks,{type:fmt.mime});
+      return {streamed:false,blob,totalBytes:blob.size,ext:fmt.ext,mime:fmt.mime};
+    }
+  }
+
+  return {generate,formats};
+})();
 
 // ============================================================
 //  UI WIRING
@@ -2601,6 +2672,7 @@ document.getElementById("struct-dl-btn").addEventListener("click",()=>{
 // ---- SECTION 3: File Generator ----
 const fileType=document.getElementById("file-type");
 let selectedSize=null,generatedFileBlob=null,generatedFileName="";
+let fileAbort=null;
 
 const fileSizeSelect=document.getElementById("file-size-select");
 fileSizeSelect.addEventListener("change",()=>{
@@ -2616,172 +2688,92 @@ function updateFileBtns(){
   document.getElementById("file-clear-btn").disabled=!generatedFileBlob;
 }
 
-// ---- File generation engine (main-thread, avoids CSP worker-src issues) ----
-const FileGen=(function(){
-  const ENC=new TextEncoder();
-  const FNAMES=["Alice Smith","Bob Jones","Carol White","Dan Brown","Eva Green","Frank Black","Grace Hall","Henry Adams","Iris Clark","Jack Davis","Karen Lee","Leo Morris","Mia Clark","Ned Brown","Opal Davis"];
-  const FCITIES=["New York","Los Angeles","Chicago","Houston","Phoenix","San Diego","Dallas","Austin","Seattle","Denver","Boston","Atlanta","Miami","Portland","Nashville"];
-  const FDEPTS=["Engineering","Marketing","Sales","Finance","HR","Operations","IT","Design"];
-  const FLOREM="Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum. ";
-  function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-  function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
-  function femail(){const u=["alice","bob","carol","dan","eva","frank","grace","henry"][ri(0,7)];const d=["gmail.com","yahoo.com","outlook.com","company.com"][ri(0,3)];return u+ri(10,99)+"@"+d;}
-  function salary(){return ri(35,180)*1000;}
+function formatSize(bytes){
+  if(bytes>=1073741824) return (bytes/1073741824).toFixed(2)+' GB';
+  if(bytes>=1048576) return (bytes/1048576).toFixed(2)+' MB';
+  if(bytes>=1024) return (bytes/1024).toFixed(1)+' KB';
+  return bytes+' bytes';
+}
 
-  function fastFill(tb,prefix,suffix,rowFn){
-    const pre=ENC.encode(prefix),suf=ENC.encode(suffix);
-    const bodyTarget=tb-pre.length-suf.length;
-    let sample="";
-    let sampleBytes=0;
-    const target=Math.min(8192,bodyTarget);
-    while(sampleBytes<target){const row=rowFn()+"\n";sample+=row;sampleBytes+=ENC.encode(row).length;}
-    const sampleEnc=ENC.encode(sample);
-    const out=new Uint8Array(tb);
-    let pos=0;
-    out.set(pre,pos);pos+=pre.length;
-    while(pos-pre.length<bodyTarget){
-      const remaining=bodyTarget-(pos-pre.length);
-      if(sampleEnc.length<=remaining){out.set(sampleEnc,pos);pos+=sampleEnc.length;}
-      else{out.set(sampleEnc.slice(0,remaining),pos);pos+=remaining;}
-    }
-    out.set(suf,pos);
-    return out;
-  }
-
-  function genTXT(tb){return fastFill(tb,"","",()=>FLOREM);}
-  function genCSV(tb){
-    const row=()=>uuid()+","+FNAMES[ri(0,14)]+","+femail()+","+FCITIES[ri(0,14)]+","+FDEPTS[ri(0,7)]+","+salary();
-    return fastFill(tb,"id,name,email,city,department,salary\n","",row);
-  }
-  function genXML(tb){
-    const row=()=>'  <record><id>'+uuid()+'</id><name>'+FNAMES[ri(0,14)]+'</name><email>'+femail()+'</email><city>'+FCITIES[ri(0,14)]+'</city></record>';
-    return fastFill(tb,'<?xml version="1.0" encoding="UTF-8"?>\n<records>\n',"\n</records>",row);
-  }
-  function genHTML(tb){
-    return fastFill(tb,'<!DOCTYPE html><html><body>\n',"\n</body></html>",()=>'<p>'+FLOREM+'</p>');
-  }
-  function genDOCX(tb){
-    const safe=FLOREM.replace(/[<>&]/g,c=>c==="<"?"&lt;":c===">"?"&gt;":"&amp;");
-    return fastFill(tb,'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>\n',"\n</w:body></w:document>",()=>'<w:p><w:r><w:t>'+safe+'</w:t></w:r></w:p>');
-  }
-  function genJSON(tb){
-    const pre="[\n",suf="\n]";
-    const preEnc=ENC.encode(pre),sufEnc=ENC.encode(suf);
-    const bodyTarget=tb-preEnc.length-sufEnc.length;
-    const rowStr=()=>'  {"id":"'+uuid()+'","name":"'+FNAMES[ri(0,14)]+'","email":"'+femail()+'","city":"'+FCITIES[ri(0,14)]+'","salary":'+salary()+',"active":'+(Math.random()>0.5)+'}';
-    let sample="";
-    let sampleBytes=0;
-    const target=Math.min(8192,bodyTarget);
-    while(sampleBytes<target){const row=rowStr()+",\n";sample+=row;sampleBytes+=ENC.encode(row).length;}
-    const sampleEnc=ENC.encode(sample);
-    const out=new Uint8Array(tb);
-    let pos=0;out.set(preEnc,pos);pos+=preEnc.length;
-    while(pos-preEnc.length<bodyTarget){
-      const remaining=bodyTarget-(pos-preEnc.length);
-      if(sampleEnc.length<=remaining){out.set(sampleEnc,pos);pos+=sampleEnc.length;}
-      else{out.set(sampleEnc.slice(0,remaining),pos);pos+=remaining;}
-    }
-    out.set(sufEnc,pos);
-    return out;
-  }
-  function genPDF(tb){
-    const stream=FLOREM.repeat(5).replace(/[()\\]/g,"").slice(0,1000);
-    const streamBytes=ENC.encode(stream).length;
-    const objs=[
-      "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj",
-      "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj",
-      "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj",
-      "4 0 obj\n<< /Length "+streamBytes+" >>\nstream\nBT /F1 10 Tf 50 750 Td ("+stream+") Tj ET\nendstream\nendobj",
-      "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj",
-    ];
-    let pdf="%PDF-1.4\n";const offs=[];
-    objs.forEach(o=>{offs.push(ENC.encode(pdf).length);pdf+=o+"\n";});
-    const xp=ENC.encode(pdf).length;
-    let xref="xref\n0 "+(objs.length+1)+"\n0000000000 65535 f \n";
-    offs.forEach(o=>xref+=String(o).padStart(10,"0")+" 00000 n \n");
-    pdf+=xref+"trailer\n<< /Size "+(objs.length+1)+" /Root 1 0 R >>\nstartxref\n"+xp+"\n%%EOF\n";
-    const padLine="% "+FLOREM+"\n";
-    const padEnc=ENC.encode(padLine);
-    const pdfBase=ENC.encode(pdf);
-    const out=new Uint8Array(tb);
-    out.set(pdfBase,0);
-    let pos=pdfBase.length-8;
-    while(pos<tb-8){
-      const rem=tb-8-pos;
-      if(padEnc.length<=rem){out.set(padEnc,pos);pos+=padEnc.length;}
-      else{out.set(padEnc.slice(0,rem),pos);pos+=rem;}
-    }
-    out.set(ENC.encode("\n%%EOF\n"),pos);
-    return out;
-  }
-  function genXLSX(tb){
-    const header='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>Name</v></c><c r="B1" t="s"><v>Age</v></c><c r="C1" t="s"><v>City</v></c><c r="D1" t="s"><v>Salary</v></c></row>';
-    const suf='</sheetData></worksheet>';
-    let r=2;
-    return fastFill(tb,header,suf,()=>{const rr=r++;return '<row r="'+rr+'"><c r="A'+rr+'" t="s"><v>'+FNAMES[ri(0,14)]+'</v></c><c r="B'+rr+'"><v>'+ri(20,60)+'</v></c><c r="C'+rr+'" t="s"><v>'+FCITIES[ri(0,14)]+'</v></c><c r="D'+rr+'"><v>'+salary()+'</v></c></row>';});
-  }
-
-  return function(type,sizeMB){
-    const tb=sizeMB*1024*1024;
-    let bytes,mime,ext;
-    switch(type){
-      case"txt": bytes=genTXT(tb);mime="text/plain";ext="txt";break;
-      case"csv": bytes=genCSV(tb);mime="text/csv";ext="csv";break;
-      case"json":bytes=genJSON(tb);mime="application/json";ext="json";break;
-      case"xml": bytes=genXML(tb);mime="application/xml";ext="xml";break;
-      case"html":bytes=genHTML(tb);mime="text/html";ext="html";break;
-      case"pdf": bytes=genPDF(tb);mime="application/pdf";ext="pdf";break;
-      case"docx":bytes=genDOCX(tb);mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document";ext="docx";break;
-      case"xlsx":bytes=genXLSX(tb);mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";ext="xlsx";break;
-      default:   bytes=genTXT(tb);mime="text/plain";ext="txt";
-    }
-    return {bytes,mime,ext};
-  };
-})();
-
-document.getElementById("file-gen-btn").addEventListener("click",()=>{
+document.getElementById("file-gen-btn").addEventListener("click",async()=>{
   const label=document.getElementById("file-gen-label");
   const pw=document.getElementById("file-progress-wrap");
   const pb=document.getElementById("file-progress-bar");
+  const pt=document.getElementById("file-progress-text");
   document.getElementById("file-error").classList.remove("visible");
+  document.getElementById("file-status").classList.remove("visible");
   pw.classList.add("visible");pb.style.width="0%";
+  pt.style.display="block";pt.textContent="Preparing…";
   label.innerHTML='<span class="spinner"></span> Generating…';
   document.getElementById("file-gen-btn").disabled=true;
   document.getElementById("file-reset-btn").disabled=true;
+  generatedFileBlob=null;generatedFileName="";
 
-  // Use setTimeout to let UI paint the "Generating…" state before blocking
-  setTimeout(()=>{
-    try{
-      pb.style.width="50%";
-      const result=FileGen(fileType.value,selectedSize);
-      pb.style.width="100%";
-      generatedFileBlob=new Blob([result.bytes],{type:result.mime});
-      generatedFileName=`sample-${selectedSize}mb.${result.ext}`;
-      const actualSize=(generatedFileBlob.size/1024/1024).toFixed(2);
+  fileAbort=new AbortController();
+  const startTime=Date.now();
+
+  try{
+    const sizeLabel=selectedSize>=1024?(selectedSize/1024)+'gb':selectedSize+'mb';
+    const result=await FileGen.generate(
+      fileType.value,
+      selectedSize,
+      (written,total)=>{
+        const pct=Math.min(100,(written/total*100)).toFixed(1);
+        pb.style.width=pct+'%';
+        pt.textContent=formatSize(written)+' of '+formatSize(total)+' ('+pct+'%)';
+      },
+      fileAbort.signal
+    );
+
+    const elapsed=((Date.now()-startTime)/1000).toFixed(1);
+    const ext=result.ext;
+    generatedFileName=`sample-${sizeLabel}.${ext}`;
+
+    if(result.streamed){
+      // Already saved to disk via File System Access API
       document.getElementById("file-status-icon").textContent=FILE_ICONS[fileType.value]||"📄";
       document.getElementById("file-status-name").textContent=generatedFileName;
-      document.getElementById("file-status-size").textContent=`${generatedFileBlob.size.toLocaleString()} bytes (${actualSize} MB)`;
+      document.getElementById("file-status-size").textContent=formatSize(result.totalBytes)+' — saved to disk in '+elapsed+'s';
       document.getElementById("file-status").classList.add("visible");
-      setTimeout(()=>pw.classList.remove("visible"),600);
-      label.textContent="Generate";
-      document.getElementById("file-reset-btn").disabled=false;
-      updateFileBtns();
-    }catch(err){
-      pw.classList.remove("visible");
-      label.textContent="Generate";
-      document.getElementById("file-gen-btn").disabled=false;
-      document.getElementById("file-reset-btn").disabled=false;
+      // No blob to re-download, but leave download btn disabled
+      generatedFileBlob=null;
+    } else {
+      // Fallback: blob in memory
+      generatedFileBlob=result.blob;
+      document.getElementById("file-status-icon").textContent=FILE_ICONS[fileType.value]||"📄";
+      document.getElementById("file-status-name").textContent=generatedFileName;
+      document.getElementById("file-status-size").textContent=formatSize(result.totalBytes)+' — generated in '+elapsed+'s';
+      document.getElementById("file-status").classList.add("visible");
+    }
+
+    setTimeout(()=>{pw.classList.remove("visible");pt.style.display="none";},800);
+    label.textContent="Generate";
+    document.getElementById("file-reset-btn").disabled=false;
+    updateFileBtns();
+  }catch(err){
+    pw.classList.remove("visible");pt.style.display="none";
+    label.textContent="Generate";
+    document.getElementById("file-gen-btn").disabled=false;
+    document.getElementById("file-reset-btn").disabled=false;
+    if(err.name!=='AbortError'){
       document.getElementById("file-error-msg").textContent=err.message||"Generation failed.";
       document.getElementById("file-error").classList.add("visible");
-      updateFileBtns();
     }
-  },50);
+    updateFileBtns();
+  }
+  fileAbort=null;
 });
 
 document.getElementById("file-reset-btn").addEventListener("click",()=>{
+  if(fileAbort){fileAbort.abort();fileAbort=null;}
   fileType.selectedIndex=0;
   fileSizeSelect.selectedIndex=0;
   selectedSize=null;
+  generatedFileBlob=null;generatedFileName="";
+  document.getElementById("file-status").classList.remove("visible");
+  document.getElementById("file-progress-wrap").classList.remove("visible");
+  document.getElementById("file-progress-text").style.display="none";
+  document.getElementById("file-gen-label").textContent="Generate";
   updateFileBtns();
 });
 document.getElementById("file-clear-btn").addEventListener("click",()=>{
@@ -2790,8 +2782,10 @@ document.getElementById("file-clear-btn").addEventListener("click",()=>{
   updateFileBtns();
 });
 document.getElementById("file-dl-btn").addEventListener("click",()=>{
-  downloadBlob(generatedFileBlob,generatedFileName);
-  showToast("File downloaded!");
+  if(generatedFileBlob){
+    downloadBlob(generatedFileBlob,generatedFileName);
+    showToast("File downloaded!");
+  }
 });
 
 // ============================================================
