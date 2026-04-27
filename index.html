@@ -877,23 +877,25 @@ function rndFloat(min,max,dec=2){ return parseFloat((Math.random()*(max-min)+min
 function rndName(){ return rnd(FIRST)+" "+rnd(LAST); }
 function rndFirst(){ return rnd(FIRST); }
 function rndLast(){ return rnd(LAST); }
+function rndSuffix(len){const c='abcdefghijklmnopqrstuvwxyz0123456789';let s='';for(let i=0;i<len;i++) s+=c[Math.floor(Math.random()*c.length)];return s;}
 function rndEmail(first,last){
   first = first||rnd(FIRST); last = last||rnd(LAST);
   const sep = rnd([".","-","_",""]);
+  const suffix = "."+rndSuffix(6);
   const prefix = rnd([
-    first.toLowerCase()+sep+last.toLowerCase(),
-    first.toLowerCase()+rndInt(10,999),
-    last.toLowerCase()+sep+first[0].toLowerCase(),
-    first[0].toLowerCase()+last.toLowerCase(),
+    first.toLowerCase()+sep+last.toLowerCase()+suffix,
+    first.toLowerCase()+rndInt(10,999)+suffix,
+    last.toLowerCase()+sep+first[0].toLowerCase()+suffix,
+    first[0].toLowerCase()+last.toLowerCase()+suffix,
   ]);
   return prefix+"@"+rnd(DOMAINS);
 }
 function rndPhone(){
   const fmt = rnd([
-    `+1 (${rndInt(200,999)}) ${rndInt(200,999)}-${rndInt(1000,9999)}`,
-    `(${rndInt(200,999)}) ${rndInt(200,999)}-${rndInt(1000,9999)}`,
-    `${rndInt(200,999)}-${rndInt(200,999)}-${rndInt(1000,9999)}`,
-    `+44 ${rndInt(700,799)} ${rndInt(100,999)} ${rndInt(1000,9999)}`,
+    `+1 (555) 01${rndInt(0,9)}-${rndInt(1000,9999)}`,
+    `(555) 01${rndInt(0,9)}-${rndInt(1000,9999)}`,
+    `555-01${rndInt(0,9)}-${rndInt(1000,9999)}`,
+    `+44 7700 9${rndInt(10000,99999)}`,
   ]);
   return fmt;
 }
@@ -912,19 +914,27 @@ function rndUUID(){
   });
 }
 function rndIP(){
-  return `${rndInt(10,223)}.${rndInt(0,255)}.${rndInt(0,255)}.${rndInt(1,254)}`;
+  return rnd([
+    `192.0.2.${rndInt(1,254)}`,
+    `198.51.100.${rndInt(1,254)}`,
+    `203.0.113.${rndInt(1,254)}`,
+  ]);
 }
 function rndUrl(){
   const name = rnd(COMPANIES).toLowerCase().replace(/[^a-z]/g,"");
-  return `https://www.${name}${rnd(TLDS)}`;
+  return `https://www.${name}.example`;
 }
 function rndCC(){
-  // Luhn-valid-looking (not real)
-  const prefixes = ["4","51","52","53","54","55","34","37"];
-  const p = rnd(prefixes);
-  const len = p.startsWith("3") ? 15 : 16;
-  let num = p;
-  while(num.length < len-1) num += rndInt(0,9);
+  // Stripe/PayPal test card prefixes — Luhn-valid but flagged as test by all payment processors
+  const testCards = [
+    {prefix:"4000000000",len:16},  // Visa test
+    {prefix:"5200828282",len:16},  // Mastercard test
+    {prefix:"378282246",len:15},   // Amex test
+    {prefix:"6011111111",len:16},  // Discover test
+  ];
+  const card = rnd(testCards);
+  let num = card.prefix;
+  while(num.length < card.len-1) num += rndInt(0,9);
   // Luhn checksum
   let sum=0,alt=false;
   for(let i=num.length-1;i>=0;i--){
@@ -1326,9 +1336,9 @@ function rndPassword(strength="strong"){
 }
 
 function rndPhoneRegion(region){
-  if(region==="uk") return `+44 ${rndInt(700,799)} ${rndInt(100,999)} ${rndInt(1000,9999)}`;
-  if(region==="india"||region==="in") return `+91 ${rndInt(70,99)}${rndInt(10000000,99999999)}`;
-  return `+1 (${rndInt(200,999)}) ${rndInt(200,999)}-${rndInt(1000,9999)}`;
+  if(region==="uk") return `+44 7700 9${rndInt(10000,99999)}`;
+  if(region==="india"||region==="in") return `+91 00${rndInt(10,99)}${rndInt(100000,999999)}`;
+  return `+1 (555) 01${rndInt(0,9)}-${rndInt(1000,9999)}`;
 }
 
 function rndComment(){
@@ -2329,7 +2339,7 @@ const FileGen=(function(){
   const LOREM_WORDS=FLOREM.split(' ');
   function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
   function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
-  function femail(){const u=FNAMES[ri(0,14)].split(' ')[0].toLowerCase();const d=["gmail.com","yahoo.com","outlook.com","company.org","example.net"][ri(0,4)];return u+ri(10,999)+"@"+d;}
+  function femail(){const u=FNAMES[ri(0,14)].split(' ')[0].toLowerCase();const s='abcdefghijklmnopqrstuvwxyz0123456789';let sx='';for(let i=0;i<6;i++) sx+=s[Math.floor(Math.random()*s.length)];const d=["gmail.com","yahoo.com","outlook.com","hotmail.com","company.com"][ri(0,4)];return u+'.'+sx+"@"+d;}
   function salary(){return ri(35,180)*1000;}
   function fdate(){return `${ri(2018,2025)}-${String(ri(1,12)).padStart(2,'0')}-${String(ri(1,28)).padStart(2,'0')}`;}
   function randSentence(){
@@ -2396,7 +2406,7 @@ const FileGen=(function(){
       mime:'text/plain',ext:'sql',
       prefix:()=>'CREATE TABLE IF NOT EXISTS users (id VARCHAR(36), name VARCHAR(100), email VARCHAR(100), city VARCHAR(50), department VARCHAR(50), salary INT, created_date DATE);\n',
       suffix:()=>'',
-      tile:()=>buildTile(()=>"INSERT INTO users VALUES ('"+uuid()+"','"+FNAMES[ri(0,14)]+"','"+femail()+"','"+FCITIES[ri(0,14)]+"','"+FDEPTS[ri(0,7)]+"',"+salary()+",'"+fdate()+"');")
+      tile:()=>{function esc(s){return s.replace(/'/g,"''");}return buildTile(()=>{const n=esc(FNAMES[ri(0,14)]),e=esc(femail()),c=esc(FCITIES[ri(0,14)]),dp=esc(FDEPTS[ri(0,7)]);return "INSERT INTO users VALUES ('"+uuid()+"','"+n+"','"+e+"','"+c+"','"+dp+"',"+salary()+",'"+fdate()+"');";});}
     },
     pdf:{
       mime:'application/pdf',ext:'pdf',
@@ -3335,7 +3345,7 @@ document.getElementById("img-dl-btn").addEventListener("click",()=>{
     if(text.length>0&&text.length<=500){
       breakdownEl.style.display='block';
       const segments=graphemeSegmenter?[...graphemeSegmenter.segment(text)]:[...text].map(c=>({segment:c}));
-      let html='';
+      breakdownBody.innerHTML='';
       segments.forEach((seg,i)=>{
         const ch=seg.segment;
         const isWs=/^\s+$/.test(ch);
@@ -3347,9 +3357,16 @@ document.getElementById("img-dl-btn").addEventListener("click",()=>{
         else if(ch==='\r') label='CR';
         else if(/^\s$/.test(ch)) label='U+'+ch.codePointAt(0).toString(16).toUpperCase().padStart(4,'0');
         else label=ch;
-        html+='<span class="cc-char-tag'+(isWs?' ws':'')+'"'+(excluded?' style="opacity:0.4;text-decoration:line-through;"':'')+'><span class="cc-char-idx">'+(i+1)+'</span>'+label.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
+        const tag=document.createElement('span');
+        tag.className='cc-char-tag'+(isWs?' ws':'');
+        if(excluded) tag.style.cssText='opacity:0.4;text-decoration:line-through;';
+        const idx=document.createElement('span');
+        idx.className='cc-char-idx';
+        idx.textContent=i+1;
+        tag.appendChild(idx);
+        tag.appendChild(document.createTextNode(label));
+        breakdownBody.appendChild(tag);
       });
-      breakdownBody.innerHTML=html;
     } else {
       breakdownEl.style.display='none';
       breakdownBody.innerHTML='';
