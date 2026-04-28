@@ -587,19 +587,12 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   <div class="pane-label">👤 Personal Data</div>
   <button class="pane-chip" data-prompt="generate 10 full names">10 Full Names</button>
   <button class="pane-chip" data-prompt="generate 10 email addresses">10 Emails</button>
-  <button class="pane-chip" data-prompt="generate phone numbers for US, UK and India">US/UK/India Phones</button>
   <button class="pane-chip" data-prompt="generate 10 addresses">10 Addresses</button>
   <button class="pane-chip" data-prompt="generate 10 usernames">10 Usernames</button>
   <button class="pane-chip" data-prompt="generate 10 random dates">10 Dates</button>
-  <button class="pane-chip" data-prompt="generate 5 credit card numbers">5 Credit Cards</button>
-  <button class="pane-chip" data-prompt="generate 10 UUIDs">10 UUIDs</button>
-  <button class="pane-chip" data-prompt="generate 10 IP addresses">10 IP Addresses</button>
   <div class="pane-label">🔐 Passwords &amp; Auth</div>
   <button class="pane-chip" data-prompt="generate 10 strong passwords">Strong Passwords</button>
-  <button class="pane-chip" data-prompt="generate 5 weak passwords">Weak Passwords</button>
-  <button class="pane-chip" data-prompt="generate 10 medium strength passwords">Medium Passwords</button>
   <button class="pane-chip" data-prompt="generate strings matching regex [A-Z]{5}[0-9]{3}">Regex Pattern</button>
-  <button class="pane-chip" data-prompt="generate 10 random coupon codes">Coupon Codes</button>
 
 </div>
 <div class="text-main-area">
@@ -766,6 +759,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
               <option value="jpeg">JPEG</option>
               <option value="png">PNG</option>
               <option value="webp">WebP</option>
+              <option value="gif">GIF</option>
               <option value="svg">SVG</option>
               <option value="bmp">BMP</option>
             </select>
@@ -778,6 +772,20 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
               <option value="abstract">Abstract</option>
               <option value="gradient">Gradient</option>
               <option value="pattern">Pattern</option>
+            </select>
+          </div>
+        </div>
+        <div class="select-row" style="grid-template-columns:1fr;">
+          <div class="field-group">
+            <label class="field-label">Target File Size</label>
+            <select id="img-size">
+              <option value="0" selected>Auto (default)</option>
+              <option value="1">1 MB</option>
+              <option value="2">2 MB</option>
+              <option value="3">3 MB</option>
+              <option value="4">4 MB</option>
+              <option value="5">5 MB</option>
+              <option value="10">10 MB</option>
             </select>
           </div>
         </div>
@@ -3115,9 +3123,260 @@ function canvasToBMP(canvas){
   return new Blob([buf],{type:'image/bmp'});
 }
 
+// ── GIF encoder (minimal LZW-based GIF89a) ──
+function canvasToGIF(canvas){
+  const w=canvas.width,h=canvas.height;
+  const ctx=canvas.getContext('2d');
+  const imgData=ctx.getImageData(0,0,w,h).data;
+  // Build 256-color palette via median cut (simplified: use first 256 unique colors or quantize)
+  const colorMap=new Map();
+  const palette=[];
+  for(let i=0;i<imgData.length;i+=4){
+    const r=imgData[i]>>4<<4,g=imgData[i+1]>>4<<4,b=imgData[i+2]>>4<<4;
+    const key=(r<<16)|(g<<8)|b;
+    if(!colorMap.has(key)&&palette.length<256){
+      colorMap.set(key,palette.length);
+      palette.push([r,g,b]);
+    }
+  }
+  while(palette.length<256) palette.push([0,0,0]);
+  // Map pixels to palette indices
+  const indices=new Uint8Array(w*h);
+  for(let i=0,p=0;i<imgData.length;i+=4,p++){
+    const r=imgData[i]>>4<<4,g=imgData[i+1]>>4<<4,b=imgData[i+2]>>4<<4;
+    const key=(r<<16)|(g<<8)|b;
+    indices[p]=colorMap.get(key)||0;
+  }
+  // LZW compress
+  const minCode=8;
+  const clearCode=1<<minCode;
+  const eoiCode=clearCode+1;
+  let codeSize=minCode+1;
+  let nextCode=eoiCode+1;
+  let table=new Map();
+  const output=[];
+  let buf=0,bits=0;
+  function writeBits(code,size){
+    buf|=(code<<bits);bits+=size;
+    while(bits>=8){output.push(buf&0xff);buf>>=8;bits-=8;}
+  }
+  writeBits(clearCode,codeSize);
+  let prev=indices[0];
+  for(let i=1;i<indices.length;i++){
+    const curr=indices[i];
+    const key=(prev<<12)|curr;
+    if(table.has(key)){
+      prev=table.get(key);
+    } else {
+      writeBits(prev,codeSize);
+      if(nextCode<4096){
+        table.set(key,nextCode++);
+        if(nextCode>(1<<codeSize)&&codeSize<12) codeSize++;
+      } else {
+        writeBits(clearCode,codeSize);
+        table=new Map();
+        nextCode=eoiCode+1;
+        codeSize=minCode+1;
+      }
+      prev=curr;
+    }
+  }
+  writeBits(prev,codeSize);
+  writeBits(eoiCode,codeSize);
+  if(bits>0) output.push(buf&0xff);
+  // Build GIF binary
+  const lzwData=new Uint8Array(output);
+  // Sub-blocks
+  const blocks=[];
+  for(let i=0;i<lzwData.length;i+=255){
+    const chunk=lzwData.slice(i,i+255);
+    blocks.push(chunk.length);
+    for(let j=0;j<chunk.length;j++) blocks.push(chunk[j]);
+  }
+  blocks.push(0); // block terminator
+  // Header + GCT + Image + Footer
+  const paletteBytes=new Uint8Array(768);
+  for(let i=0;i<256;i++){paletteBytes[i*3]=palette[i][0];paletteBytes[i*3+1]=palette[i][1];paletteBytes[i*3+2]=palette[i][2];}
+  const header=new Uint8Array([
+    0x47,0x49,0x46,0x38,0x39,0x61, // GIF89a
+    w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff,
+    0xf7, // GCT flag, 256 colors (2^(7+1))
+    0x00, // bg color index
+    0x00  // pixel aspect ratio
+  ]);
+  const imgDesc=new Uint8Array([
+    0x2c, // image separator
+    0x00,0x00,0x00,0x00, // left, top
+    w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff,
+    0x00  // no local color table
+  ]);
+  const lzwMin=new Uint8Array([minCode]);
+  const trailer=new Uint8Array([0x3b]);
+  return new Blob([header,paletteBytes,imgDesc,lzwMin,new Uint8Array(blocks),trailer],{type:'image/gif'});
+}
+
+// ── Size-targeted image generation ──
+function calcBMPDimensions(targetBytes){
+  // BMP: fileSize = 54 + rowSize * h, rowSize = (w*3 + padding)
+  // Use 16:9 aspect ratio
+  const usable=targetBytes-54;
+  // w*3 per row, ~h rows, w/h = 16/9
+  // h = w * 9/16, totalPixelBytes ≈ w * 3 * w * 9/16
+  const w=Math.floor(Math.sqrt(usable*16/(3*9)));
+  const h=Math.floor(w*9/16);
+  return {w:Math.max(w,64),h:Math.max(h,36)};
+}
+
+function generateSizedBMP(style,targetBytes){
+  const {w,h}=calcBMPDimensions(targetBytes);
+  const canvas=document.createElement('canvas');
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  switch(style){
+    case 'landscape': drawLandscape(ctx,w,h);break;
+    case 'abstract': drawAbstract(ctx,w,h);break;
+    case 'gradient': drawGradient(ctx,w,h);break;
+    case 'pattern': drawPattern(ctx,w,h);break;
+  }
+  // Fill remaining with noise to hit exact size
+  const blob=canvasToBMP(canvas);
+  return {blob,w,h};
+}
+
+function generateSizedSVG(style,targetBytes){
+  // Start with base SVG, add shapes until target reached
+  let w=1920,h=1080;
+  let svg=generateSVG(style,w,h);
+  let size=new Blob([svg]).size;
+  // Add extra shapes to pad
+  const closingTag='\n</svg>';
+  let body=svg.slice(0,svg.lastIndexOf(closingTag));
+  while(size<targetBytes){
+    const remaining=targetBytes-size;
+    if(remaining<100) break;
+    // Add random circles with long attribute strings
+    for(let i=0;i<50&&size<targetBytes;i++){
+      const shape=`<circle cx="${rndInt(0,w)}" cy="${rndInt(0,h)}" r="${rndInt(5,200)}" fill="${rndPastel()}" opacity="${rndFloat(0.05,0.15,3)}" data-pad="${rndSuffix(Math.min(200,Math.max(10,remaining/100|0)))}"/>`;
+      body+=shape;
+      size+=shape.length;
+    }
+  }
+  svg=body+closingTag;
+  return {svg,w,h,size:new Blob([svg]).size};
+}
+
+async function generateSizedRaster(style,format,targetBytes){
+  // Binary search: adjust canvas resolution and quality to hit target
+  const isQualityFormat=(format==='jpeg'||format==='webp');
+  const mime={jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif'}[format];
+
+  // Estimate starting resolution based on format
+  let w,h;
+  if(format==='png'){
+    // PNG with noise: ~4 bytes per pixel after compression
+    const pixels=targetBytes/4;
+    w=Math.floor(Math.sqrt(pixels*16/9));
+    h=Math.floor(w*9/16);
+  } else if(format==='gif'){
+    // GIF: ~1-2 bytes per pixel
+    const pixels=targetBytes/1.5;
+    w=Math.floor(Math.sqrt(pixels*16/9));
+    h=Math.floor(w*9/16);
+  } else {
+    // JPEG/WebP: start large, control via quality
+    w=4000;h=2250;
+  }
+  w=Math.max(w,320);h=Math.max(h,180);
+  // Cap at reasonable max
+  w=Math.min(w,8000);h=Math.min(h,4500);
+
+  const canvas=document.createElement('canvas');
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    switch(style){
+      case 'landscape': drawLandscape(ctx,w,h);break;
+      case 'abstract': drawAbstract(ctx,w,h);break;
+      case 'gradient': drawGradient(ctx,w,h);break;
+      case 'pattern': drawPattern(ctx,w,h);break;
+    }
+    // Add subtle noise to defeat PNG/GIF compression
+    if(format==='png'||format==='gif'){
+      const imgData=ctx.getImageData(0,0,w,h);
+      const d=imgData.data;
+      for(let i=0;i<d.length;i+=4){
+        d[i]  =Math.min(255,Math.max(0,d[i]  +rndInt(-3,3)));
+        d[i+1]=Math.min(255,Math.max(0,d[i+1]+rndInt(-3,3)));
+        d[i+2]=Math.min(255,Math.max(0,d[i+2]+rndInt(-3,3)));
+      }
+      ctx.putImageData(imgData,0,0);
+    }
+  }
+
+  draw();
+
+  function toBlob(q){
+    return new Promise(resolve=>{
+      if(format==='gif'){
+        resolve(canvasToGIF(canvas));
+      } else {
+        canvas.toBlob(resolve,mime,q);
+      }
+    });
+  }
+
+  if(isQualityFormat){
+    // Binary search quality
+    let lo=0.01,hi=1.0,bestBlob=null;
+    for(let i=0;i<12;i++){
+      const mid=(lo+hi)/2;
+      const blob=await toBlob(mid);
+      bestBlob=blob;
+      if(blob.size<targetBytes*0.95) lo=mid;
+      else if(blob.size>targetBytes*1.05) hi=mid;
+      else break;
+    }
+    // If still too small even at quality=1, increase resolution
+    if(bestBlob.size<targetBytes*0.85){
+      const scale=Math.sqrt(targetBytes/bestBlob.size)*1.1;
+      w=Math.min(Math.floor(w*scale),8000);
+      h=Math.min(Math.floor(h*scale),4500);
+      canvas.width=w;canvas.height=h;
+      draw();
+      lo=0.01;hi=1.0;
+      for(let i=0;i<12;i++){
+        const mid=(lo+hi)/2;
+        const blob=await toBlob(mid);
+        bestBlob=blob;
+        if(blob.size<targetBytes*0.95) lo=mid;
+        else if(blob.size>targetBytes*1.05) hi=mid;
+        else break;
+      }
+    }
+    return {blob:bestBlob,w,h};
+  } else {
+    // PNG/GIF: adjust resolution
+    let blob=await toBlob();
+    let attempts=0;
+    while(Math.abs(blob.size-targetBytes)/targetBytes>0.15&&attempts<5){
+      const scale=Math.sqrt(targetBytes/blob.size);
+      w=Math.min(Math.max(Math.floor(w*scale),320),8000);
+      h=Math.min(Math.max(Math.floor(h*scale),180),4500);
+      canvas.width=w;canvas.height=h;
+      draw();
+      blob=await toBlob();
+      attempts++;
+    }
+    return {blob,w,h};
+  }
+}
+
 // ---- Image UI wiring ----
 const imgStyle=document.getElementById("img-style");
 const imgFormat=document.getElementById("img-format");
+const imgSizeSelect=document.getElementById("img-size");
 const imgGenBtn=document.getElementById("img-gen-btn");
 const imgPreviewWrap=document.getElementById("img-preview-wrap");
 const imgPreview=document.getElementById("img-preview");
@@ -3133,81 +3392,88 @@ function updateImgBtns(){
 imgStyle.addEventListener("change",updateImgBtns);
 imgFormat.addEventListener("change",updateImgBtns);
 
-imgGenBtn.addEventListener("click",()=>{
+function showImgResult(blob,w,h,fmt,style){
+  imgBlob=blob;
+  const ext=fmt==='jpeg'?'jpg':fmt;
+  imgFileName=`sample-${style}-${w}x${h}.${ext}`;
+  const url=URL.createObjectURL(blob);
+  imgPreview.onload=()=>URL.revokeObjectURL(url);
+  imgPreview.src=url;
+  imgPreviewWrap.classList.add("visible");
+  const sizeStr=blob.size>=1048576?(blob.size/1048576).toFixed(2)+' MB':(blob.size/1024).toFixed(1)+' KB';
+  imgInfo.innerHTML=`<span>${w} × ${h}</span><span>${fmt.toUpperCase()}</span><span>${sizeStr}</span><span>${style}</span>`;
+}
+
+imgGenBtn.addEventListener("click",async()=>{
   if(!imgStyle.value||!imgFormat.value) return;
   const label=document.getElementById("img-gen-label");
   label.innerHTML='<span class="spinner"></span> Generating…';
   imgGenBtn.disabled=true;
-  // Hide previous error
   document.getElementById("img-error").classList.remove("visible");
-  // Clear previous blob but keep preview visible to avoid layout shift
   imgBlob=null;imgFileName="";
 
-  setTimeout(()=>{
-    try{
-      generateImage(imgStyle.value);
+  const targetMB=parseInt(imgSizeSelect.value)||0;
+  const targetBytes=targetMB*1024*1024;
+  const fmt=imgFormat.value;
+  const style=imgStyle.value;
 
-      // SVG: build vector XML, skip canvas export
-      if(imgFormat.value==='svg'){
-        const svgText=generateSVG(imgStyle.value,IMG_W,IMG_H);
-        imgBlob=new Blob([svgText],{type:'image/svg+xml'});
-        imgFileName=`sample-${imgStyle.value}-${IMG_W}x${IMG_H}.svg`;
-        // Preview using canvas render
-        const url=URL.createObjectURL(new Blob([svgText],{type:'image/svg+xml'}));
+  try{
+    if(targetMB>0){
+      // ── Size-targeted generation ──
+      if(fmt==='bmp'){
+        const {blob,w,h}=generateSizedBMP(style,targetBytes);
+        showImgResult(blob,w,h,fmt,style);
+      } else if(fmt==='svg'){
+        const {svg,w,h}=generateSizedSVG(style,targetBytes);
+        imgBlob=new Blob([svg],{type:'image/svg+xml'});
+        const ext='svg';
+        imgFileName=`sample-${style}-${w}x${h}.${ext}`;
+        const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
         imgPreview.onload=()=>URL.revokeObjectURL(url);
         imgPreview.src=url;
         imgPreviewWrap.classList.add("visible");
-        const sizeKB=(imgBlob.size/1024).toFixed(1);
-        imgInfo.innerHTML=`<span>${IMG_W} × ${IMG_H}</span><span>SVG</span><span>${sizeKB} KB</span><span>${imgStyle.value}</span>`;
-        label.textContent="Generate";
-        updateImgBtns();
-        return;
+        const sizeStr=imgBlob.size>=1048576?(imgBlob.size/1048576).toFixed(2)+' MB':(imgBlob.size/1024).toFixed(1)+' KB';
+        imgInfo.innerHTML=`<span>${w} × ${h}</span><span>SVG</span><span>${sizeStr}</span><span>${style}</span>`;
+      } else {
+        // JPEG, PNG, WebP, GIF
+        const {blob,w,h}=await generateSizedRaster(style,fmt,targetBytes);
+        showImgResult(blob,w,h,fmt,style);
       }
+    } else {
+      // ── Auto (default) — original behavior ──
+      generateImage(style);
 
-      // BMP: convert canvas pixels to BMP bytes
-      if(imgFormat.value==='bmp'){
-        imgBlob=canvasToBMP(imgCanvas);
-        imgFileName=`sample-${imgStyle.value}-${IMG_W}x${IMG_H}.bmp`;
-        const url=URL.createObjectURL(imgBlob);
-        imgPreview.onload=()=>URL.revokeObjectURL(url);
-        imgPreview.src=url;
-        imgPreviewWrap.classList.add("visible");
-        const sizeKB=(imgBlob.size/1024).toFixed(1);
-        imgInfo.innerHTML=`<span>${IMG_W} × ${IMG_H}</span><span>BMP</span><span>${sizeKB} KB</span><span>${imgStyle.value}</span>`;
-        label.textContent="Generate";
-        updateImgBtns();
-        return;
+      if(fmt==='svg'){
+        const svgText=generateSVG(style,IMG_W,IMG_H);
+        const blob=new Blob([svgText],{type:'image/svg+xml'});
+        showImgResult(blob,IMG_W,IMG_H,fmt,style);
+      } else if(fmt==='bmp'){
+        const blob=canvasToBMP(imgCanvas);
+        showImgResult(blob,IMG_W,IMG_H,fmt,style);
+      } else if(fmt==='gif'){
+        const blob=canvasToGIF(imgCanvas);
+        showImgResult(blob,IMG_W,IMG_H,fmt,style);
+      } else {
+        const mimeMap={jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
+        const mime=mimeMap[fmt]||'image/jpeg';
+        const quality=fmt==='png'?undefined:0.75;
+        const blob=await new Promise(r=>imgCanvas.toBlob(r,mime,quality));
+        showImgResult(blob,IMG_W,IMG_H,fmt,style);
       }
-
-      // Standard raster: JPEG, PNG, WebP
-      const mimeMap={jpeg:"image/jpeg",png:"image/png",webp:"image/webp"};
-      const mime=mimeMap[imgFormat.value]||"image/jpeg";
-      const quality=(imgFormat.value==="png")?undefined:0.75;
-      imgCanvas.toBlob(blob=>{
-        imgBlob=blob;
-        imgFileName=`sample-${imgStyle.value}-${IMG_W}x${IMG_H}.${imgFormat.value==="jpeg"?"jpg":imgFormat.value}`;
-        // Preview
-        const url=URL.createObjectURL(blob);
-        imgPreview.onload=()=>URL.revokeObjectURL(url);
-        imgPreview.src=url;
-        imgPreviewWrap.classList.add("visible");
-        const sizeKB=(blob.size/1024).toFixed(1);
-        imgInfo.innerHTML=`<span>${IMG_W} × ${IMG_H}</span><span>${imgFormat.value.toUpperCase()}</span><span>${sizeKB} KB</span><span>${imgStyle.value}</span>`;
-        label.textContent="Generate";
-        updateImgBtns();
-      },mime,quality);
-    }catch(e){
-      label.textContent="Generate";
-      imgGenBtn.disabled=false;
-      document.getElementById("img-error-msg").textContent=e.message||"Image generation failed. Please try again.";
-      document.getElementById("img-error").classList.add("visible");
-      updateImgBtns();
     }
-  },30);
+    label.textContent="Generate";
+    updateImgBtns();
+  }catch(e){
+    label.textContent="Generate";
+    imgGenBtn.disabled=false;
+    document.getElementById("img-error-msg").textContent=e.message||"Image generation failed.";
+    document.getElementById("img-error").classList.add("visible");
+    updateImgBtns();
+  }
 });
 
 document.getElementById("img-reset-btn").addEventListener("click",()=>{
-  imgStyle.selectedIndex=0;imgFormat.selectedIndex=0;updateImgBtns();
+  imgStyle.selectedIndex=0;imgFormat.selectedIndex=0;imgSizeSelect.selectedIndex=0;updateImgBtns();
 });
 
 document.getElementById("img-clear-btn").addEventListener("click",()=>{
