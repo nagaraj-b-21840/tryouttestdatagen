@@ -360,7 +360,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 .left-pane{
   width:210px;flex-shrink:0;
   background:var(--bg2);border-right:1px solid var(--border);
-  padding:8px 8px 16px;display:flex;flex-direction:column;gap:2px;
+  padding:8px 8px 0;display:flex;flex-direction:column;gap:2px;
   height:calc(100vh - 116px);overflow-y:auto;scrollbar-gutter:stable;
   position:sticky;top:0;
 }
@@ -988,6 +988,38 @@ function rndMultilingualChars(pool,n){
   let out="";
   while(out.length<n+20) out+=rnd(pool)+" ";
   return out.slice(0,n);
+}
+
+function rndMultilingualParagraph(pool,sentenceCount){
+  // Build a paragraph from sentenceCount sentences, each 6-12 words
+  return Array.from({length:sentenceCount},()=>{
+    const words=Array.from({length:rndInt(6,12)},()=>rnd(pool));
+    words[0]=words[0].charAt(0).toUpperCase?words[0]:words[0];
+    return words.join(' ');
+  }).join('. ')+'.';
+}
+
+function parsePerLangCharCounts(raw){
+  // Parse "100 tamil character and 100 english character" → [{lang:'tamil',cc:100},{lang:'english',cc:100}]
+  const CU='(?:char(?:acter)?s?|letters?)';
+  const langNames='tamil|hindi|japanese|chinese|mandarin|french|spanish|arabic|german|portuguese|korean|english';
+  const re=new RegExp('(\\d+)\\s*('+langNames+')\\s*'+CU,'gi');
+  const results=[];
+  let m;
+  while((m=re.exec(raw))!==null){
+    let lang=m[2].toLowerCase();
+    if(lang==='mandarin') lang='chinese';
+    results.push({lang, cc:parseInt(m[1])});
+  }
+  if(results.length) return results;
+  // Also try "lang N chars" pattern: "tamil 100 characters and english 100 characters"
+  const re2=new RegExp('('+langNames+')\\s+(\\d+)\\s*'+CU,'gi');
+  while((m=re2.exec(raw))!==null){
+    let lang=m[1].toLowerCase();
+    if(lang==='mandarin') lang='chinese';
+    results.push({lang, cc:parseInt(m[2])});
+  }
+  return results;
 }
 
 function rndMixedUnicode(n){
@@ -1778,15 +1810,18 @@ function parseCount(raw,q){
 function parseCharCount(raw){
   // Char-unit words: chars, characters, letter(s) — NOT "long/length/bytes" (too ambiguous)
   const CU='(?:char(?:acter)?s?|letters?)';
+  // Allow 0-2 adjective words between number/multiplier and unit
+  // e.g. "10000 English characters", "5k random English chars"
+  const GAP='(?:\\s+\\w+){0,2}?\\s*';
   // Handle "1 million chars/letters", "5k characters", "2 thousand letters"
-  const mMil=raw.match(new RegExp('(\\d+)\\s*million\\s*'+CU,'i'));
+  const mMil=raw.match(new RegExp('(\\d+)\\s*million'+GAP+CU,'i'));
   if(mMil) return parseInt(mMil[1])*1000000;
-  const mK=raw.match(new RegExp('(\\d+)\\s*k\\s*'+CU,'i'));
+  const mK=raw.match(new RegExp('(\\d+)\\s*k'+GAP+CU,'i'));
   if(mK) return parseInt(mK[1])*1000;
-  const mTh=raw.match(new RegExp('(\\d+)\\s*thousand\\s*'+CU,'i'));
+  const mTh=raw.match(new RegExp('(\\d+)\\s*thousand'+GAP+CU,'i'));
   if(mTh) return parseInt(mTh[1])*1000;
-  // "500 characters", "500 letters", "500 char"
-  const m=raw.match(new RegExp('\\b(\\d+)\\s*'+CU+'\\b','i'));
+  // "500 characters", "500 English characters", "10000 random English letters"
+  const m=raw.match(new RegExp('\\b(\\d+)'+GAP+CU+'\\b','i'));
   if(m) return parseInt(m[1]);
   // Reverse: "characters of 500", "letter content of 200"
   const mRev=raw.match(new RegExp(CU+'\\s+(?:content\\s+)?(?:of|in|with)\\s+(\\d+)','i'));
@@ -2008,8 +2043,24 @@ const INTENTS = [
     },
     run:(q,n,cc,raw)=>{
       const langs=detectLangs(raw.toLowerCase());
+      const isPara=/\bparagraph/.test(q);
       if(langs.length>=2){
+        // Check for per-language char counts: "100 tamil characters and 100 english characters"
+        const perLang=parsePerLangCharCounts(raw);
+        if(perLang.length>=2){
+          return perLang.map(pl=>{
+            const pool=LANG_POOLS[pl.lang]?LANG_POOLS[pl.lang]():LOREM_WORDS;
+            return rndMultilingualChars(pool,pl.cc);
+          }).join('\n\n');
+        }
         if(cc) return rndMultiLangMix(langs,cc);
+        if(isPara){
+          const pools=langs.map(l=>LANG_POOLS[l]?LANG_POOLS[l]():LOREM_WORDS);
+          return Array.from({length:n},(_,i)=>{
+            const pool=pools[i%pools.length];
+            return `Paragraph ${i+1}:\n${rndMultilingualParagraph(pool,rndInt(3,6))}`;
+          }).join('\n\n');
+        }
         return Array.from({length:n},()=>{
           return langs.map(l=>{
             const pool=LANG_POOLS[l]?LANG_POOLS[l]():LOREM_WORDS;
@@ -2024,6 +2075,9 @@ const INTENTS = [
         return toCSV(Array.from({length:n},()=>{const r=genRecord();r.note=rndMultilingualWords(pool,rndInt(3,6));return r;}));
       }
       if(cc) return rndMultilingualChars(pool,cc);
+      if(isPara){
+        return Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndMultilingualParagraph(pool,rndInt(3,6))}`).join('\n\n');
+      }
       return Array.from({length:n},()=>rndMultilingualWords(pool,rndInt(8,15))).join("\n");
     }},
 
@@ -2139,7 +2193,7 @@ const INTENTS = [
   { id:'placeholder',score:q=>/\bplaceholder\b/.test(q)?82:0,
     run:()=>["name","email","phone","address","message","username","password","search","url"].map(f=>`${f}: "${rndPlaceholder(f)}"`).join("\n") },
   { id:'paragraph', score:q=>/\bparagraph\b/.test(q)&&!/lorem|ipsum|emoji|symbol/.test(q)?72:0,
-    run:(q,n)=>Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n") },
+    run:(q,n,cc)=>cc ? rndEnglishChars(cc) : Array.from({length:n},(_,i)=>`Paragraph ${i+1}:\n${rndLorem(rndInt(3,6))}`).join("\n\n") },
 
   // ── COMBINED RECORDS ──
   { id:'login',     score:q=>/\blogin\b|\bsign.?in\b|\bauth\b|\bcredential\b/.test(q)?87:0,
@@ -2238,6 +2292,15 @@ function processQuery(rawQuery){
     if(cc===0) return {text:null, isCharBased:false, intentId:'error', error:'Cannot generate 0 characters. Please specify a positive number.'};
     if(cc<0) return {text:null, isCharBased:false, intentId:'error', error:'Character count must be a positive number.'};
     if(cc>CHAR_LIMIT) return {text:null, isCharBased:false, intentId:'error', error:`Maximum character limit is ${CHAR_LIMIT.toLocaleString()}. Please reduce your character count.`};
+  }
+  // Validate per-language char counts (e.g. "100 tamil chars and 100 english chars")
+  const perLangCounts=parsePerLangCharCounts(raw);
+  if(perLangCounts.length>=2){
+    const totalPerLang=perLangCounts.reduce((s,p)=>s+p.cc,0);
+    if(totalPerLang>CHAR_LIMIT) return {text:null, isCharBased:false, intentId:'error', error:`Total character count (${totalPerLang.toLocaleString()}) exceeds the ${CHAR_LIMIT.toLocaleString()} limit. Please reduce your character counts.`};
+    for(const pl of perLangCounts){
+      if(pl.cc<=0) return {text:null, isCharBased:false, intentId:'error', error:'Each language character count must be a positive number.'};
+    }
   }
 
   // Blocked check
