@@ -409,14 +409,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 .cc-checkbox-label input[type="checkbox"]{
   width:16px;height:16px;accent-color:var(--primary);cursor:pointer;
 }
-.cc-limit-chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.cc-limit-chip{
-  padding:5px 12px;border:1px solid var(--border);border-radius:999px;
-  font-size:11px;font-weight:600;font-family:'Outfit',sans-serif;
-  cursor:pointer;background:var(--bg2);color:var(--text-muted);transition:color .18s,background .18s,border-color .18s;
-}
-.cc-limit-chip:hover{border-color:var(--primary);color:var(--primary-glow);background:var(--primary-dim);}
-.cc-limit-chip.active{background:var(--primary);color:#000;border-color:var(--primary);}
 .cc-stats-bar{
   display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
 }
@@ -465,33 +457,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
 .cc-char-tag .cc-char-idx{
   font-size:9px;color:var(--text-muted);font-weight:600;
 }
-.cc-limit-bar-wrap{
-  background:var(--border);border-radius:999px;height:6px;overflow:hidden;
-  display:none;
-}
-.cc-limit-bar-wrap.visible{display:block;}
-.cc-limit-bar{
-  height:100%;border-radius:999px;
-  transition:width .15s ease,background .2s;
-}
-.cc-limit-info{
-  font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;
-  text-align:right;display:none;
-}
-.cc-limit-info.visible{display:block;}
-.cc-limit-info .over{color:var(--danger);font-weight:700;}
-.cc-generate-row{
-  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
-}
-.cc-gen-input{
-  width:120px;padding:9px 12px;
-  background:var(--bg2);color:var(--text);border:1px solid var(--border);
-  border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;
-  font-weight:500;transition:border-color .2s;
-}
-.cc-gen-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
-.cc-gen-input::placeholder{color:var(--text-muted);}
-
 @media(max-width:700px){
   .text-section-inner{flex-direction:column;}
   .left-pane{width:100%;height:auto;flex-direction:row;flex-wrap:wrap;position:static;border-right:none;border-bottom:1px solid var(--border);padding:8px;}
@@ -504,8 +469,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
   .theme-btn span:last-child{display:none;}
   .cc-stats-bar{grid-template-columns:repeat(3,1fr);}
   .cc-stats-bar-secondary{grid-template-columns:repeat(2,1fr);}
-  .cc-generate-row{flex-direction:column;}
-  .cc-gen-input{width:100%;}
 }
 @media(max-width:400px){
   .cc-stats-bar{grid-template-columns:repeat(2,1fr);}
@@ -819,17 +782,7 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         <textarea class="cc-textarea" id="cc-input" placeholder="Type or paste your text here..."></textarea>
         <div class="cc-options">
           <label class="cc-checkbox-label"><input type="checkbox" id="cc-exclude-spaces"> Exclude Spaces</label>
-          <div class="cc-limit-chips">
-            <span class="suggest-label" style="font-size:10px;">LIMIT:</span>
-            <button class="cc-limit-chip" data-limit="100">100</button>
-            <button class="cc-limit-chip" data-limit="200">200</button>
-            <button class="cc-limit-chip" data-limit="500">500</button>
-            <button class="cc-limit-chip" data-limit="1000">1000</button>
-            <button class="cc-limit-chip" data-limit="0">None</button>
-          </div>
         </div>
-        <div class="cc-limit-info" id="cc-limit-info"></div>
-        <div class="cc-limit-bar-wrap" id="cc-limit-bar-wrap"><div class="cc-limit-bar" id="cc-limit-bar" style="width:0%"></div></div>
         <div class="cc-stats-bar" id="cc-stats-bar">
           <div class="cc-stat"><div class="cc-stat-value" id="cc-chars">0</div><div class="cc-stat-label">Characters</div></div>
           <div class="cc-stat"><div class="cc-stat-value" id="cc-words">0</div><div class="cc-stat-label">Words</div></div>
@@ -849,12 +802,6 @@ select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(-
         </div>
         <div class="response-actions">
           <button class="btn-secondary" id="cc-clear-btn" disabled>Clear Text</button>
-        </div>
-        <div class="cc-generate-row">
-          <span class="field-label" style="white-space:nowrap;">Generate text</span>
-          <input type="number" class="cc-gen-input" id="cc-gen-count" placeholder="e.g. 500" min="1" max="100000">
-          <span class="field-label" style="white-space:nowrap;">characters</span>
-          <button class="btn-primary" id="cc-gen-btn" disabled>Generate</button>
         </div>
       </div>
     </div>
@@ -3505,14 +3452,8 @@ document.getElementById("img-dl-btn").addEventListener("click",()=>{
   const elTabs=document.getElementById('cc-tabs');
   const elNewlines=document.getElementById('cc-newlines');
   const elBytes=document.getElementById('cc-bytes');
-  const limitInfo=document.getElementById('cc-limit-info');
-  const limitBarWrap=document.getElementById('cc-limit-bar-wrap');
-  const limitBar=document.getElementById('cc-limit-bar');
-  const genCountInput=document.getElementById('cc-gen-count');
-  const genBtn=document.getElementById('cc-gen-btn');
   const copyBtn=document.getElementById('cc-copy-btn');
   const clearBtn=document.getElementById('cc-clear-btn');
-  let charLimit=0;
 
   // ── Grapheme segmenter: counts visual characters (handles compound emojis, flags, ZWJ sequences) ──
   const hasSegmenter=typeof Intl!=='undefined'&&typeof Intl.Segmenter==='function';
@@ -3662,25 +3603,6 @@ document.getElementById("img-dl-btn").addEventListener("click",()=>{
       breakdownBody.innerHTML='';
     }
 
-    // ── Limit bar (grapheme-aware) ──
-    if(charLimit>0){
-      const rawChars=countGraphemes(text);
-      const pct=Math.min((rawChars/charLimit)*100,100);
-      limitBarWrap.classList.add('visible');
-      limitInfo.classList.add('visible');
-      limitBar.style.width=pct+'%';
-      if(rawChars>charLimit){
-        limitBar.style.background='var(--danger)';
-        limitInfo.innerHTML=`<span class="over">${rawChars.toLocaleString()} / ${charLimit.toLocaleString()}</span> \u2014 ${(rawChars-charLimit).toLocaleString()} over limit`;
-      } else {
-        limitBar.style.background='linear-gradient(90deg,var(--primary),var(--primary-glow))';
-        limitInfo.textContent=`${rawChars.toLocaleString()} / ${charLimit.toLocaleString()} characters`;
-      }
-    } else {
-      limitBarWrap.classList.remove('visible');
-      limitInfo.classList.remove('visible');
-    }
-
     // Button states
     const hasText=text.length>0;
     copyBtn.disabled=!hasText;
@@ -3689,31 +3611,6 @@ document.getElementById("img-dl-btn").addEventListener("click",()=>{
 
   input.addEventListener('input',scheduleAnalyze);
   excludeSpaces.addEventListener('change',analyze);
-
-  // Limit chips
-  document.querySelectorAll('.cc-limit-chip').forEach(chip=>{
-    chip.addEventListener('click',()=>{
-      document.querySelectorAll('.cc-limit-chip').forEach(c=>c.classList.remove('active'));
-      const lim=parseInt(chip.dataset.limit);
-      if(lim>0){
-        chip.classList.add('active');
-        charLimit=lim;
-      } else {
-        charLimit=0;
-      }
-      analyze();
-    });
-  });
-
-  // Generate X characters
-  genCountInput.addEventListener('input',()=>{
-    genBtn.disabled=!genCountInput.value||parseInt(genCountInput.value)<1;
-  });
-  genBtn.addEventListener('click',()=>{
-    const count=Math.min(Math.max(parseInt(genCountInput.value)||0,1),100000);
-    input.value=rndEnglishChars(count);
-    analyze();
-  });
 
   // Copy
   copyBtn.addEventListener('click',async()=>{
